@@ -1,0 +1,19 @@
+schema = "context-record/v0.1"
+set_id = "macanderson.oxagen-arp"
+
+[[record]]
+lineage_id = "ctx.arp.quickstart-same-gates"
+record_id = "rec_arp_quickstart_same_gates_294d1b0fe737"
+record_hash = "sha256:91c68c9931d521b98c12bf686c7ba34f8e48280034a8ab0f1ac02366d6b7153b"
+kind = "rule"
+statement = "oxagen quickstart composes the existing login, enroll, link, init, sync, validate, and submit steps with safe defaults; it must not add a bypass flag, skip the scanner, create a write-capable work order, or raise a cap above the tenant default."
+origin = "user"
+sharing_scope = "repository"
+status = "active"
+
+[record.provenance]
+source_kind = "document"
+source_uri = "ARP-CLI-spec.md"
+
+[record.steering]
+force = "must"

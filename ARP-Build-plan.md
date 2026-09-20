@@ -107,7 +107,7 @@ Each current example allows at most $20 across that batch's agent work, with at 
 
 ## The actual 22 batches
 
-The current plan is deliberately sequential. Each row depends on the preceding named batch, so a partial or unreviewed result cannot become the next batch's base. This avoids shared-file races while the product contracts are being established.
+The current plan is deliberately sequential. Each row depends on the preceding named batch, so a partial or unreviewed result cannot become the next batch's base. This avoids shared-file races while the product contracts are being established. Two pairs have no real dependency on each other: the desktop and web mockup batches write disjoint files, and the web and desktop product batches both depend only on the adapters batch. The controller runs batches in list order today, so those pairs stay serial until it can run independent batches concurrently; when it can, they are the first to parallelize and remove two implement-and-review cycles from the critical path. Product batches may no longer edit `.github/`, so an implementer cannot rewrite the CI check that gates its own merge; workflow changes need a separate reviewed control run.
 
 ### 1. desktop-mockups
 
@@ -137,13 +137,13 @@ Consolidate desktop and web mockups, the full OpenAPI contract, typed database s
 
 Phase: **product**. Depends on `design-certification-pack`. Implementer: **Codex**. Fresh reviewer: **Claude Code**.
 
-Build tenant/workspace storage, canonical human and agent identities, RBAC and per-record grants, SQL RLS, protected object registry, signed storage access, and audit migrations. Prove cross-tenant and forbidden-record denial.
+Build organization/workspace storage (`org`, `auth`, `workspace`, and `oxagen` schemas), canonical human and agent identities, RBAC and per-record grants, SQL RLS with the two scope shapes, protected object registry, signed storage access, organization encryption keys with `encryption_key_versions` and a re-wrap migration path, and audit migrations. Prove cross-organization and forbidden-record denial, and prove that a revoked principal, a decremented epoch, and a workspace move are rejected at the database.
 
 ### 6. control-records
 
 Phase: **product**. Depends on `storage-iam`. Implementer: **Claude Code**. Fresh reviewer: **Codex**.
 
-Build durable commands, events, transactional outbox, run/turn/action state machines, authority epochs, idempotency and reconciliation. Prove crash recovery and late-event handling.
+Build durable commands, events, transactional outbox with a per-organization relay, run/turn/action state machines, authority epochs and the run-control epoch fence, the scan-receipt and composition-receipt records that later batches fill, idempotency and reconciliation. Prove crash recovery and late-event handling. Run a synthetic load gate on event and ledger volume against the stated writes-per-turn budget before certification freezes the schema; a hot-row finding discovered in batch 21 would otherwise restart sixteen batches. Batches 8, 11, and 12 then supply the scanner engine, graph traversal, and steering delivery on top of records that already exist, so each can be tested on its own.
 
 ### 7. desktop-enrollment
 

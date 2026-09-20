@@ -1,7 +1,7 @@
 [
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/capabilities/negotiate",
+    "path": "/v0.1/organizations/{org_id}/capabilities/negotiate",
     "operation": "capabilities.negotiate",
     "summary": "Negotiate required capabilities",
     "tag": "Foundation",
@@ -33,14 +33,14 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}",
-    "operation": "tenant.get",
+    "path": "/v0.1/organizations/{org_id}",
+    "operation": "organization.get",
     "summary": "Read tenant settings",
     "tag": "Foundation",
     "request": null,
-    "result": "Tenant",
+    "result": "Organization",
     "code": 200,
-    "permission": "tenant.get",
+    "permission": "organization.get",
     "version": false,
     "scan": false,
     "service": false,
@@ -49,14 +49,14 @@
   },
   {
     "method": "PATCH",
-    "path": "/v0.1/tenants/{tenant_id}",
-    "operation": "tenant.configure",
+    "path": "/v0.1/organizations/{org_id}",
+    "operation": "organization.configure",
     "summary": "Configure tenant settings",
     "tag": "Foundation",
-    "request": "TenantPatch",
-    "result": "Tenant",
+    "request": "OrganizationPatch",
+    "result": "Organization",
     "code": 200,
-    "permission": "tenant.configure",
+    "permission": "organization.configure",
     "version": true,
     "scan": true,
     "service": false,
@@ -65,7 +65,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces",
+    "path": "/v0.1/organizations/{org_id}/workspaces",
     "operation": "workspaces.list",
     "summary": "List workspaces",
     "tag": "Foundation",
@@ -81,7 +81,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}",
     "operation": "workspaces.get",
     "summary": "Get Workspace",
     "tag": "Foundation",
@@ -97,7 +97,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces",
+    "path": "/v0.1/organizations/{org_id}/workspaces",
     "operation": "workspaces.create",
     "summary": "Create Workspace",
     "tag": "Foundation",
@@ -113,7 +113,7 @@
   },
   {
     "method": "PATCH",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}",
     "operation": "workspaces.update",
     "summary": "Update Workspace",
     "tag": "Foundation",
@@ -129,7 +129,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/revoke",
     "operation": "workspaces.revoke",
     "summary": "Revoke Workspace",
     "tag": "Foundation",
@@ -145,7 +145,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/principals",
+    "path": "/v0.1/organizations/{org_id}/principals",
     "operation": "principals.list",
     "summary": "List principals",
     "tag": "IAM",
@@ -161,7 +161,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/principals/{principal_id}",
+    "path": "/v0.1/organizations/{org_id}/principals/{principal_id}",
     "operation": "principals.get",
     "summary": "Get Principal",
     "tag": "IAM",
@@ -177,7 +177,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/principals",
+    "path": "/v0.1/organizations/{org_id}/principals",
     "operation": "principals.create",
     "summary": "Create Principal",
     "tag": "IAM",
@@ -193,7 +193,7 @@
   },
   {
     "method": "PATCH",
-    "path": "/v0.1/tenants/{tenant_id}/principals/{principal_id}",
+    "path": "/v0.1/organizations/{org_id}/principals/{principal_id}",
     "operation": "principals.update",
     "summary": "Update Principal",
     "tag": "IAM",
@@ -209,7 +209,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/principals/{principal_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/principals/{principal_id}/revoke",
     "operation": "principals.revoke",
     "summary": "Revoke Principal",
     "tag": "IAM",
@@ -225,7 +225,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/identity-providers",
+    "path": "/v0.1/organizations/{org_id}/identity-providers",
     "operation": "identity_providers.list",
     "summary": "List identity-providers",
     "tag": "IAM",
@@ -241,7 +241,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/identity-providers/{identity_provider_id}",
+    "path": "/v0.1/organizations/{org_id}/identity-providers/{identity_provider_id}",
     "operation": "identity_providers.get",
     "summary": "Get IdentityProvider",
     "tag": "IAM",
@@ -257,7 +257,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/identity-providers",
+    "path": "/v0.1/organizations/{org_id}/identity-providers",
     "operation": "identity_providers.create",
     "summary": "Create IdentityProvider",
     "tag": "IAM",
@@ -273,7 +273,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/identity-providers/{identity_provider_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/identity-providers/{identity_provider_id}/revoke",
     "operation": "identity_providers.revoke",
     "summary": "Revoke IdentityProvider",
     "tag": "IAM",
@@ -289,7 +289,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/groups",
+    "path": "/v0.1/organizations/{org_id}/groups",
     "operation": "groups.list",
     "summary": "List groups",
     "tag": "IAM",
@@ -305,7 +305,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/groups/{group_id}",
+    "path": "/v0.1/organizations/{org_id}/groups/{group_id}",
     "operation": "groups.get",
     "summary": "Get Group",
     "tag": "IAM",
@@ -321,7 +321,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/groups",
+    "path": "/v0.1/organizations/{org_id}/groups",
     "operation": "groups.create",
     "summary": "Create Group",
     "tag": "IAM",
@@ -337,7 +337,7 @@
   },
   {
     "method": "PATCH",
-    "path": "/v0.1/tenants/{tenant_id}/groups/{group_id}",
+    "path": "/v0.1/organizations/{org_id}/groups/{group_id}",
     "operation": "groups.update",
     "summary": "Update Group",
     "tag": "IAM",
@@ -353,7 +353,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/groups/{group_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/groups/{group_id}/revoke",
     "operation": "groups.revoke",
     "summary": "Revoke Group",
     "tag": "IAM",
@@ -369,7 +369,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/group-memberships",
+    "path": "/v0.1/organizations/{org_id}/group-memberships",
     "operation": "group_memberships.list",
     "summary": "List group-memberships",
     "tag": "IAM",
@@ -385,7 +385,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/group-memberships/{group_membership_id}",
+    "path": "/v0.1/organizations/{org_id}/group-memberships/{group_membership_id}",
     "operation": "group_memberships.get",
     "summary": "Get GroupMembership",
     "tag": "IAM",
@@ -401,7 +401,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/group-memberships",
+    "path": "/v0.1/organizations/{org_id}/group-memberships",
     "operation": "group_memberships.create",
     "summary": "Create GroupMembership",
     "tag": "IAM",
@@ -417,7 +417,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/group-memberships/{group_membership_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/group-memberships/{group_membership_id}/revoke",
     "operation": "group_memberships.revoke",
     "summary": "Revoke GroupMembership",
     "tag": "IAM",
@@ -433,7 +433,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/permissions",
+    "path": "/v0.1/organizations/{org_id}/permissions",
     "operation": "permissions.list",
     "summary": "List permissions",
     "tag": "IAM",
@@ -449,7 +449,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/permissions/{permission_id}",
+    "path": "/v0.1/organizations/{org_id}/permissions/{permission_id}",
     "operation": "permissions.get",
     "summary": "Get Permission",
     "tag": "IAM",
@@ -465,7 +465,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/roles",
+    "path": "/v0.1/organizations/{org_id}/roles",
     "operation": "roles.list",
     "summary": "List roles",
     "tag": "IAM",
@@ -481,7 +481,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/roles/{role_id}",
+    "path": "/v0.1/organizations/{org_id}/roles/{role_id}",
     "operation": "roles.get",
     "summary": "Get Role",
     "tag": "IAM",
@@ -497,7 +497,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/roles",
+    "path": "/v0.1/organizations/{org_id}/roles",
     "operation": "roles.create",
     "summary": "Create Role",
     "tag": "IAM",
@@ -513,7 +513,7 @@
   },
   {
     "method": "PATCH",
-    "path": "/v0.1/tenants/{tenant_id}/roles/{role_id}",
+    "path": "/v0.1/organizations/{org_id}/roles/{role_id}",
     "operation": "roles.update",
     "summary": "Update Role",
     "tag": "IAM",
@@ -529,7 +529,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/roles/{role_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/roles/{role_id}/revoke",
     "operation": "roles.revoke",
     "summary": "Revoke Role",
     "tag": "IAM",
@@ -545,7 +545,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/role-grants",
+    "path": "/v0.1/organizations/{org_id}/role-grants",
     "operation": "role_grants.list",
     "summary": "List role-grants",
     "tag": "IAM",
@@ -561,7 +561,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/role-grants/{role_grant_id}",
+    "path": "/v0.1/organizations/{org_id}/role-grants/{role_grant_id}",
     "operation": "role_grants.get",
     "summary": "Get RoleGrant",
     "tag": "IAM",
@@ -577,7 +577,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/role-grants",
+    "path": "/v0.1/organizations/{org_id}/role-grants",
     "operation": "role_grants.create",
     "summary": "Create RoleGrant",
     "tag": "IAM",
@@ -593,7 +593,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/role-grants/{role_grant_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/role-grants/{role_grant_id}/revoke",
     "operation": "role_grants.revoke",
     "summary": "Revoke RoleGrant",
     "tag": "IAM",
@@ -609,7 +609,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/record-grants",
+    "path": "/v0.1/organizations/{org_id}/record-grants",
     "operation": "record_grants.list",
     "summary": "List record-grants",
     "tag": "IAM",
@@ -625,7 +625,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/record-grants/{record_grant_id}",
+    "path": "/v0.1/organizations/{org_id}/record-grants/{record_grant_id}",
     "operation": "record_grants.get",
     "summary": "Get RecordGrant",
     "tag": "IAM",
@@ -641,7 +641,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/record-grants",
+    "path": "/v0.1/organizations/{org_id}/record-grants",
     "operation": "record_grants.create",
     "summary": "Create RecordGrant",
     "tag": "IAM",
@@ -657,7 +657,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/record-grants/{record_grant_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/record-grants/{record_grant_id}/revoke",
     "operation": "record_grants.revoke",
     "summary": "Revoke RecordGrant",
     "tag": "IAM",
@@ -673,7 +673,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/delegations",
+    "path": "/v0.1/organizations/{org_id}/delegations",
     "operation": "delegations.list",
     "summary": "List delegations",
     "tag": "IAM",
@@ -689,7 +689,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/delegations/{delegation_id}",
+    "path": "/v0.1/organizations/{org_id}/delegations/{delegation_id}",
     "operation": "delegations.get",
     "summary": "Get Delegation",
     "tag": "IAM",
@@ -705,7 +705,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/delegations",
+    "path": "/v0.1/organizations/{org_id}/delegations",
     "operation": "delegations.create",
     "summary": "Create Delegation",
     "tag": "IAM",
@@ -721,7 +721,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/delegations/{delegation_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/delegations/{delegation_id}/revoke",
     "operation": "delegations.revoke",
     "summary": "Revoke Delegation",
     "tag": "IAM",
@@ -737,7 +737,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/data-plane-bindings",
+    "path": "/v0.1/organizations/{org_id}/data-plane-bindings",
     "operation": "data_plane_bindings.list",
     "summary": "List data-plane-bindings",
     "tag": "Data planes",
@@ -753,7 +753,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/data-plane-bindings/{data_plane_binding_id}",
+    "path": "/v0.1/organizations/{org_id}/data-plane-bindings/{data_plane_binding_id}",
     "operation": "data_plane_bindings.get",
     "summary": "Get DataPlaneBinding",
     "tag": "Data planes",
@@ -769,7 +769,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/data-plane-bindings",
+    "path": "/v0.1/organizations/{org_id}/data-plane-bindings",
     "operation": "data_plane_bindings.create",
     "summary": "Create DataPlaneBinding",
     "tag": "Data planes",
@@ -785,7 +785,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/data-plane-bindings/{data_plane_binding_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/data-plane-bindings/{data_plane_binding_id}/revoke",
     "operation": "data_plane_bindings.revoke",
     "summary": "Revoke DataPlaneBinding",
     "tag": "Data planes",
@@ -801,7 +801,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/data-plane-revisions",
+    "path": "/v0.1/organizations/{org_id}/data-plane-revisions",
     "operation": "data_plane.revision.create",
     "summary": "Create a data-plane revision",
     "tag": "Data planes",
@@ -817,7 +817,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/data-plane-bindings/{binding_id}/activate",
+    "path": "/v0.1/organizations/{org_id}/data-plane-bindings/{binding_id}/activate",
     "operation": "data_plane.activate",
     "summary": "Commit a checked storage cutover",
     "tag": "Data planes",
@@ -833,7 +833,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/device-enrollment/challenges",
+    "path": "/v0.1/organizations/{org_id}/device-enrollment/challenges",
     "operation": "device.challenge",
     "summary": "Request a device enrollment challenge",
     "tag": "Enrollment",
@@ -849,7 +849,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/device-enrollment/complete",
+    "path": "/v0.1/organizations/{org_id}/device-enrollment/complete",
     "operation": "device.enroll",
     "summary": "Verify a device enrollment proof",
     "tag": "Enrollment",
@@ -865,7 +865,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/devices",
+    "path": "/v0.1/organizations/{org_id}/devices",
     "operation": "devices.list",
     "summary": "List devices",
     "tag": "Enrollment",
@@ -881,7 +881,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/devices/{device_id}",
+    "path": "/v0.1/organizations/{org_id}/devices/{device_id}",
     "operation": "devices.get",
     "summary": "Get Device",
     "tag": "Enrollment",
@@ -897,7 +897,7 @@
   },
   {
     "method": "PATCH",
-    "path": "/v0.1/tenants/{tenant_id}/devices/{device_id}",
+    "path": "/v0.1/organizations/{org_id}/devices/{device_id}",
     "operation": "devices.update",
     "summary": "Update Device",
     "tag": "Enrollment",
@@ -913,7 +913,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/devices/{device_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/devices/{device_id}/revoke",
     "operation": "devices.revoke",
     "summary": "Revoke Device",
     "tag": "Enrollment",
@@ -929,7 +929,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/gateway-enrollments",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/gateway-enrollments",
     "operation": "gateway_enrollments.list",
     "summary": "List gateway-enrollments",
     "tag": "Enrollment",
@@ -945,7 +945,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/gateway-enrollments/{gateway_enrollment_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/gateway-enrollments/{gateway_enrollment_id}",
     "operation": "gateway_enrollments.get",
     "summary": "Get GatewayEnrollment",
     "tag": "Enrollment",
@@ -961,7 +961,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/gateway-enrollments",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/gateway-enrollments",
     "operation": "gateway_enrollments.create",
     "summary": "Create GatewayEnrollment",
     "tag": "Enrollment",
@@ -977,7 +977,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/gateway-enrollments/{gateway_enrollment_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/gateway-enrollments/{gateway_enrollment_id}/revoke",
     "operation": "gateway_enrollments.revoke",
     "summary": "Revoke GatewayEnrollment",
     "tag": "Enrollment",
@@ -993,7 +993,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/harness-targets",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/harness-targets",
     "operation": "harness_targets.list",
     "summary": "List harness-targets",
     "tag": "Enrollment",
@@ -1009,7 +1009,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/harness-targets/{harness_target_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/harness-targets/{harness_target_id}",
     "operation": "harness_targets.get",
     "summary": "Get HarnessTarget",
     "tag": "Enrollment",
@@ -1025,7 +1025,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/harness-targets",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/harness-targets",
     "operation": "harness_targets.create",
     "summary": "Create HarnessTarget",
     "tag": "Enrollment",
@@ -1041,7 +1041,7 @@
   },
   {
     "method": "PATCH",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/harness-targets/{harness_target_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/harness-targets/{harness_target_id}",
     "operation": "harness_targets.update",
     "summary": "Update HarnessTarget",
     "tag": "Enrollment",
@@ -1057,7 +1057,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/harness-targets/{harness_target_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/harness-targets/{harness_target_id}/revoke",
     "operation": "harness_targets.revoke",
     "summary": "Revoke HarnessTarget",
     "tag": "Enrollment",
@@ -1073,7 +1073,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/harness-targets/{target_id}/heartbeat",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/harness-targets/{target_id}/heartbeat",
     "operation": "target.heartbeat",
     "summary": "Report target presence",
     "tag": "Enrollment",
@@ -1089,7 +1089,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repositories",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/repositories",
     "operation": "repositories.list",
     "summary": "List repositories",
     "tag": "Repos",
@@ -1105,7 +1105,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repositories/{repository_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/repositories/{repository_id}",
     "operation": "repositories.get",
     "summary": "Get Repository",
     "tag": "Repos",
@@ -1121,7 +1121,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repositories",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/repositories",
     "operation": "repositories.create",
     "summary": "Create Repository",
     "tag": "Repos",
@@ -1137,7 +1137,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repositories/{repository_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/repositories/{repository_id}/revoke",
     "operation": "repositories.revoke",
     "summary": "Revoke Repository",
     "tag": "Repos",
@@ -1153,7 +1153,7 @@
   },
   {
     "method": "PATCH",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repositories/{repository_id}/settings",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/repositories/{repository_id}/settings",
     "operation": "workspace.repository.configure",
     "summary": "Set the workspace target branch",
     "tag": "Repos",
@@ -1169,7 +1169,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/checkout-bindings",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/checkout-bindings",
     "operation": "checkout_bindings.list",
     "summary": "List checkout-bindings",
     "tag": "Repos",
@@ -1185,7 +1185,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/checkout-bindings/{checkout_binding_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/checkout-bindings/{checkout_binding_id}",
     "operation": "checkout_bindings.get",
     "summary": "Get CheckoutBinding",
     "tag": "Repos",
@@ -1201,7 +1201,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/checkout-bindings",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/checkout-bindings",
     "operation": "checkout_bindings.create",
     "summary": "Create CheckoutBinding",
     "tag": "Repos",
@@ -1217,7 +1217,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/checkout-bindings/{checkout_binding_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/checkout-bindings/{checkout_binding_id}/revoke",
     "operation": "checkout_bindings.revoke",
     "summary": "Revoke CheckoutBinding",
     "tag": "Repos",
@@ -1233,7 +1233,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/harness-targets/{target_id}/configure",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/harness-targets/{target_id}/configure",
     "operation": "target.configure",
     "summary": "Apply checked harness settings",
     "tag": "Enrollment",
@@ -1249,7 +1249,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repo-config/exports",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/repo-config/exports",
     "operation": "repo_config.export",
     "summary": "Export reference-only repo config",
     "tag": "Repo config",
@@ -1265,7 +1265,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repo-config/plans",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/repo-config/plans",
     "operation": "repo_config.plan",
     "summary": "Plan repo sync without applying it",
     "tag": "Repo config",
@@ -1281,7 +1281,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repo-config/plans/{plan_id}/apply",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/repo-config/plans/{plan_id}/apply",
     "operation": "repo_config.apply",
     "summary": "Apply a fresh authorized sync plan",
     "tag": "Repo config",
@@ -1297,7 +1297,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repo-config/validate",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/repo-config/validate",
     "operation": "repo_config.validate",
     "summary": "Validate current setup without launching",
     "tag": "Repo config",
@@ -1313,7 +1313,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repo-config/sync-receipts/{receipt_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/repo-config/sync-receipts/{receipt_id}",
     "operation": "repo_config.receipt.get",
     "summary": "Read the protected sync receipt",
     "tag": "Repo config",
@@ -1329,7 +1329,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/personas",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/personas",
     "operation": "personas.list",
     "summary": "List personas",
     "tag": "Agent definitions",
@@ -1345,7 +1345,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/personas/{persona_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/personas/{persona_id}",
     "operation": "personas.get",
     "summary": "Get Persona",
     "tag": "Agent definitions",
@@ -1361,7 +1361,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/personas",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/personas",
     "operation": "personas.create",
     "summary": "Create Persona",
     "tag": "Agent definitions",
@@ -1377,7 +1377,7 @@
   },
   {
     "method": "PATCH",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/personas/{persona_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/personas/{persona_id}",
     "operation": "personas.update",
     "summary": "Update Persona",
     "tag": "Agent definitions",
@@ -1393,7 +1393,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/personas/{persona_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/personas/{persona_id}/revoke",
     "operation": "personas.revoke",
     "summary": "Revoke Persona",
     "tag": "Agent definitions",
@@ -1409,7 +1409,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/persona-versions",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/persona-versions",
     "operation": "persona_versions.list",
     "summary": "List persona-versions",
     "tag": "Agent definitions",
@@ -1425,7 +1425,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/persona-versions/{persona_version_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/persona-versions/{persona_version_id}",
     "operation": "persona_versions.get",
     "summary": "Get PersonaVersion",
     "tag": "Agent definitions",
@@ -1441,7 +1441,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/persona-versions",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/persona-versions",
     "operation": "persona_versions.create",
     "summary": "Create PersonaVersion",
     "tag": "Agent definitions",
@@ -1457,7 +1457,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agents",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/agents",
     "operation": "agents.list",
     "summary": "List agents",
     "tag": "Agent definitions",
@@ -1473,7 +1473,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agents/{agent_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/agents/{agent_id}",
     "operation": "agents.get",
     "summary": "Get Agent",
     "tag": "Agent definitions",
@@ -1489,7 +1489,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agents",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/agents",
     "operation": "agents.create",
     "summary": "Create Agent",
     "tag": "Agent definitions",
@@ -1505,7 +1505,7 @@
   },
   {
     "method": "PATCH",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agents/{agent_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/agents/{agent_id}",
     "operation": "agents.update",
     "summary": "Update Agent",
     "tag": "Agent definitions",
@@ -1521,7 +1521,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agents/{agent_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/agents/{agent_id}/revoke",
     "operation": "agents.revoke",
     "summary": "Revoke Agent",
     "tag": "Agent definitions",
@@ -1537,7 +1537,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-releases",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-releases",
     "operation": "agent_releases.list",
     "summary": "List agent-releases",
     "tag": "Agent definitions",
@@ -1553,7 +1553,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-releases/{agent_release_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-releases/{agent_release_id}",
     "operation": "agent_releases.get",
     "summary": "Get AgentRelease",
     "tag": "Agent definitions",
@@ -1569,7 +1569,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-releases",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-releases",
     "operation": "agent_releases.create",
     "summary": "Create AgentRelease",
     "tag": "Agent definitions",
@@ -1585,7 +1585,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-modes",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-modes",
     "operation": "agent_modes.list",
     "summary": "List agent-modes",
     "tag": "Agent definitions",
@@ -1601,7 +1601,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-modes/{agent_mode_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-modes/{agent_mode_id}",
     "operation": "agent_modes.get",
     "summary": "Get AgentMode",
     "tag": "Agent definitions",
@@ -1617,7 +1617,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-modes",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-modes",
     "operation": "agent_modes.create",
     "summary": "Create AgentMode",
     "tag": "Agent definitions",
@@ -1633,7 +1633,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/skills",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/skills",
     "operation": "skills.list",
     "summary": "List skills",
     "tag": "Agent definitions",
@@ -1649,7 +1649,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/skills/{skill_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/skills/{skill_id}",
     "operation": "skills.get",
     "summary": "Get Skill",
     "tag": "Agent definitions",
@@ -1665,7 +1665,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/skills",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/skills",
     "operation": "skills.create",
     "summary": "Create Skill",
     "tag": "Agent definitions",
@@ -1681,7 +1681,7 @@
   },
   {
     "method": "PATCH",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/skills/{skill_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/skills/{skill_id}",
     "operation": "skills.update",
     "summary": "Update Skill",
     "tag": "Agent definitions",
@@ -1697,7 +1697,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/skills/{skill_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/skills/{skill_id}/revoke",
     "operation": "skills.revoke",
     "summary": "Revoke Skill",
     "tag": "Agent definitions",
@@ -1713,7 +1713,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/skill-versions",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/skill-versions",
     "operation": "skill_versions.list",
     "summary": "List skill-versions",
     "tag": "Agent definitions",
@@ -1729,7 +1729,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/skill-versions/{skill_version_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/skill-versions/{skill_version_id}",
     "operation": "skill_versions.get",
     "summary": "Get SkillVersion",
     "tag": "Agent definitions",
@@ -1745,7 +1745,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/skill-versions",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/skill-versions",
     "operation": "skill_versions.create",
     "summary": "Create SkillVersion",
     "tag": "Agent definitions",
@@ -1761,7 +1761,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-definitions",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-definitions",
     "operation": "tool_definitions.list",
     "summary": "List tool-definitions",
     "tag": "Tools",
@@ -1777,7 +1777,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-definitions/{tool_definition_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-definitions/{tool_definition_id}",
     "operation": "tool_definitions.get",
     "summary": "Get ToolDefinition",
     "tag": "Tools",
@@ -1793,7 +1793,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-definitions",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-definitions",
     "operation": "tool_definitions.create",
     "summary": "Create ToolDefinition",
     "tag": "Tools",
@@ -1809,7 +1809,7 @@
   },
   {
     "method": "PATCH",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-definitions/{tool_definition_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-definitions/{tool_definition_id}",
     "operation": "tool_definitions.update",
     "summary": "Update ToolDefinition",
     "tag": "Tools",
@@ -1825,7 +1825,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-definitions/{tool_definition_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-definitions/{tool_definition_id}/revoke",
     "operation": "tool_definitions.revoke",
     "summary": "Revoke ToolDefinition",
     "tag": "Tools",
@@ -1841,7 +1841,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-releases",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-releases",
     "operation": "tool_releases.list",
     "summary": "List tool-releases",
     "tag": "Tools",
@@ -1857,7 +1857,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-releases/{tool_release_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-releases/{tool_release_id}",
     "operation": "tool_releases.get",
     "summary": "Get ToolRelease",
     "tag": "Tools",
@@ -1873,7 +1873,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-releases",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-releases",
     "operation": "tool_releases.create",
     "summary": "Create ToolRelease",
     "tag": "Tools",
@@ -1889,7 +1889,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-bindings",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-bindings",
     "operation": "tool_bindings.list",
     "summary": "List tool-bindings",
     "tag": "Tools",
@@ -1905,7 +1905,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-bindings/{tool_binding_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-bindings/{tool_binding_id}",
     "operation": "tool_bindings.get",
     "summary": "Get ToolBinding",
     "tag": "Tools",
@@ -1921,7 +1921,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-bindings",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-bindings",
     "operation": "tool_bindings.create",
     "summary": "Create ToolBinding",
     "tag": "Tools",
@@ -1937,7 +1937,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-bindings/{tool_binding_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-bindings/{tool_binding_id}/revoke",
     "operation": "tool_bindings.revoke",
     "summary": "Revoke ToolBinding",
     "tag": "Tools",
@@ -1953,7 +1953,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-tool-rules",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-tool-rules",
     "operation": "agent_tool_rules.list",
     "summary": "List agent-tool-rules",
     "tag": "Tools",
@@ -1969,7 +1969,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-tool-rules/{agent_tool_rule_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-tool-rules/{agent_tool_rule_id}",
     "operation": "agent_tool_rules.get",
     "summary": "Get AgentToolRule",
     "tag": "Tools",
@@ -1985,7 +1985,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-tool-rules",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-tool-rules",
     "operation": "agent_tool_rules.create",
     "summary": "Create AgentToolRule",
     "tag": "Tools",
@@ -2001,7 +2001,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-belts/resolve",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-belts/resolve",
     "operation": "toolbelt.resolve",
     "summary": "Resolve the active allowed tool belt",
     "tag": "Tools",
@@ -2017,7 +2017,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-belts/{snapshot_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-belts/{snapshot_id}",
     "operation": "toolbelt.status",
     "summary": "Read a tool-belt snapshot",
     "tag": "Tools",
@@ -2033,7 +2033,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-providers",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-providers",
     "operation": "model_providers.list",
     "summary": "List model-providers",
     "tag": "Models",
@@ -2049,7 +2049,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-providers/{model_provider_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-providers/{model_provider_id}",
     "operation": "model_providers.get",
     "summary": "Get ModelProvider",
     "tag": "Models",
@@ -2065,7 +2065,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-providers",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-providers",
     "operation": "model_providers.create",
     "summary": "Create ModelProvider",
     "tag": "Models",
@@ -2081,7 +2081,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-providers/{model_provider_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-providers/{model_provider_id}/revoke",
     "operation": "model_providers.revoke",
     "summary": "Revoke ModelProvider",
     "tag": "Models",
@@ -2097,7 +2097,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-releases",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-releases",
     "operation": "model_releases.list",
     "summary": "List model-releases",
     "tag": "Models",
@@ -2113,7 +2113,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-releases/{model_release_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-releases/{model_release_id}",
     "operation": "model_releases.get",
     "summary": "Get ModelRelease",
     "tag": "Models",
@@ -2129,7 +2129,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-releases",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-releases",
     "operation": "model_releases.create",
     "summary": "Create ModelRelease",
     "tag": "Models",
@@ -2145,7 +2145,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-routes",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-routes",
     "operation": "model_routes.list",
     "summary": "List model-routes",
     "tag": "Models",
@@ -2161,7 +2161,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-routes/{model_route_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-routes/{model_route_id}",
     "operation": "model_routes.get",
     "summary": "Get ModelRoute",
     "tag": "Models",
@@ -2177,7 +2177,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-routes",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-routes",
     "operation": "model_routes.create",
     "summary": "Create ModelRoute",
     "tag": "Models",
@@ -2193,7 +2193,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-routes/{model_route_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-routes/{model_route_id}/revoke",
     "operation": "model_routes.revoke",
     "summary": "Revoke ModelRoute",
     "tag": "Models",
@@ -2209,7 +2209,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/secret-backend-bindings",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/secret-backend-bindings",
     "operation": "secret_backend_bindings.list",
     "summary": "List secret-backend-bindings",
     "tag": "Connectors",
@@ -2225,7 +2225,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/secret-backend-bindings/{secret_backend_binding_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/secret-backend-bindings/{secret_backend_binding_id}",
     "operation": "secret_backend_bindings.get",
     "summary": "Get SecretBackendBinding",
     "tag": "Connectors",
@@ -2241,7 +2241,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/secret-backend-bindings",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/secret-backend-bindings",
     "operation": "secret_backend_bindings.create",
     "summary": "Create SecretBackendBinding",
     "tag": "Connectors",
@@ -2257,7 +2257,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/secret-backend-bindings/{secret_backend_binding_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/secret-backend-bindings/{secret_backend_binding_id}/revoke",
     "operation": "secret_backend_bindings.revoke",
     "summary": "Revoke SecretBackendBinding",
     "tag": "Connectors",
@@ -2273,7 +2273,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/credential-references",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/credential-references",
     "operation": "credential_references.list",
     "summary": "List credential-references",
     "tag": "Connectors",
@@ -2289,7 +2289,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/credential-references/{credential_reference_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/credential-references/{credential_reference_id}",
     "operation": "credential_references.get",
     "summary": "Get CredentialReference",
     "tag": "Connectors",
@@ -2305,7 +2305,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/credential-references",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/credential-references",
     "operation": "credential_references.create",
     "summary": "Create CredentialReference",
     "tag": "Connectors",
@@ -2321,7 +2321,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/credential-references/{credential_reference_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/credential-references/{credential_reference_id}/revoke",
     "operation": "credential_references.revoke",
     "summary": "Revoke CredentialReference",
     "tag": "Connectors",
@@ -2337,7 +2337,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connectors",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/connectors",
     "operation": "connectors.list",
     "summary": "List connectors",
     "tag": "Connectors",
@@ -2353,7 +2353,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connectors/{connector_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/connectors/{connector_id}",
     "operation": "connectors.get",
     "summary": "Get Connector",
     "tag": "Connectors",
@@ -2369,7 +2369,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connectors",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/connectors",
     "operation": "connectors.create",
     "summary": "Create Connector",
     "tag": "Connectors",
@@ -2385,7 +2385,7 @@
   },
   {
     "method": "PATCH",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connectors/{connector_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/connectors/{connector_id}",
     "operation": "connectors.update",
     "summary": "Update Connector",
     "tag": "Connectors",
@@ -2401,7 +2401,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connectors/{connector_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/connectors/{connector_id}/revoke",
     "operation": "connectors.revoke",
     "summary": "Revoke Connector",
     "tag": "Connectors",
@@ -2417,7 +2417,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connector-releases",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/connector-releases",
     "operation": "connector_releases.list",
     "summary": "List connector-releases",
     "tag": "Connectors",
@@ -2433,7 +2433,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connector-releases/{connector_release_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/connector-releases/{connector_release_id}",
     "operation": "connector_releases.get",
     "summary": "Get ConnectorRelease",
     "tag": "Connectors",
@@ -2449,7 +2449,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connector-releases",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/connector-releases",
     "operation": "connector_releases.create",
     "summary": "Create ConnectorRelease",
     "tag": "Connectors",
@@ -2465,7 +2465,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connector-deployments",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/connector-deployments",
     "operation": "connector_deployments.list",
     "summary": "List connector-deployments",
     "tag": "Connectors",
@@ -2481,7 +2481,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connector-deployments/{connector_deployment_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/connector-deployments/{connector_deployment_id}",
     "operation": "connector_deployments.get",
     "summary": "Get ConnectorDeployment",
     "tag": "Connectors",
@@ -2497,7 +2497,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connector-deployments",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/connector-deployments",
     "operation": "connector_deployments.create",
     "summary": "Create ConnectorDeployment",
     "tag": "Connectors",
@@ -2513,7 +2513,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connector-deployments/{connector_deployment_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/connector-deployments/{connector_deployment_id}/revoke",
     "operation": "connector_deployments.revoke",
     "summary": "Revoke ConnectorDeployment",
     "tag": "Connectors",
@@ -2529,7 +2529,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-templates",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-templates",
     "operation": "policy_templates.list",
     "summary": "List policy-templates",
     "tag": "Policies",
@@ -2545,7 +2545,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-templates/{policy_template_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-templates/{policy_template_id}",
     "operation": "policy_templates.get",
     "summary": "Get PolicyTemplate",
     "tag": "Policies",
@@ -2561,7 +2561,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-templates",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-templates",
     "operation": "policy_templates.create",
     "summary": "Create PolicyTemplate",
     "tag": "Policies",
@@ -2577,7 +2577,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policies",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/policies",
     "operation": "policies.list",
     "summary": "List policies",
     "tag": "Policies",
@@ -2593,7 +2593,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policies/{policy_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/policies/{policy_id}",
     "operation": "policies.get",
     "summary": "Get Policy",
     "tag": "Policies",
@@ -2609,7 +2609,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policies",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/policies",
     "operation": "policies.create",
     "summary": "Create Policy",
     "tag": "Policies",
@@ -2625,7 +2625,7 @@
   },
   {
     "method": "PATCH",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policies/{policy_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/policies/{policy_id}",
     "operation": "policies.update",
     "summary": "Update Policy",
     "tag": "Policies",
@@ -2641,7 +2641,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policies/{policy_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/policies/{policy_id}/revoke",
     "operation": "policies.revoke",
     "summary": "Revoke Policy",
     "tag": "Policies",
@@ -2657,7 +2657,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-revisions",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-revisions",
     "operation": "policy_revisions.list",
     "summary": "List policy-revisions",
     "tag": "Policies",
@@ -2673,7 +2673,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-revisions/{policy_revision_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-revisions/{policy_revision_id}",
     "operation": "policy_revisions.get",
     "summary": "Get PolicyRevision",
     "tag": "Policies",
@@ -2689,7 +2689,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-revisions",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-revisions",
     "operation": "policy_revisions.create",
     "summary": "Create PolicyRevision",
     "tag": "Policies",
@@ -2705,7 +2705,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policies/validate",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/policies/validate",
     "operation": "policy.validate",
     "summary": "Validate a proposed policy revision",
     "tag": "Policies",
@@ -2721,7 +2721,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-activations",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-activations",
     "operation": "policy_activations.list",
     "summary": "List policy-activations",
     "tag": "Policies",
@@ -2737,7 +2737,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-activations/{policy_activation_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-activations/{policy_activation_id}",
     "operation": "policy_activations.get",
     "summary": "Get PolicyActivation",
     "tag": "Policies",
@@ -2753,7 +2753,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-activations",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-activations",
     "operation": "policy_activations.create",
     "summary": "Create PolicyActivation",
     "tag": "Policies",
@@ -2769,7 +2769,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-activations/{policy_activation_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-activations/{policy_activation_id}/revoke",
     "operation": "policy_activations.revoke",
     "summary": "Revoke PolicyActivation",
     "tag": "Policies",
@@ -2785,7 +2785,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policies/explain",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/policies/explain",
     "operation": "policy.explain",
     "summary": "Explain effective rules without executing",
     "tag": "Policies",
@@ -2801,7 +2801,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-target-receipts",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-target-receipts",
     "operation": "policy.target_receipt",
     "summary": "Record whether a target applied a policy",
     "tag": "Policies",
@@ -2817,7 +2817,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/data-protection-profiles",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/data-protection-profiles",
     "operation": "data_protection_profiles.list",
     "summary": "List data-protection-profiles",
     "tag": "Data protection",
@@ -2833,7 +2833,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/data-protection-profiles/{data_protection_profile_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/data-protection-profiles/{data_protection_profile_id}",
     "operation": "data_protection_profiles.get",
     "summary": "Get DataProtectionProfile",
     "tag": "Data protection",
@@ -2849,7 +2849,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/data-protection-profiles",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/data-protection-profiles",
     "operation": "data_protection_profiles.create",
     "summary": "Create DataProtectionProfile",
     "tag": "Data protection",
@@ -2865,7 +2865,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/scan-receipts",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/scan-receipts",
     "operation": "scan_receipt.register",
     "summary": "Register a signed local scan receipt",
     "tag": "Data protection",
@@ -2881,7 +2881,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/scan-receipts/{receipt_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/scan-receipts/{receipt_id}",
     "operation": "scan_receipt.get",
     "summary": "Read allowed scan receipt metadata",
     "tag": "Data protection",
@@ -2897,7 +2897,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-orders",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-orders",
     "operation": "work_orders.list",
     "summary": "List work-orders",
     "tag": "Work",
@@ -2913,7 +2913,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-orders/{work_order_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-orders/{work_order_id}",
     "operation": "work_orders.get",
     "summary": "Get WorkOrder",
     "tag": "Work",
@@ -2929,7 +2929,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-orders",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-orders",
     "operation": "work_orders.create",
     "summary": "Create WorkOrder",
     "tag": "Work",
@@ -2945,7 +2945,7 @@
   },
   {
     "method": "PATCH",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-orders/{work_order_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-orders/{work_order_id}",
     "operation": "work_orders.update",
     "summary": "Update WorkOrder",
     "tag": "Work",
@@ -2961,7 +2961,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-orders/{work_order_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-orders/{work_order_id}/revoke",
     "operation": "work_orders.revoke",
     "summary": "Revoke WorkOrder",
     "tag": "Work",
@@ -2977,7 +2977,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-order-revisions",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-order-revisions",
     "operation": "work_order_revisions.list",
     "summary": "List work-order-revisions",
     "tag": "Work",
@@ -2993,7 +2993,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-order-revisions/{work_order_revision_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-order-revisions/{work_order_revision_id}",
     "operation": "work_order_revisions.get",
     "summary": "Get WorkOrderRevision",
     "tag": "Work",
@@ -3009,7 +3009,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-order-revisions",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-order-revisions",
     "operation": "work_order_revisions.create",
     "summary": "Create WorkOrderRevision",
     "tag": "Work",
@@ -3025,7 +3025,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-requests",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-requests",
     "operation": "work.submit",
     "summary": "Submit new work to a fixed target set",
     "tag": "Work",
@@ -3041,7 +3041,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-requests/{work_request_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-requests/{work_request_id}",
     "operation": "work.status",
     "summary": "Read each target launch outcome",
     "tag": "Work",
@@ -3057,7 +3057,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-requests/{work_request_id}/cancel",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-requests/{work_request_id}/cancel",
     "operation": "work.cancel",
     "summary": "Request cancellation of queued or started work",
     "tag": "Work",
@@ -3073,7 +3073,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs",
     "operation": "run.list",
     "summary": "List visible runs",
     "tag": "Runs",
@@ -3089,7 +3089,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}",
     "operation": "run.get",
     "summary": "Read current run state",
     "tag": "Runs",
@@ -3105,7 +3105,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/steering",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/steering",
     "operation": "steering.submit",
     "summary": "Steer a fixed set of current runs",
     "tag": "Runs",
@@ -3121,7 +3121,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/steering/{steering_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/steering/{steering_id}",
     "operation": "steering.status",
     "summary": "Read per-run steering application",
     "tag": "Runs",
@@ -3137,7 +3137,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}/pause",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}/pause",
     "operation": "run.pause",
     "summary": "Request run pause",
     "tag": "Runs",
@@ -3153,7 +3153,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}/stop",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}/stop",
     "operation": "run.stop",
     "summary": "Request run stop",
     "tag": "Runs",
@@ -3169,7 +3169,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}/force-continue",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}/force-continue",
     "operation": "run.force_continue",
     "summary": "Request run force-continue",
     "tag": "Runs",
@@ -3185,7 +3185,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}/pause",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}/pause",
     "operation": "run.pause_status",
     "summary": "Read confirmed pause proof",
     "tag": "Runs",
@@ -3201,7 +3201,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}/resume",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}/resume",
     "operation": "run.resume",
     "summary": "Resume from a confirmed boundary",
     "tag": "Runs",
@@ -3217,7 +3217,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}/mode",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}/mode",
     "operation": "run.mode.change",
     "summary": "Change mode behind closed old gates",
     "tag": "Runs",
@@ -3233,7 +3233,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}/start-receipt",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}/start-receipt",
     "operation": "run.start_receipt",
     "summary": "Read proof of the first controlled model dispatch",
     "tag": "Repo config",
@@ -3249,7 +3249,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/actions",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/actions",
     "operation": "action.propose",
     "summary": "Propose a governed workspace action",
     "tag": "Actions",
@@ -3265,7 +3265,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/admin-actions",
+    "path": "/v0.1/organizations/{org_id}/admin-actions",
     "operation": "admin_action.propose",
     "summary": "Propose a governed tenant admin action",
     "tag": "Actions",
@@ -3277,11 +3277,11 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Requires tenant_admin context and null run. Scope comes from the authenticated tenant. Tenant-wide rights do not follow from the null run. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Requires org_admin context and null run. Scope comes from the authenticated tenant. Tenant-wide rights do not follow from the null run. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/actions/{action_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/actions/{action_id}",
     "operation": "action.get",
     "summary": "Read action and attempts",
     "tag": "Actions",
@@ -3297,7 +3297,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/actions/{action_id}/attempts",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/actions/{action_id}/attempts",
     "operation": "action.attempt.create",
     "summary": "Create a checked new attempt",
     "tag": "Actions",
@@ -3313,7 +3313,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/actions/{action_id}/authorize",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/actions/{action_id}/authorize",
     "operation": "action.authorize",
     "summary": "Authorize exact input and reserve all limits",
     "tag": "Actions",
@@ -3329,7 +3329,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/actions/{action_id}/dispatch",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/actions/{action_id}/dispatch",
     "operation": "action.dispatch",
     "summary": "Consume authorization before tool dispatch",
     "tag": "Actions",
@@ -3345,7 +3345,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/gateway/model-dispatches",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/gateway/model-dispatches",
     "operation": "gateway.model_dispatch",
     "summary": "Dispatch an approved model request through the proxy",
     "tag": "Gateway",
@@ -3361,7 +3361,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connector-receipts",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/connector-receipts",
     "operation": "connector.receipt.ingest",
     "summary": "Ingest a trusted cleaned tool or source receipt",
     "tag": "Connectors",
@@ -3377,7 +3377,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-response-receipts",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-response-receipts",
     "operation": "model.response.ingest",
     "summary": "Record a locally inspected model response",
     "tag": "Gateway",
@@ -3393,7 +3393,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/actions/{action_id}/reconcile",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/actions/{action_id}/reconcile",
     "operation": "action.reconcile",
     "summary": "Reconcile an uncertain external effect",
     "tag": "Actions",
@@ -3409,7 +3409,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/responses/{response_id}/adopt",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/responses/{response_id}/adopt",
     "operation": "response.adopt",
     "summary": "Explicitly admit selected late evidence",
     "tag": "Actions",
@@ -3425,7 +3425,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/access-requests",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/access-requests",
     "operation": "access_requests.list",
     "summary": "List access-requests",
     "tag": "Approvals",
@@ -3441,7 +3441,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/access-requests/{access_request_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/access-requests/{access_request_id}",
     "operation": "access_requests.get",
     "summary": "Get AccessRequest",
     "tag": "Approvals",
@@ -3457,7 +3457,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/access-requests",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/access-requests",
     "operation": "access_requests.create",
     "summary": "Create AccessRequest",
     "tag": "Approvals",
@@ -3473,7 +3473,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/access-requests/{request_id}/approve",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/access-requests/{request_id}/approve",
     "operation": "access.approve",
     "summary": "Grant the allowed portion of an access request",
     "tag": "Approvals",
@@ -3489,7 +3489,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/approval-requests",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/approval-requests",
     "operation": "approval_requests.list",
     "summary": "List approval-requests",
     "tag": "Approvals",
@@ -3505,7 +3505,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/approval-requests/{approval_request_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/approval-requests/{approval_request_id}",
     "operation": "approval_requests.get",
     "summary": "Get ApprovalRequest",
     "tag": "Approvals",
@@ -3521,7 +3521,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/approval-requests",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/approval-requests",
     "operation": "approval_requests.create",
     "summary": "Create ApprovalRequest",
     "tag": "Approvals",
@@ -3537,7 +3537,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/approval-requests/{request_id}/decide",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/approval-requests/{request_id}/decide",
     "operation": "approval.decide",
     "summary": "Decide an explicitly overridable threshold",
     "tag": "Approvals",
@@ -3553,7 +3553,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/limit-accounts",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/limit-accounts",
     "operation": "limit_accounts.list",
     "summary": "List limit-accounts",
     "tag": "Budgets",
@@ -3569,7 +3569,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/limit-accounts/{limit_account_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/limit-accounts/{limit_account_id}",
     "operation": "limit_accounts.get",
     "summary": "Get LimitAccount",
     "tag": "Budgets",
@@ -3585,7 +3585,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/limit-accounts",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/limit-accounts",
     "operation": "limit_accounts.create",
     "summary": "Create LimitAccount",
     "tag": "Budgets",
@@ -3601,7 +3601,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/limit-accounts/{limit_account_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/limit-accounts/{limit_account_id}/revoke",
     "operation": "limit_accounts.revoke",
     "summary": "Revoke LimitAccount",
     "tag": "Budgets",
@@ -3617,7 +3617,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/limit-accounts/{account_id}/balance",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/limit-accounts/{account_id}/balance",
     "operation": "budget.get",
     "summary": "Read used held and remaining amounts",
     "tag": "Budgets",
@@ -3633,7 +3633,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/limit-accounts/{account_id}/configure",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/limit-accounts/{account_id}/configure",
     "operation": "budget.configure",
     "summary": "Change a cap through current policy",
     "tag": "Budgets",
@@ -3649,7 +3649,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/budget-reservations",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/budget-reservations",
     "operation": "budget.reserve",
     "summary": "Atomically hold all applicable accounts",
     "tag": "Budgets",
@@ -3665,7 +3665,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/budget-settlements",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/budget-settlements",
     "operation": "budget.settle",
     "summary": "Settle a hold from authoritative evidence",
     "tag": "Budgets",
@@ -3681,7 +3681,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/budget-reservations/{hold_id}/release",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/budget-reservations/{hold_id}/release",
     "operation": "budget.release",
     "summary": "Release only a proven unused reservation",
     "tag": "Budgets",
@@ -3697,7 +3697,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/price-schedules",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/price-schedules",
     "operation": "price_schedules.list",
     "summary": "List price-schedules",
     "tag": "Budgets",
@@ -3713,7 +3713,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/price-schedules/{price_schedule_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/price-schedules/{price_schedule_id}",
     "operation": "price_schedules.get",
     "summary": "Get PriceSchedule",
     "tag": "Budgets",
@@ -3729,7 +3729,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/price-schedules",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/price-schedules",
     "operation": "price_schedules.create",
     "summary": "Create PriceSchedule",
     "tag": "Budgets",
@@ -3745,7 +3745,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/credential-leases",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/credential-leases",
     "operation": "credential.lease",
     "summary": "Issue a protected connector handle",
     "tag": "Connectors",
@@ -3761,7 +3761,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/source-bindings",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/source-bindings",
     "operation": "source_bindings.list",
     "summary": "List source-bindings",
     "tag": "Graph",
@@ -3777,7 +3777,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/source-bindings/{source_binding_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/source-bindings/{source_binding_id}",
     "operation": "source_bindings.get",
     "summary": "Get SourceBinding",
     "tag": "Graph",
@@ -3793,7 +3793,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/source-bindings",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/source-bindings",
     "operation": "source_bindings.create",
     "summary": "Create SourceBinding",
     "tag": "Graph",
@@ -3809,7 +3809,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/source-bindings/{source_binding_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/source-bindings/{source_binding_id}/revoke",
     "operation": "source_bindings.revoke",
     "summary": "Revoke SourceBinding",
     "tag": "Graph",
@@ -3825,7 +3825,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/ontology-versions",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/ontology-versions",
     "operation": "ontology_versions.list",
     "summary": "List ontology-versions",
     "tag": "Graph",
@@ -3841,7 +3841,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/ontology-versions/{ontology_version_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/ontology-versions/{ontology_version_id}",
     "operation": "ontology_versions.get",
     "summary": "Get OntologyVersion",
     "tag": "Graph",
@@ -3857,7 +3857,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/ontology-versions",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/ontology-versions",
     "operation": "ontology_versions.create",
     "summary": "Create OntologyVersion",
     "tag": "Graph",
@@ -3873,7 +3873,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-entities",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-entities",
     "operation": "graph_entities.list",
     "summary": "List graph-entities",
     "tag": "Graph",
@@ -3889,7 +3889,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-entities/{graph_entity_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-entities/{graph_entity_id}",
     "operation": "graph_entities.get",
     "summary": "Get GraphEntity",
     "tag": "Graph",
@@ -3905,7 +3905,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-entities",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-entities",
     "operation": "graph_entities.create",
     "summary": "Create GraphEntity",
     "tag": "Graph",
@@ -3921,7 +3921,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-entity-revisions",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-entity-revisions",
     "operation": "graph_entity_revisions.list",
     "summary": "List graph-entity-revisions",
     "tag": "Graph",
@@ -3937,7 +3937,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-entity-revisions/{graph_entity_revision_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-entity-revisions/{graph_entity_revision_id}",
     "operation": "graph_entity_revisions.get",
     "summary": "Get GraphEntityRevision",
     "tag": "Graph",
@@ -3953,7 +3953,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-entity-revisions",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-entity-revisions",
     "operation": "graph_entity_revisions.create",
     "summary": "Create GraphEntityRevision",
     "tag": "Graph",
@@ -3969,7 +3969,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-relations",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-relations",
     "operation": "graph_relations.list",
     "summary": "List graph-relations",
     "tag": "Graph",
@@ -3985,7 +3985,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-relations/{graph_relation_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-relations/{graph_relation_id}",
     "operation": "graph_relations.get",
     "summary": "Get GraphRelation",
     "tag": "Graph",
@@ -4001,7 +4001,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-relations",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-relations",
     "operation": "graph_relations.create",
     "summary": "Create GraphRelation",
     "tag": "Graph",
@@ -4017,7 +4017,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-relation-revisions",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-relation-revisions",
     "operation": "graph.relation.revise",
     "summary": "Append a relation assertion or retraction",
     "tag": "Graph",
@@ -4033,7 +4033,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph/query",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph/query",
     "operation": "graph.query",
     "summary": "Read an authorized bounded graph view",
     "tag": "Graph",
@@ -4049,7 +4049,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/source-bindings/{binding_id}/sync",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/source-bindings/{binding_id}/sync",
     "operation": "source.sync",
     "summary": "Request a checked source refresh",
     "tag": "Graph",
@@ -4065,7 +4065,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/context-records",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/context-records",
     "operation": "context_records.list",
     "summary": "List context-records",
     "tag": "Context",
@@ -4081,7 +4081,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/context-records/{context_record_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/context-records/{context_record_id}",
     "operation": "context_records.get",
     "summary": "Get ContextRecord",
     "tag": "Context",
@@ -4097,7 +4097,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/context-records",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/context-records",
     "operation": "context_records.create",
     "summary": "Create ContextRecord",
     "tag": "Context",
@@ -4113,7 +4113,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/context-records/{context_record_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/context-records/{context_record_id}/revoke",
     "operation": "context_records.revoke",
     "summary": "Revoke ContextRecord",
     "tag": "Context",
@@ -4129,7 +4129,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/context-revisions",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/context-revisions",
     "operation": "context_revisions.list",
     "summary": "List context-revisions",
     "tag": "Context",
@@ -4145,7 +4145,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/context-revisions/{context_revision_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/context-revisions/{context_revision_id}",
     "operation": "context_revisions.get",
     "summary": "Get ContextRevision",
     "tag": "Context",
@@ -4161,7 +4161,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/context-revisions",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/context-revisions",
     "operation": "context_revisions.create",
     "summary": "Create ContextRevision",
     "tag": "Context",
@@ -4177,7 +4177,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/memory-views",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/memory-views",
     "operation": "memory_views.list",
     "summary": "List memory-views",
     "tag": "Context",
@@ -4193,7 +4193,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/memory-views/{memory_view_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/memory-views/{memory_view_id}",
     "operation": "memory_views.get",
     "summary": "Get MemoryView",
     "tag": "Context",
@@ -4209,7 +4209,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/memory-views",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/memory-views",
     "operation": "memory_views.create",
     "summary": "Create MemoryView",
     "tag": "Context",
@@ -4225,7 +4225,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/cgp-providers",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/cgp-providers",
     "operation": "cgp_providers.list",
     "summary": "List cgp-providers",
     "tag": "Context",
@@ -4241,7 +4241,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/cgp-providers/{c_g_p_provider_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/cgp-providers/{c_g_p_provider_id}",
     "operation": "cgp_providers.get",
     "summary": "Get CGPProvider",
     "tag": "Context",
@@ -4257,7 +4257,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/cgp-providers",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/cgp-providers",
     "operation": "cgp_providers.create",
     "summary": "Create CGPProvider",
     "tag": "Context",
@@ -4273,7 +4273,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/cgp-providers/{c_g_p_provider_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/cgp-providers/{c_g_p_provider_id}/revoke",
     "operation": "cgp_providers.revoke",
     "summary": "Revoke CGPProvider",
     "tag": "Context",
@@ -4289,7 +4289,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/context/resolve",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/context/resolve",
     "operation": "context.resolve",
     "summary": "Retrieve allowed context with provenance",
     "tag": "Context",
@@ -4305,7 +4305,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/memory/query",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/memory/query",
     "operation": "memory.query",
     "summary": "Query permitted memories",
     "tag": "Context",
@@ -4321,7 +4321,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/memory/proposals",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/memory/proposals",
     "operation": "memory.propose",
     "summary": "Propose a memory change without granting rights",
     "tag": "Context",
@@ -4337,7 +4337,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/memory/proposals/{proposal_id}/promote",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/memory/proposals/{proposal_id}/promote",
     "operation": "memory.promote",
     "summary": "Publish a reviewed memory version",
     "tag": "Context",
@@ -4353,7 +4353,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/artifact-uploads",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/artifact-uploads",
     "operation": "artifact.upload.create",
     "summary": "Create an upload for sealed cleaned bytes",
     "tag": "Evidence",
@@ -4369,7 +4369,7 @@
   },
   {
     "method": "PUT",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/artifact-uploads/{upload_id}/content",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/artifact-uploads/{upload_id}/content",
     "operation": "artifact.upload.content",
     "summary": "Upload the exact sealed cleaned artifact",
     "tag": "Evidence",
@@ -4385,7 +4385,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/artifact-uploads/{upload_id}/commit",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/artifact-uploads/{upload_id}/commit",
     "operation": "artifact.upload.commit",
     "summary": "Confirm durable artifact storage",
     "tag": "Evidence",
@@ -4401,7 +4401,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/artifacts/{artifact_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/artifacts/{artifact_id}",
     "operation": "artifact.get",
     "summary": "Read permitted artifact metadata",
     "tag": "Evidence",
@@ -4417,7 +4417,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/artifacts/{artifact_id}/content",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/artifacts/{artifact_id}/content",
     "operation": "artifact.content.get",
     "summary": "Read permitted cleaned artifact bytes",
     "tag": "Evidence",
@@ -4433,7 +4433,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/events",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/events",
     "operation": "events.append",
     "summary": "Append trusted or labeled event observations",
     "tag": "Evidence",
@@ -4449,7 +4449,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/events",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/events",
     "operation": "events.subscribe",
     "summary": "Subscribe to permitted workspace events",
     "tag": "Evidence",
@@ -4465,7 +4465,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}/events",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}/events",
     "operation": "run.events.subscribe",
     "summary": "Subscribe to permitted run events",
     "tag": "Evidence",
@@ -4481,7 +4481,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/operations/{operation_id}",
+    "path": "/v0.1/organizations/{org_id}/operations/{operation_id}",
     "operation": "operation.get",
     "summary": "Read an accepted operation until it resolves",
     "tag": "Foundation",
@@ -4497,7 +4497,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/checkpoints/prepare",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/checkpoints/prepare",
     "operation": "checkpoint.prepare",
     "summary": "Reach a safe checkpoint boundary",
     "tag": "Continuation",
@@ -4513,7 +4513,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/checkpoints",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/checkpoints",
     "operation": "checkpoint.commit",
     "summary": "Commit an inspected checkpoint manifest",
     "tag": "Continuation",
@@ -4529,7 +4529,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/checkpoints/{checkpoint_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/checkpoints/{checkpoint_id}",
     "operation": "checkpoint.get",
     "summary": "Read checkpoint coverage and manifest",
     "tag": "Continuation",
@@ -4545,7 +4545,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/fork-plans",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/fork-plans",
     "operation": "fork.plan",
     "summary": "Plan a supported continuation",
     "tag": "Continuation",
@@ -4561,7 +4561,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/fork-plans/{plan_id}/create",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/fork-plans/{plan_id}/create",
     "operation": "fork.create",
     "summary": "Start a fork with fresh grants and budgets",
     "tag": "Continuation",
@@ -4577,7 +4577,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/migrations",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/migrations",
     "operation": "migration.commit",
     "summary": "Transfer ownership after source fencing",
     "tag": "Continuation",
@@ -4593,7 +4593,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/retention-policies",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/retention-policies",
     "operation": "retention_policies.list",
     "summary": "List retention-policies",
     "tag": "Retention",
@@ -4609,7 +4609,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/retention-policies/{retention_policy_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/retention-policies/{retention_policy_id}",
     "operation": "retention_policies.get",
     "summary": "Get RetentionPolicy",
     "tag": "Retention",
@@ -4625,7 +4625,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/retention-policies",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/retention-policies",
     "operation": "retention_policies.create",
     "summary": "Create RetentionPolicy",
     "tag": "Retention",
@@ -4641,7 +4641,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/legal-holds",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/legal-holds",
     "operation": "legal_holds.list",
     "summary": "List legal-holds",
     "tag": "Retention",
@@ -4657,7 +4657,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/legal-holds/{legal_hold_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/legal-holds/{legal_hold_id}",
     "operation": "legal_holds.get",
     "summary": "Get LegalHold",
     "tag": "Retention",
@@ -4673,7 +4673,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/legal-holds",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/legal-holds",
     "operation": "legal_holds.create",
     "summary": "Create LegalHold",
     "tag": "Retention",
@@ -4689,7 +4689,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/legal-holds/{legal_hold_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/legal-holds/{legal_hold_id}/revoke",
     "operation": "legal_holds.revoke",
     "summary": "Revoke LegalHold",
     "tag": "Retention",
@@ -4705,7 +4705,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/deletion-requests",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/deletion-requests",
     "operation": "retention.delete",
     "summary": "Request a governed deletion with a tombstone",
     "tag": "Retention",
@@ -4721,7 +4721,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/audit/query",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/audit/query",
     "operation": "audit.query",
     "summary": "Read authorized audit facts",
     "tag": "Retention",
@@ -4737,7 +4737,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/audit/exports",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/audit/exports",
     "operation": "audit.export",
     "summary": "Create an approved cleaned audit export",
     "tag": "Retention",
@@ -4753,7 +4753,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-reports",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-reports",
     "operation": "work_report.list",
     "summary": "List authorized saved work reports",
     "tag": "Reports",
@@ -4769,7 +4769,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-reports/{report_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-reports/{report_id}",
     "operation": "work_report.get",
     "summary": "Read required repo work and CI evidence",
     "tag": "Reports",
@@ -4785,7 +4785,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-reports/refresh",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-reports/refresh",
     "operation": "work_report.refresh",
     "summary": "Refresh a report from trusted sources",
     "tag": "Reports",
@@ -4801,7 +4801,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-reports",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-reports",
     "operation": "work_report.ingest",
     "summary": "Persist a cleaned trusted report revision",
     "tag": "Reports",
@@ -4817,7 +4817,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-reports/{report_id}/events",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-reports/{report_id}/events",
     "operation": "work_report.subscribe",
     "summary": "Follow authorized report updates",
     "tag": "Reports",
@@ -4833,7 +4833,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/ci-observations",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/ci-observations",
     "operation": "ci.ingest",
     "summary": "Ingest checked per-job CI observations",
     "tag": "Reports",
@@ -4849,7 +4849,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugin-packages",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugin-packages",
     "operation": "plugin_packages.list",
     "summary": "List plugin-packages",
     "tag": "Future plugins",
@@ -4865,7 +4865,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugin-packages/{plugin_package_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugin-packages/{plugin_package_id}",
     "operation": "plugin_packages.get",
     "summary": "Get PluginPackage",
     "tag": "Future plugins",
@@ -4881,7 +4881,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugin-packages",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugin-packages",
     "operation": "plugin_packages.create",
     "summary": "Create PluginPackage",
     "tag": "Future plugins",
@@ -4897,7 +4897,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugin-installs",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugin-installs",
     "operation": "plugin_installs.list",
     "summary": "List plugin-installs",
     "tag": "Future plugins",
@@ -4913,7 +4913,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugin-installs/{plugin_install_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugin-installs/{plugin_install_id}",
     "operation": "plugin_installs.get",
     "summary": "Get PluginInstall",
     "tag": "Future plugins",
@@ -4929,7 +4929,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugin-installs",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugin-installs",
     "operation": "plugin_installs.create",
     "summary": "Create PluginInstall",
     "tag": "Future plugins",
@@ -4945,7 +4945,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugin-installs/{plugin_install_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugin-installs/{plugin_install_id}/revoke",
     "operation": "plugin_installs.revoke",
     "summary": "Revoke PluginInstall",
     "tag": "Future plugins",
@@ -4961,7 +4961,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugins/control",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugins/control",
     "operation": "plugin.control",
     "summary": "Reserved scoped plugin run control",
     "tag": "Future plugins",
@@ -4977,7 +4977,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugins/context-offers",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugins/context-offers",
     "operation": "plugin.context.offer",
     "summary": "Reserved plugin context offer",
     "tag": "Future plugins",
@@ -4993,7 +4993,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugins/jobs",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugins/jobs",
     "operation": "plugin.job.request",
     "summary": "Reserved external plugin job",
     "tag": "Future plugins",
@@ -5009,7 +5009,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugins/events",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugins/events",
     "operation": "plugin.events.subscribe",
     "summary": "Reserved authorized plugin event stream",
     "tag": "Future plugins",
@@ -5025,7 +5025,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugins/event-acks",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugins/event-acks",
     "operation": "plugin.events.ack",
     "summary": "Reserved delivery acknowledgment",
     "tag": "Future plugins",
@@ -5041,7 +5041,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/completion-proposals",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/completion-proposals",
     "operation": "completion.propose",
     "summary": "Propose completion to core controls",
     "tag": "Completion",
@@ -5057,7 +5057,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/completion-proposals/{proposal_id}",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/completion-proposals/{proposal_id}",
     "operation": "completion.status",
     "summary": "Read completion state and holds",
     "tag": "Completion",
@@ -5073,7 +5073,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugins/completion-decisions",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugins/completion-decisions",
     "operation": "plugin.decision.submit",
     "summary": "Reserved immutable completion-seat reply",
     "tag": "Future plugins",
@@ -5089,7 +5089,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/holds/{hold_id}/release",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/holds/{hold_id}/release",
     "operation": "hold.release",
     "summary": "Resolve only the named authorized hold",
     "tag": "Completion",
@@ -5105,7 +5105,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/holds/{hold_id}/override",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/holds/{hold_id}/override",
     "operation": "hold.override",
     "summary": "Resolve only the named authorized hold",
     "tag": "Completion",
@@ -5121,7 +5121,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/business-correlations",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/business-correlations",
     "operation": "business.correlation.create",
     "summary": "Reserved exact-source business correlation",
     "tag": "Future business data",
@@ -5137,30 +5137,30 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/context/resolve",
-    "operation": "tenant.context.resolve",
+    "path": "/v0.1/organizations/{org_id}/context/resolve",
+    "operation": "organization.context.resolve",
     "summary": "Retrieve context for an allowed tenant admin action",
     "tag": "Context",
     "request": "ContextResolveRequest",
     "result": "ContextResult",
     "code": 200,
-    "permission": "tenant.context.resolve",
+    "permission": "organization.context.resolve",
     "version": false,
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Requires tenant_admin context with no run; same source/record/export checks apply. Workspace-scoped records still require the caller's exact rights. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Requires org_admin context with no run; same source/record/export checks apply. Workspace-scoped records still require the caller's exact rights. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/scan-receipts",
-    "operation": "tenant.scan_receipt.register",
+    "path": "/v0.1/organizations/{org_id}/scan-receipts",
+    "operation": "organization.scan_receipt.register",
     "summary": "Register an approved tenant-scope scan receipt",
     "tag": "Data protection",
     "request": "ScanReceipt",
     "result": "Reference",
     "code": 201,
-    "permission": "tenant.scan_receipt.register",
+    "permission": "organization.scan_receipt.register",
     "version": false,
     "scan": false,
     "service": true,
@@ -5169,7 +5169,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/principal-auth-bindings",
+    "path": "/v0.1/organizations/{org_id}/principal-auth-bindings",
     "operation": "principal_auth_bindings.list",
     "summary": "List principal-auth-bindings",
     "tag": "IAM",
@@ -5185,7 +5185,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/principal-auth-bindings/{principal_auth_binding_id}",
+    "path": "/v0.1/organizations/{org_id}/principal-auth-bindings/{principal_auth_binding_id}",
     "operation": "principal_auth_bindings.get",
     "summary": "Get PrincipalAuthBinding",
     "tag": "IAM",
@@ -5201,7 +5201,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/principal-auth-bindings",
+    "path": "/v0.1/organizations/{org_id}/principal-auth-bindings",
     "operation": "principal_auth_bindings.create",
     "summary": "Create PrincipalAuthBinding",
     "tag": "IAM",
@@ -5217,7 +5217,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/principal-auth-bindings/{principal_auth_binding_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/principal-auth-bindings/{principal_auth_binding_id}/revoke",
     "operation": "principal_auth_bindings.revoke",
     "summary": "Revoke PrincipalAuthBinding",
     "tag": "IAM",
@@ -5233,7 +5233,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/adapter-attestations",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/adapter-attestations",
     "operation": "adapter.attest",
     "summary": "Attest tested adapter controls",
     "tag": "Enrollment",
@@ -5249,7 +5249,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agents/resolve",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/agents/resolve",
     "operation": "agent.resolve",
     "summary": "Resolve the approved agent release for a target",
     "tag": "Agent definitions",
@@ -5265,7 +5265,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/projections/compile",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/projections/compile",
     "operation": "projection.compile",
     "summary": "Compile a release for the tested adapter",
     "tag": "Agent definitions",
@@ -5281,7 +5281,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/projections/verify",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/projections/verify",
     "operation": "projection.verify",
     "summary": "Compare actual setup to approved projection",
     "tag": "Agent definitions",
@@ -5297,7 +5297,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-belts/prepare",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-belts/prepare",
     "operation": "toolbelt.prepare",
     "summary": "Prepare a pre-run tool menu without granting execution",
     "tag": "Tools",
@@ -5313,7 +5313,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-reports/{report_id}/files",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-reports/{report_id}/files",
     "operation": "work_report.files.list",
     "summary": "Page the report's full permitted file set",
     "tag": "Reports",
@@ -5329,7 +5329,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-reports/{report_id}/ci-jobs",
+    "path": "/v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-reports/{report_id}/ci-jobs",
     "operation": "work_report.ci.list",
     "summary": "Page the report's full permitted CI job set",
     "tag": "Reports",
@@ -5345,7 +5345,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/admin-actions/{action_id}",
+    "path": "/v0.1/organizations/{org_id}/admin-actions/{action_id}",
     "operation": "admin_action.get",
     "summary": "Read a governed tenant admin action",
     "tag": "Actions",
@@ -5361,7 +5361,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/admin-actions/{action_id}/attempts",
+    "path": "/v0.1/organizations/{org_id}/admin-actions/{action_id}/attempts",
     "operation": "admin_action.attempt.create",
     "summary": "Create a checked tenant admin attempt",
     "tag": "Actions",
@@ -5377,7 +5377,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/admin-actions/{action_id}/authorize",
+    "path": "/v0.1/organizations/{org_id}/admin-actions/{action_id}/authorize",
     "operation": "admin_action.authorize",
     "summary": "Authorize tenant admin input under all current grants",
     "tag": "Actions",
@@ -5393,7 +5393,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/admin-actions/{action_id}/dispatch",
+    "path": "/v0.1/organizations/{org_id}/admin-actions/{action_id}/dispatch",
     "operation": "admin_action.dispatch",
     "summary": "Dispatch a governed tenant admin action",
     "tag": "Actions",
@@ -5409,7 +5409,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/admin-actions/{action_id}/reconcile",
+    "path": "/v0.1/organizations/{org_id}/admin-actions/{action_id}/reconcile",
     "operation": "admin_action.reconcile",
     "summary": "Reconcile a tenant admin effect",
     "tag": "Actions",
@@ -5442,13 +5442,13 @@
   {
     "method": "POST",
     "path": "/v0.1/platform/tenant-provisions",
-    "operation": "platform.tenant.provision",
+    "operation": "platform.organization.provision",
     "summary": "Begin protected tenant provisioning",
     "tag": "Platform bootstrap",
-    "request": "TenantProvisionRequest",
-    "result": "TenantProvisionOperation",
+    "request": "OrganizationProvisionRequest",
+    "result": "OrganizationProvisionOperation",
     "code": 202,
-    "permission": "platform.tenant.provision",
+    "permission": "platform.organization.provision",
     "version": false,
     "scan": false,
     "service": true,
@@ -5458,13 +5458,13 @@
   {
     "method": "GET",
     "path": "/v0.1/platform/tenant-provisions/{provision_id}",
-    "operation": "platform.tenant.provision.get",
+    "operation": "platform.organization.provision.get",
     "summary": "Read a tenant provisioning operation",
     "tag": "Platform bootstrap",
     "request": null,
-    "result": "TenantProvisionOperation",
+    "result": "OrganizationProvisionOperation",
     "code": 200,
-    "permission": "platform.tenant.provision.get",
+    "permission": "platform.organization.provision.get",
     "version": false,
     "scan": false,
     "service": true,
@@ -5474,13 +5474,13 @@
   {
     "method": "POST",
     "path": "/v0.1/platform/tenant-provisions/{provision_id}/activate",
-    "operation": "platform.tenant.activate",
+    "operation": "platform.organization.activate",
     "summary": "Activate a tenant after checked storage and initial IAM setup",
     "tag": "Platform bootstrap",
-    "request": "TenantActivationRequest",
-    "result": "TenantProvisionOperation",
+    "request": "OrganizationActivationRequest",
+    "result": "OrganizationProvisionOperation",
     "code": 202,
-    "permission": "platform.tenant.activate",
+    "permission": "platform.organization.activate",
     "version": true,
     "scan": false,
     "service": true,
@@ -5489,7 +5489,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/limit-definitions",
+    "path": "/v0.1/organizations/{org_id}/limit-definitions",
     "operation": "limit_definitions.list",
     "summary": "List limit-definitions",
     "tag": "Budgets",
@@ -5505,7 +5505,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/limit-definitions/{limit_definition_id}",
+    "path": "/v0.1/organizations/{org_id}/limit-definitions/{limit_definition_id}",
     "operation": "limit_definitions.get",
     "summary": "Get LimitDefinition",
     "tag": "Budgets",
@@ -5521,7 +5521,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/limit-definitions",
+    "path": "/v0.1/organizations/{org_id}/limit-definitions",
     "operation": "limit_definitions.create",
     "summary": "Create LimitDefinition",
     "tag": "Budgets",
@@ -5537,7 +5537,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/limit-definitions/{limit_definition_id}/revoke",
+    "path": "/v0.1/organizations/{org_id}/limit-definitions/{limit_definition_id}/revoke",
     "operation": "limit_definitions.revoke",
     "summary": "Revoke LimitDefinition",
     "tag": "Budgets",
@@ -5553,7 +5553,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/limit-definition-terms",
+    "path": "/v0.1/organizations/{org_id}/limit-definition-terms",
     "operation": "limit_definition_terms.list",
     "summary": "List limit-definition-terms",
     "tag": "Budgets",
@@ -5569,7 +5569,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/limit-definition-terms/{limit_definition_terms_id}",
+    "path": "/v0.1/organizations/{org_id}/limit-definition-terms/{limit_definition_terms_id}",
     "operation": "limit_definition_terms.get",
     "summary": "Get LimitDefinitionTerms",
     "tag": "Budgets",
@@ -5585,7 +5585,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/limit-definition-terms",
+    "path": "/v0.1/organizations/{org_id}/limit-definition-terms",
     "operation": "limit_definition_terms.create",
     "summary": "Create LimitDefinitionTerms",
     "tag": "Budgets",
@@ -5601,14 +5601,14 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/limit-accounts",
-    "operation": "tenant.limit_accounts.list",
+    "path": "/v0.1/organizations/{org_id}/limit-accounts",
+    "operation": "organization.limit_accounts.list",
     "summary": "Manage an explicitly tenant-wide shared limit",
     "tag": "Budgets",
     "request": null,
     "result": "LimitAccountPage",
     "code": 200,
-    "permission": "tenant.limit_accounts.list",
+    "permission": "organization.limit_accounts.list",
     "version": false,
     "scan": false,
     "service": false,
@@ -5617,14 +5617,14 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/limit-accounts/{account_id}",
-    "operation": "tenant.limit_accounts.get",
+    "path": "/v0.1/organizations/{org_id}/limit-accounts/{account_id}",
+    "operation": "organization.limit_accounts.get",
     "summary": "Manage an explicitly tenant-wide shared limit",
     "tag": "Budgets",
     "request": null,
     "result": "LimitAccount",
     "code": 200,
-    "permission": "tenant.limit_accounts.get",
+    "permission": "organization.limit_accounts.get",
     "version": false,
     "scan": false,
     "service": false,
@@ -5633,14 +5633,14 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/limit-accounts",
-    "operation": "tenant.limit_accounts.create",
+    "path": "/v0.1/organizations/{org_id}/limit-accounts",
+    "operation": "organization.limit_accounts.create",
     "summary": "Manage an explicitly tenant-wide shared limit",
     "tag": "Budgets",
     "request": "LimitAccountCreate",
     "result": "LimitAccount",
     "code": 201,
-    "permission": "tenant.limit_accounts.create",
+    "permission": "organization.limit_accounts.create",
     "version": false,
     "scan": true,
     "service": false,
@@ -5649,14 +5649,14 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/limit-accounts/{account_id}/balance",
-    "operation": "tenant.budget.get",
+    "path": "/v0.1/organizations/{org_id}/limit-accounts/{account_id}/balance",
+    "operation": "organization.budget.get",
     "summary": "Manage an explicitly tenant-wide shared limit",
     "tag": "Budgets",
     "request": null,
     "result": "BudgetBalance",
     "code": 200,
-    "permission": "tenant.budget.get",
+    "permission": "organization.budget.get",
     "version": false,
     "scan": false,
     "service": false,
@@ -5665,14 +5665,14 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/limit-accounts/{account_id}/configure",
-    "operation": "tenant.budget.configure",
+    "path": "/v0.1/organizations/{org_id}/limit-accounts/{account_id}/configure",
+    "operation": "organization.budget.configure",
     "summary": "Manage an explicitly tenant-wide shared limit",
     "tag": "Budgets",
     "request": "BudgetChange",
     "result": "Accepted",
     "code": 202,
-    "permission": "tenant.budget.configure",
+    "permission": "organization.budget.configure",
     "version": true,
     "scan": true,
     "service": false,
@@ -5681,14 +5681,14 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/limit-accounts/{account_id}/revoke",
-    "operation": "tenant.limit_accounts.revoke",
+    "path": "/v0.1/organizations/{org_id}/limit-accounts/{account_id}/revoke",
+    "operation": "organization.limit_accounts.revoke",
     "summary": "Manage an explicitly tenant-wide shared limit",
     "tag": "Budgets",
     "request": "RevocationRequest",
     "result": "Accepted",
     "code": 202,
-    "permission": "tenant.limit_accounts.revoke",
+    "permission": "organization.limit_accounts.revoke",
     "version": true,
     "scan": true,
     "service": false,
@@ -5697,7 +5697,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/financial-sources",
+    "path": "/v0.1/organizations/{org_id}/financial-sources",
     "operation": "financial_sources.list",
     "summary": "List financial-sources",
     "tag": "Financial evidence",
@@ -5713,7 +5713,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/financial-sources/{financial_source_id}",
+    "path": "/v0.1/organizations/{org_id}/financial-sources/{financial_source_id}",
     "operation": "financial_sources.get",
     "summary": "Get FinancialSource",
     "tag": "Financial evidence",
@@ -5729,7 +5729,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/financial-sources",
+    "path": "/v0.1/organizations/{org_id}/financial-sources",
     "operation": "financial_sources.create",
     "summary": "Create FinancialSource",
     "tag": "Financial evidence",
@@ -5745,7 +5745,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/financial-effects",
+    "path": "/v0.1/organizations/{org_id}/financial-effects",
     "operation": "financial_effects.list",
     "summary": "List financial-effects",
     "tag": "Financial evidence",
@@ -5761,7 +5761,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/financial-effects/{financial_effect_id}",
+    "path": "/v0.1/organizations/{org_id}/financial-effects/{financial_effect_id}",
     "operation": "financial_effects.get",
     "summary": "Get FinancialEffect",
     "tag": "Financial evidence",
@@ -5777,7 +5777,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/financial-effects",
+    "path": "/v0.1/organizations/{org_id}/financial-effects",
     "operation": "financial_effects.create",
     "summary": "Create FinancialEffect",
     "tag": "Financial evidence",
@@ -5793,7 +5793,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/financial-effect-revisions",
+    "path": "/v0.1/organizations/{org_id}/financial-effect-revisions",
     "operation": "financial_effect_revisions.list",
     "summary": "List financial-effect-revisions",
     "tag": "Financial evidence",
@@ -5809,7 +5809,7 @@
   },
   {
     "method": "GET",
-    "path": "/v0.1/tenants/{tenant_id}/financial-effect-revisions/{financial_effect_revision_id}",
+    "path": "/v0.1/organizations/{org_id}/financial-effect-revisions/{financial_effect_revision_id}",
     "operation": "financial_effect_revisions.get",
     "summary": "Get FinancialEffectRevision",
     "tag": "Financial evidence",
@@ -5825,7 +5825,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/financial-effect-revisions",
+    "path": "/v0.1/organizations/{org_id}/financial-effect-revisions",
     "operation": "financial_effect_revisions.create",
     "summary": "Create FinancialEffectRevision",
     "tag": "Financial evidence",
@@ -5841,7 +5841,7 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/financial-effect-observations",
+    "path": "/v0.1/organizations/{org_id}/financial-effect-observations",
     "operation": "financial_effect.observation.record",
     "summary": "Link another trusted receipt to the same source effect",
     "tag": "Financial evidence",
@@ -5857,14 +5857,14 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/budget-reservations",
-    "operation": "tenant.budget.reserve",
+    "path": "/v0.1/organizations/{org_id}/budget-reservations",
+    "operation": "organization.budget.reserve",
     "summary": "Apply the shared reservation authority to tenant admin work",
     "tag": "Budgets",
     "request": "ReservationRequest",
     "result": "Reservation",
     "code": 201,
-    "permission": "tenant.budget.reserve",
+    "permission": "organization.budget.reserve",
     "version": false,
     "scan": true,
     "service": true,
@@ -5873,14 +5873,14 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/budget-settlements",
-    "operation": "tenant.budget.settle",
+    "path": "/v0.1/organizations/{org_id}/budget-settlements",
+    "operation": "organization.budget.settle",
     "summary": "Apply the shared reservation authority to tenant admin work",
     "tag": "Budgets",
     "request": "SettlementRequest",
     "result": "Reference",
     "code": 201,
-    "permission": "tenant.budget.settle",
+    "permission": "organization.budget.settle",
     "version": false,
     "scan": true,
     "service": true,
@@ -5889,14 +5889,14 @@
   },
   {
     "method": "POST",
-    "path": "/v0.1/tenants/{tenant_id}/budget-reservations/{hold_id}/release",
-    "operation": "tenant.budget.release",
+    "path": "/v0.1/organizations/{org_id}/budget-reservations/{hold_id}/release",
+    "operation": "organization.budget.release",
     "summary": "Apply the shared reservation authority to tenant admin work",
     "tag": "Budgets",
     "request": "ReasonRequest",
     "result": "Reservation",
     "code": 200,
-    "permission": "tenant.budget.release",
+    "permission": "organization.budget.release",
     "version": true,
     "scan": true,
     "service": true,

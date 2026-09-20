@@ -3,7 +3,7 @@
   "format_version": "arp.repo/0.2",
   "record_type": "RunStartReceipt",
   "status": "started",
-  "tenant_id": "799ea40b-e94e-5280-b8f8-b2cc69866950",
+  "org_id": "799ea40b-e94e-5280-b8f8-b2cc69866950",
   "workspace_id": "bb09fca7-c26f-56d3-9b74-37a0a7c0912b",
   "repository_id": "84488469-4d99-5bbe-89f9-31904bfeaaa7",
   "run_id": "861a1d59-2397-5144-9a0d-00ac51ebf235",

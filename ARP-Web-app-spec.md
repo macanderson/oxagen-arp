@@ -12,6 +12,12 @@ Sign in, choose an organization and workspace, then show only allowed records. H
 
 An owner may manage a workspace. An operator may send work. A team supervisor may review team results. A policy admin may publish rules. These roles do not imply every possible right. Reading prompt content, raising a limit, and granting access need their own checks. Show hidden or unavailable fields without exposing private names or counts.
 
+Whoever creates an organization is its first owner and holds owner, operator, policy admin, and approver in every workspace they create until delegated. Email plus a second factor is supported; single sign-on is optional. The data plane defaults to Oxagen-hosted. A solo developer therefore reaches a first governed run without an administrator.
+
+A denial names the missing role and who can grant it, without exposing private records: “You’re a Viewer in Support. Sending work needs the Operator role. Ask the workspace owner.” A denial never says only “request the named role” without naming it.
+
+**Policies → Model routes** is the first setup step. Paste a provider key or pick an Oxagen-managed model; the model proxy stores the key and the device never sees it. Until one route exists, Send work is disabled with the copy “No model route yet. Add a provider key to send work.”
+
 Home shows active work, blocked actions, approvals, spend, target health, and data freshness. Database row-level security, or RLS, keeps tenant rows apart. The same IAM checks also cover files, graphs, search, and exports. The browser has no privileged database login.
 
 ## Send work or steer existing work
@@ -42,7 +48,11 @@ Use reusable templates and simple forms. Customers should not need a policy lang
 
 All applicable rules must pass. Agents share workspace limits; making more agents creates no new allowance. Configure block or request approval. Show who may approve an exception and which threshold it can change. An approval cannot waive an absolute prohibition. The protected tool service checks authoritative facts and reserves allowance before execution.
 
-**Policies → Data protection** sets workspace block, redact, and replace rules. Show supported formats and known scan limits. Prompt and file entry require the paired [desktop gateway](ARP-Desktop-app-spec.md). Raw content cannot first go to a cloud form, autosave, analytics, or upload. If the local path is unavailable, block submission with a clear recovery step.
+**Policies → Data protection** sets workspace block, redact, and replace rules. Show supported formats and known scan limits. Prompt and file entry require the paired [desktop guard](ARP-Desktop-app-spec.md). Raw content cannot first go to a cloud form, autosave, analytics, or upload. If the local path is unavailable, block submission with a clear recovery step.
+
+The unpaired state is a designed screen, not an error. When no desktop guard is paired, the prompt field on Send work is replaced by a card: “Prompts are checked on your computer before they leave it. Open Oxagen desktop and choose Pair browser.” The card shows the six-digit pairing code, a “Not installed? Download” link, and the rest of the form stays usable so the person can pick the agent, work order, and target first. Every screen has its own empty state with one next action, and four shared failure fixtures: guard not running (“The Oxagen desktop app isn’t running on this computer. Open it to continue. Nothing was sent.”), browser unpaired, device revoked (“This device was removed from Support on Sep 19 by the workspace owner. Enroll again to continue.”), and harness not certified (“Codex 0.160 isn’t certified. Use 0.155.1, or switch this target to observed mode.”).
+
+A budget block has its own copy on every surface: “Budget blocked. This call could cost up to $6.10. $4.70 remains for Support builder today. Raise the agent limit or wait for held funds to settle.” The preview before Send shows the tightest applicable scope, not one unlabeled number.
 
 Publish versioned policies. Show draft, active, and each target's applied version. Pending rollout is visible. Urgent denies close affected gates; an old screen must not preserve old rights.
 

@@ -112,7 +112,7 @@ Store the actual commit tested. PR checks can run on a synthetic merge commit, a
 
 Duplicate event delivery, replay, and stream chunks never add uses. A newly executed retry has a new attempt ID and adds one. The unique-name view sums those facts across binding rows, retains the name used at the time, and exposes each binding/source/revision behind a collision. Whole-tree summaries count each underlying attempt once and label whether child runs are included. Persona-segment totals must reconcile with the same run totals. Reports contain no bearer tokens.
 
-**Storage and updates.** `TenantDataPlaneBinding` is trusted tenant configuration, with backend namespace, region, service identity, key policy, routing version, and approved buffering rules. Web-app writes and report ingest resolve the same binding through trusted services. Database rows and large patch artifacts may use different storage components within that configured data plane. Their references remain tenant-scoped. A private deployment keeps code, paths, diffs, persona details, counts, and CI records in its configured store unless an explicit export rule allows a copy elsewhere.
+**Storage and updates.** `OrganizationDataPlaneBinding` is trusted tenant configuration, with backend namespace, region, service identity, key policy, routing version, and approved buffering rules. Web-app writes and report ingest resolve the same binding through trusted services. Database rows and large patch artifacts may use different storage components within that configured data plane. Their references remain tenant-scoped. A private deployment keeps code, paths, diffs, persona details, counts, and CI records in its configured store unless an explicit export rule allows a copy elsewhere.
 
 Save source events and artifact bytes before committing a report revision that relies on them. The durable acknowledgement must cover required artifacts as well as metadata. Build the current read view through a recoverable transaction/outbox or equivalent. Distinguish `collected`, `pending_sync`, `durably_saved`, and `projected`; the UI reports its last applied sequence. Missing required persistence stops new strict-mode dispatch under the existing capture rule. An approved encrypted local spool is bounded and visible as pending. It is not permission to report a central save or silently change storage destination.
 
@@ -642,7 +642,7 @@ An illustrative event envelope follows. Identifiers and digests are placeholders
   "arp_version": "0.1",
   "type": "action.dispatch_committed",
   "event_id": "evt_932",
-  "tenant_id": "tenant_acme",
+  "org_id": "tenant_acme",
   "session_id": "session_12",
   "run_id": "run_27",
   "branch_id": "branch_main",
@@ -800,7 +800,7 @@ Secrets must be removed or blocked before ledger upload. If detection fails and 
 
 Use regional cells that contain bounded tenant populations, their execution pools, storage authorization, queues, keys and failure domains. A minimal global plane routes tenants and distributes software/control metadata without requiring access to customer prompt payloads. Provide dedicated cells without changing protocol semantics.
 
-Derive tenant identity from authenticated context and propagate it through every queue message, scheduled job, connector request, cache key, object reference and vector query. Combine application authorization with database row-level security and scoped service roles; prevent application roles from bypassing those controls. Tenant isolation is an end-to-end property, not a `tenant_id` column. [AWS SaaS isolation guidance](https://docs.aws.amazon.com/wellarchitected/latest/saas-lens/preventing-cross-tenant-access.html)
+Derive tenant identity from authenticated context and propagate it through every queue message, scheduled job, connector request, cache key, object reference and vector query. Combine application authorization with database row-level security and scoped service roles; prevent application roles from bypassing those controls. Tenant isolation is an end-to-end property, not a `org_id` column. [AWS SaaS isolation guidance](https://docs.aws.amazon.com/wellarchitected/latest/saas-lens/preventing-cross-tenant-access.html)
 
 A concrete starting stack can use PostgreSQL for transactional registry/IAM/run metadata and append-only action rows; encrypted object storage for transcripts/snapshots; a transactional outbox for downstream delivery; isolated execution workers; and a searchable read model. Add partitioned event streaming and analytical storage as measured volume requires. Authorization must not depend on an eventually consistent analytical projection.
 

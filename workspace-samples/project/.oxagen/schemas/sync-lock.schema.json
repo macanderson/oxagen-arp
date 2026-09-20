@@ -17,7 +17,7 @@
     "protected_sync_receipt_id": {
       "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
     },
-    "tenant_id": {
+    "org_id": {
       "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
     },
     "workspace_id": {
@@ -149,7 +149,7 @@
     "format_version",
     "authority",
     "protected_sync_receipt_id",
-    "tenant_id",
+    "org_id",
     "workspace_id",
     "repository_id",
     "checkout_binding_id",

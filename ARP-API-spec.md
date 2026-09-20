@@ -87,7 +87,7 @@ Lists use a caller/scope/query-bound cursor and limit 1–200. Empty results can
 
 SSE sends `id`, `event`, and one JSON Event in `data`. Delivery can repeat; deduplicate stable event IDs. Last-Event-ID resumes only within its authorized retained frontier. An expired cursor returns CURSOR_EXPIRED and requires a fresh snapshot; it must not silently skip a gap. Heartbeats contain no customer text. Apply backpressure and bounded per-tenant queues. Preserve a separate capacity lane for authorized stop and revoke requests.
 
-Errors use the Error schema. They provide a safe code, correlation ID and retry rule without quoting rejected secrets. Honor Retry-After on 429. An unknown outcome says reconcile_first; a generic retry loop must not repeat the action. The complete status/error matrix and race tests remain certification gates.
+Errors use the Error schema. They provide a safe code, correlation ID and retry rule without quoting rejected secrets. Every 429 and 503 response carries a `Retry-After` header, declared in the OpenAPI document as the `RetryAfter` header component, so a generated client can implement the wait. Rate classes are per organization and per principal; the defaults are published with the cursor limits and are certification inputs, not implementation details. Honor Retry-After on 429. An unknown outcome says reconcile_first; a generic retry loop must not repeat the action. The complete status/error matrix and race tests remain certification gates.
 
 ### Tenant creation and external bootstrap boundary
 
@@ -114,521 +114,521 @@ Raw third-party webhook signatures and body formats belong to versioned connecto
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `capabilities.negotiate` | `POST /v0.1/tenants/{tenant_id}/capabilities/negotiate` | CapabilitiesRequest → Capabilities (200) | `capabilities.negotiate` |
+| `capabilities.negotiate` | `POST /v0.1/organizations/{org_id}/capabilities/negotiate` | CapabilitiesRequest → Capabilities (200) | `capabilities.negotiate` |
 | `identity.get` | `GET /v0.1/identity` | none → Identity (200) | `identity.read` |
-| `tenant.get` | `GET /v0.1/tenants/{tenant_id}` | none → Tenant (200) | `tenant.get` |
-| `tenant.configure` | `PATCH /v0.1/tenants/{tenant_id}` | TenantPatch → Tenant (200) | `tenant.configure` |
-| `workspaces.list` | `GET /v0.1/tenants/{tenant_id}/workspaces` | none → WorkspacePage (200) | `workspaces.list` |
-| `workspaces.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}` | none → Workspace (200) | `workspaces.get` |
-| `workspaces.create` | `POST /v0.1/tenants/{tenant_id}/workspaces` | WorkspaceCreate → Workspace (201) | `workspaces.create` |
-| `workspaces.update` | `PATCH /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}` | WorkspacePatch → Workspace (200) | `workspaces.update` |
-| `workspaces.revoke` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/revoke` | RevocationRequest → Accepted (202) | `workspaces.revoke` |
-| `operation.get` | `GET /v0.1/tenants/{tenant_id}/operations/{operation_id}` | none → Operation (200) | `operation.get` |
+| `organization.get` | `GET /v0.1/organizations/{org_id}` | none → Tenant (200) | `organization.get` |
+| `organization.configure` | `PATCH /v0.1/organizations/{org_id}` | OrganizationPatch → Tenant (200) | `organization.configure` |
+| `workspaces.list` | `GET /v0.1/organizations/{org_id}/workspaces` | none → WorkspacePage (200) | `workspaces.list` |
+| `workspaces.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}` | none → Workspace (200) | `workspaces.get` |
+| `workspaces.create` | `POST /v0.1/organizations/{org_id}/workspaces` | WorkspaceCreate → Workspace (201) | `workspaces.create` |
+| `workspaces.update` | `PATCH /v0.1/organizations/{org_id}/workspaces/{workspace_id}` | WorkspacePatch → Workspace (200) | `workspaces.update` |
+| `workspaces.revoke` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/revoke` | RevocationRequest → Accepted (202) | `workspaces.revoke` |
+| `operation.get` | `GET /v0.1/organizations/{org_id}/operations/{operation_id}` | none → Operation (200) | `operation.get` |
 
 ### IAM
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `principals.list` | `GET /v0.1/tenants/{tenant_id}/principals` | none → PrincipalPage (200) | `principals.list` |
-| `principals.get` | `GET /v0.1/tenants/{tenant_id}/principals/{principal_id}` | none → Principal (200) | `principals.get` |
-| `principals.create` | `POST /v0.1/tenants/{tenant_id}/principals` | PrincipalCreate → Principal (201) | `principals.create` |
-| `principals.update` | `PATCH /v0.1/tenants/{tenant_id}/principals/{principal_id}` | PrincipalPatch → Principal (200) | `principals.update` |
-| `principals.revoke` | `POST /v0.1/tenants/{tenant_id}/principals/{principal_id}/revoke` | RevocationRequest → Accepted (202) | `principals.revoke` |
-| `identity_providers.list` | `GET /v0.1/tenants/{tenant_id}/identity-providers` | none → IdentityProviderPage (200) | `identity_providers.list` |
-| `identity_providers.get` | `GET /v0.1/tenants/{tenant_id}/identity-providers/{identity_provider_id}` | none → IdentityProvider (200) | `identity_providers.get` |
-| `identity_providers.create` | `POST /v0.1/tenants/{tenant_id}/identity-providers` | IdentityProviderCreate → IdentityProvider (201) | `identity_providers.create` |
-| `identity_providers.revoke` | `POST /v0.1/tenants/{tenant_id}/identity-providers/{identity_provider_id}/revoke` | RevocationRequest → Accepted (202) | `identity_providers.revoke` |
-| `groups.list` | `GET /v0.1/tenants/{tenant_id}/groups` | none → GroupPage (200) | `groups.list` |
-| `groups.get` | `GET /v0.1/tenants/{tenant_id}/groups/{group_id}` | none → Group (200) | `groups.get` |
-| `groups.create` | `POST /v0.1/tenants/{tenant_id}/groups` | GroupCreate → Group (201) | `groups.create` |
-| `groups.update` | `PATCH /v0.1/tenants/{tenant_id}/groups/{group_id}` | GroupPatch → Group (200) | `groups.update` |
-| `groups.revoke` | `POST /v0.1/tenants/{tenant_id}/groups/{group_id}/revoke` | RevocationRequest → Accepted (202) | `groups.revoke` |
-| `group_memberships.list` | `GET /v0.1/tenants/{tenant_id}/group-memberships` | none → GroupMembershipPage (200) | `group_memberships.list` |
-| `group_memberships.get` | `GET /v0.1/tenants/{tenant_id}/group-memberships/{group_membership_id}` | none → GroupMembership (200) | `group_memberships.get` |
-| `group_memberships.create` | `POST /v0.1/tenants/{tenant_id}/group-memberships` | GroupMembershipCreate → GroupMembership (201) | `group_memberships.create` |
-| `group_memberships.revoke` | `POST /v0.1/tenants/{tenant_id}/group-memberships/{group_membership_id}/revoke` | RevocationRequest → Accepted (202) | `group_memberships.revoke` |
-| `permissions.list` | `GET /v0.1/tenants/{tenant_id}/permissions` | none → PermissionPage (200) | `permissions.list` |
-| `permissions.get` | `GET /v0.1/tenants/{tenant_id}/permissions/{permission_id}` | none → Permission (200) | `permissions.get` |
-| `roles.list` | `GET /v0.1/tenants/{tenant_id}/roles` | none → RolePage (200) | `roles.list` |
-| `roles.get` | `GET /v0.1/tenants/{tenant_id}/roles/{role_id}` | none → Role (200) | `roles.get` |
-| `roles.create` | `POST /v0.1/tenants/{tenant_id}/roles` | RoleCreate → Role (201) | `roles.create` |
-| `roles.update` | `PATCH /v0.1/tenants/{tenant_id}/roles/{role_id}` | RolePatch → Role (200) | `roles.update` |
-| `roles.revoke` | `POST /v0.1/tenants/{tenant_id}/roles/{role_id}/revoke` | RevocationRequest → Accepted (202) | `roles.revoke` |
-| `role_grants.list` | `GET /v0.1/tenants/{tenant_id}/role-grants` | none → RoleGrantPage (200) | `role_grants.list` |
-| `role_grants.get` | `GET /v0.1/tenants/{tenant_id}/role-grants/{role_grant_id}` | none → RoleGrant (200) | `role_grants.get` |
-| `role_grants.create` | `POST /v0.1/tenants/{tenant_id}/role-grants` | RoleGrantCreate → RoleGrant (201) | `role_grants.create` |
-| `role_grants.revoke` | `POST /v0.1/tenants/{tenant_id}/role-grants/{role_grant_id}/revoke` | RevocationRequest → Accepted (202) | `role_grants.revoke` |
-| `record_grants.list` | `GET /v0.1/tenants/{tenant_id}/record-grants` | none → RecordGrantPage (200) | `record_grants.list` |
-| `record_grants.get` | `GET /v0.1/tenants/{tenant_id}/record-grants/{record_grant_id}` | none → RecordGrant (200) | `record_grants.get` |
-| `record_grants.create` | `POST /v0.1/tenants/{tenant_id}/record-grants` | RecordGrantCreate → RecordGrant (201) | `record_grants.create` |
-| `record_grants.revoke` | `POST /v0.1/tenants/{tenant_id}/record-grants/{record_grant_id}/revoke` | RevocationRequest → Accepted (202) | `record_grants.revoke` |
-| `delegations.list` | `GET /v0.1/tenants/{tenant_id}/delegations` | none → DelegationPage (200) | `delegations.list` |
-| `delegations.get` | `GET /v0.1/tenants/{tenant_id}/delegations/{delegation_id}` | none → Delegation (200) | `delegations.get` |
-| `delegations.create` | `POST /v0.1/tenants/{tenant_id}/delegations` | DelegationCreate → Delegation (201) | `delegations.create` |
-| `delegations.revoke` | `POST /v0.1/tenants/{tenant_id}/delegations/{delegation_id}/revoke` | RevocationRequest → Accepted (202) | `delegations.revoke` |
-| `principal_auth_bindings.list` | `GET /v0.1/tenants/{tenant_id}/principal-auth-bindings` | none → PrincipalAuthBindingPage (200) | `principal_auth_bindings.list` |
-| `principal_auth_bindings.get` | `GET /v0.1/tenants/{tenant_id}/principal-auth-bindings/{principal_auth_binding_id}` | none → PrincipalAuthBinding (200) | `principal_auth_bindings.get` |
-| `principal_auth_bindings.create` | `POST /v0.1/tenants/{tenant_id}/principal-auth-bindings` | PrincipalAuthBindingCreate → PrincipalAuthBinding (201) | `principal_auth_bindings.create` |
-| `principal_auth_bindings.revoke` | `POST /v0.1/tenants/{tenant_id}/principal-auth-bindings/{principal_auth_binding_id}/revoke` | RevocationRequest → Accepted (202) | `principal_auth_bindings.revoke` |
+| `principals.list` | `GET /v0.1/organizations/{org_id}/principals` | none → PrincipalPage (200) | `principals.list` |
+| `principals.get` | `GET /v0.1/organizations/{org_id}/principals/{principal_id}` | none → Principal (200) | `principals.get` |
+| `principals.create` | `POST /v0.1/organizations/{org_id}/principals` | PrincipalCreate → Principal (201) | `principals.create` |
+| `principals.update` | `PATCH /v0.1/organizations/{org_id}/principals/{principal_id}` | PrincipalPatch → Principal (200) | `principals.update` |
+| `principals.revoke` | `POST /v0.1/organizations/{org_id}/principals/{principal_id}/revoke` | RevocationRequest → Accepted (202) | `principals.revoke` |
+| `identity_providers.list` | `GET /v0.1/organizations/{org_id}/identity-providers` | none → IdentityProviderPage (200) | `identity_providers.list` |
+| `identity_providers.get` | `GET /v0.1/organizations/{org_id}/identity-providers/{identity_provider_id}` | none → IdentityProvider (200) | `identity_providers.get` |
+| `identity_providers.create` | `POST /v0.1/organizations/{org_id}/identity-providers` | IdentityProviderCreate → IdentityProvider (201) | `identity_providers.create` |
+| `identity_providers.revoke` | `POST /v0.1/organizations/{org_id}/identity-providers/{identity_provider_id}/revoke` | RevocationRequest → Accepted (202) | `identity_providers.revoke` |
+| `groups.list` | `GET /v0.1/organizations/{org_id}/groups` | none → GroupPage (200) | `groups.list` |
+| `groups.get` | `GET /v0.1/organizations/{org_id}/groups/{group_id}` | none → Group (200) | `groups.get` |
+| `groups.create` | `POST /v0.1/organizations/{org_id}/groups` | GroupCreate → Group (201) | `groups.create` |
+| `groups.update` | `PATCH /v0.1/organizations/{org_id}/groups/{group_id}` | GroupPatch → Group (200) | `groups.update` |
+| `groups.revoke` | `POST /v0.1/organizations/{org_id}/groups/{group_id}/revoke` | RevocationRequest → Accepted (202) | `groups.revoke` |
+| `group_memberships.list` | `GET /v0.1/organizations/{org_id}/group-memberships` | none → GroupMembershipPage (200) | `group_memberships.list` |
+| `group_memberships.get` | `GET /v0.1/organizations/{org_id}/group-memberships/{group_membership_id}` | none → GroupMembership (200) | `group_memberships.get` |
+| `group_memberships.create` | `POST /v0.1/organizations/{org_id}/group-memberships` | GroupMembershipCreate → GroupMembership (201) | `group_memberships.create` |
+| `group_memberships.revoke` | `POST /v0.1/organizations/{org_id}/group-memberships/{group_membership_id}/revoke` | RevocationRequest → Accepted (202) | `group_memberships.revoke` |
+| `permissions.list` | `GET /v0.1/organizations/{org_id}/permissions` | none → PermissionPage (200) | `permissions.list` |
+| `permissions.get` | `GET /v0.1/organizations/{org_id}/permissions/{permission_id}` | none → Permission (200) | `permissions.get` |
+| `roles.list` | `GET /v0.1/organizations/{org_id}/roles` | none → RolePage (200) | `roles.list` |
+| `roles.get` | `GET /v0.1/organizations/{org_id}/roles/{role_id}` | none → Role (200) | `roles.get` |
+| `roles.create` | `POST /v0.1/organizations/{org_id}/roles` | RoleCreate → Role (201) | `roles.create` |
+| `roles.update` | `PATCH /v0.1/organizations/{org_id}/roles/{role_id}` | RolePatch → Role (200) | `roles.update` |
+| `roles.revoke` | `POST /v0.1/organizations/{org_id}/roles/{role_id}/revoke` | RevocationRequest → Accepted (202) | `roles.revoke` |
+| `role_grants.list` | `GET /v0.1/organizations/{org_id}/role-grants` | none → RoleGrantPage (200) | `role_grants.list` |
+| `role_grants.get` | `GET /v0.1/organizations/{org_id}/role-grants/{role_grant_id}` | none → RoleGrant (200) | `role_grants.get` |
+| `role_grants.create` | `POST /v0.1/organizations/{org_id}/role-grants` | RoleGrantCreate → RoleGrant (201) | `role_grants.create` |
+| `role_grants.revoke` | `POST /v0.1/organizations/{org_id}/role-grants/{role_grant_id}/revoke` | RevocationRequest → Accepted (202) | `role_grants.revoke` |
+| `record_grants.list` | `GET /v0.1/organizations/{org_id}/record-grants` | none → RecordGrantPage (200) | `record_grants.list` |
+| `record_grants.get` | `GET /v0.1/organizations/{org_id}/record-grants/{record_grant_id}` | none → RecordGrant (200) | `record_grants.get` |
+| `record_grants.create` | `POST /v0.1/organizations/{org_id}/record-grants` | RecordGrantCreate → RecordGrant (201) | `record_grants.create` |
+| `record_grants.revoke` | `POST /v0.1/organizations/{org_id}/record-grants/{record_grant_id}/revoke` | RevocationRequest → Accepted (202) | `record_grants.revoke` |
+| `delegations.list` | `GET /v0.1/organizations/{org_id}/delegations` | none → DelegationPage (200) | `delegations.list` |
+| `delegations.get` | `GET /v0.1/organizations/{org_id}/delegations/{delegation_id}` | none → Delegation (200) | `delegations.get` |
+| `delegations.create` | `POST /v0.1/organizations/{org_id}/delegations` | DelegationCreate → Delegation (201) | `delegations.create` |
+| `delegations.revoke` | `POST /v0.1/organizations/{org_id}/delegations/{delegation_id}/revoke` | RevocationRequest → Accepted (202) | `delegations.revoke` |
+| `principal_auth_bindings.list` | `GET /v0.1/organizations/{org_id}/principal-auth-bindings` | none → PrincipalAuthBindingPage (200) | `principal_auth_bindings.list` |
+| `principal_auth_bindings.get` | `GET /v0.1/organizations/{org_id}/principal-auth-bindings/{principal_auth_binding_id}` | none → PrincipalAuthBinding (200) | `principal_auth_bindings.get` |
+| `principal_auth_bindings.create` | `POST /v0.1/organizations/{org_id}/principal-auth-bindings` | PrincipalAuthBindingCreate → PrincipalAuthBinding (201) | `principal_auth_bindings.create` |
+| `principal_auth_bindings.revoke` | `POST /v0.1/organizations/{org_id}/principal-auth-bindings/{principal_auth_binding_id}/revoke` | RevocationRequest → Accepted (202) | `principal_auth_bindings.revoke` |
 
 ### Data planes
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `data_plane_bindings.list` | `GET /v0.1/tenants/{tenant_id}/data-plane-bindings` | none → DataPlaneBindingPage (200) | `data_plane_bindings.list` |
-| `data_plane_bindings.get` | `GET /v0.1/tenants/{tenant_id}/data-plane-bindings/{data_plane_binding_id}` | none → DataPlaneBinding (200) | `data_plane_bindings.get` |
-| `data_plane_bindings.create` | `POST /v0.1/tenants/{tenant_id}/data-plane-bindings` | DataPlaneBindingCreate → DataPlaneBinding (201) | `data_plane_bindings.create` |
-| `data_plane_bindings.revoke` | `POST /v0.1/tenants/{tenant_id}/data-plane-bindings/{data_plane_binding_id}/revoke` | RevocationRequest → Accepted (202) | `data_plane_bindings.revoke` |
-| `data_plane.revision.create` | `POST /v0.1/tenants/{tenant_id}/data-plane-revisions` | DataPlaneRevisionRequest → Reference (201) | `data_plane.revision.create` |
-| `data_plane.activate` | `POST /v0.1/tenants/{tenant_id}/data-plane-bindings/{binding_id}/activate` | DataPlaneCutover → Accepted (202) | `data_plane.activate` |
+| `data_plane_bindings.list` | `GET /v0.1/organizations/{org_id}/data-plane-bindings` | none → DataPlaneBindingPage (200) | `data_plane_bindings.list` |
+| `data_plane_bindings.get` | `GET /v0.1/organizations/{org_id}/data-plane-bindings/{data_plane_binding_id}` | none → DataPlaneBinding (200) | `data_plane_bindings.get` |
+| `data_plane_bindings.create` | `POST /v0.1/organizations/{org_id}/data-plane-bindings` | DataPlaneBindingCreate → DataPlaneBinding (201) | `data_plane_bindings.create` |
+| `data_plane_bindings.revoke` | `POST /v0.1/organizations/{org_id}/data-plane-bindings/{data_plane_binding_id}/revoke` | RevocationRequest → Accepted (202) | `data_plane_bindings.revoke` |
+| `data_plane.revision.create` | `POST /v0.1/organizations/{org_id}/data-plane-revisions` | DataPlaneRevisionRequest → Reference (201) | `data_plane.revision.create` |
+| `data_plane.activate` | `POST /v0.1/organizations/{org_id}/data-plane-bindings/{binding_id}/activate` | DataPlaneCutover → Accepted (202) | `data_plane.activate` |
 
 ### Enrollment
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `device.challenge` | `POST /v0.1/tenants/{tenant_id}/device-enrollment/challenges` | EnrollmentChallengeRequest → EnrollmentChallenge (201) | `device.challenge` |
-| `device.enroll` | `POST /v0.1/tenants/{tenant_id}/device-enrollment/complete` | EnrollmentProof → DeviceEnrollment (201) | `device.enroll` |
-| `devices.list` | `GET /v0.1/tenants/{tenant_id}/devices` | none → DevicePage (200) | `devices.list` |
-| `devices.get` | `GET /v0.1/tenants/{tenant_id}/devices/{device_id}` | none → Device (200) | `devices.get` |
-| `devices.update` | `PATCH /v0.1/tenants/{tenant_id}/devices/{device_id}` | DevicePatch → Device (200) | `devices.update` |
-| `devices.revoke` | `POST /v0.1/tenants/{tenant_id}/devices/{device_id}/revoke` | RevocationRequest → Accepted (202) | `devices.revoke` |
-| `gateway_enrollments.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/gateway-enrollments` | none → GatewayEnrollmentPage (200) | `gateway_enrollments.list` |
-| `gateway_enrollments.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/gateway-enrollments/{gateway_enrollment_id}` | none → GatewayEnrollment (200) | `gateway_enrollments.get` |
-| `gateway_enrollments.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/gateway-enrollments` | GatewayEnrollmentCreate → GatewayEnrollment (201) | `gateway_enrollments.create` |
-| `gateway_enrollments.revoke` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/gateway-enrollments/{gateway_enrollment_id}/revoke` | RevocationRequest → Accepted (202) | `gateway_enrollments.revoke` |
-| `harness_targets.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/harness-targets` | none → HarnessTargetPage (200) | `harness_targets.list` |
-| `harness_targets.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/harness-targets/{harness_target_id}` | none → HarnessTarget (200) | `harness_targets.get` |
-| `harness_targets.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/harness-targets` | HarnessTargetCreate → HarnessTarget (201) | `harness_targets.create` |
-| `harness_targets.update` | `PATCH /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/harness-targets/{harness_target_id}` | HarnessTargetPatch → HarnessTarget (200) | `harness_targets.update` |
-| `harness_targets.revoke` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/harness-targets/{harness_target_id}/revoke` | RevocationRequest → Accepted (202) | `harness_targets.revoke` |
-| `target.heartbeat` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/harness-targets/{target_id}/heartbeat` | Heartbeat → Reference (200) | `target.heartbeat` |
-| `target.configure` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/harness-targets/{target_id}/configure` | TargetConfiguration → Accepted (202) | `target.configure` |
-| `adapter.attest` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/adapter-attestations` | AdapterAttestation → Reference (201) | `adapter.attest` |
+| `device.challenge` | `POST /v0.1/organizations/{org_id}/device-enrollment/challenges` | EnrollmentChallengeRequest → EnrollmentChallenge (201) | `device.challenge` |
+| `device.enroll` | `POST /v0.1/organizations/{org_id}/device-enrollment/complete` | EnrollmentProof → DeviceEnrollment (201) | `device.enroll` |
+| `devices.list` | `GET /v0.1/organizations/{org_id}/devices` | none → DevicePage (200) | `devices.list` |
+| `devices.get` | `GET /v0.1/organizations/{org_id}/devices/{device_id}` | none → Device (200) | `devices.get` |
+| `devices.update` | `PATCH /v0.1/organizations/{org_id}/devices/{device_id}` | DevicePatch → Device (200) | `devices.update` |
+| `devices.revoke` | `POST /v0.1/organizations/{org_id}/devices/{device_id}/revoke` | RevocationRequest → Accepted (202) | `devices.revoke` |
+| `gateway_enrollments.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/gateway-enrollments` | none → GatewayEnrollmentPage (200) | `gateway_enrollments.list` |
+| `gateway_enrollments.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/gateway-enrollments/{gateway_enrollment_id}` | none → GatewayEnrollment (200) | `gateway_enrollments.get` |
+| `gateway_enrollments.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/gateway-enrollments` | GatewayEnrollmentCreate → GatewayEnrollment (201) | `gateway_enrollments.create` |
+| `gateway_enrollments.revoke` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/gateway-enrollments/{gateway_enrollment_id}/revoke` | RevocationRequest → Accepted (202) | `gateway_enrollments.revoke` |
+| `harness_targets.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/harness-targets` | none → HarnessTargetPage (200) | `harness_targets.list` |
+| `harness_targets.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/harness-targets/{harness_target_id}` | none → HarnessTarget (200) | `harness_targets.get` |
+| `harness_targets.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/harness-targets` | HarnessTargetCreate → HarnessTarget (201) | `harness_targets.create` |
+| `harness_targets.update` | `PATCH /v0.1/organizations/{org_id}/workspaces/{workspace_id}/harness-targets/{harness_target_id}` | HarnessTargetPatch → HarnessTarget (200) | `harness_targets.update` |
+| `harness_targets.revoke` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/harness-targets/{harness_target_id}/revoke` | RevocationRequest → Accepted (202) | `harness_targets.revoke` |
+| `target.heartbeat` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/harness-targets/{target_id}/heartbeat` | Heartbeat → Reference (200) | `target.heartbeat` |
+| `target.configure` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/harness-targets/{target_id}/configure` | TargetConfiguration → Accepted (202) | `target.configure` |
+| `adapter.attest` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/adapter-attestations` | AdapterAttestation → Reference (201) | `adapter.attest` |
 
 ### Repos
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `repositories.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repositories` | none → RepositoryPage (200) | `repositories.list` |
-| `repositories.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repositories/{repository_id}` | none → Repository (200) | `repositories.get` |
-| `repositories.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repositories` | RepositoryCreate → Repository (201) | `repositories.create` |
-| `repositories.revoke` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repositories/{repository_id}/revoke` | RevocationRequest → Accepted (202) | `repositories.revoke` |
-| `workspace.repository.configure` | `PATCH /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repositories/{repository_id}/settings` | RepositorySettings → Reference (200) | `workspace.repository.configure` |
-| `checkout_bindings.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/checkout-bindings` | none → CheckoutBindingPage (200) | `checkout_bindings.list` |
-| `checkout_bindings.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/checkout-bindings/{checkout_binding_id}` | none → CheckoutBinding (200) | `checkout_bindings.get` |
-| `checkout_bindings.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/checkout-bindings` | CheckoutBindingCreate → CheckoutBinding (201) | `checkout_bindings.create` |
-| `checkout_bindings.revoke` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/checkout-bindings/{checkout_binding_id}/revoke` | RevocationRequest → Accepted (202) | `checkout_bindings.revoke` |
+| `repositories.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/repositories` | none → RepositoryPage (200) | `repositories.list` |
+| `repositories.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/repositories/{repository_id}` | none → Repository (200) | `repositories.get` |
+| `repositories.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/repositories` | RepositoryCreate → Repository (201) | `repositories.create` |
+| `repositories.revoke` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/repositories/{repository_id}/revoke` | RevocationRequest → Accepted (202) | `repositories.revoke` |
+| `workspace.repository.configure` | `PATCH /v0.1/organizations/{org_id}/workspaces/{workspace_id}/repositories/{repository_id}/settings` | RepositorySettings → Reference (200) | `workspace.repository.configure` |
+| `checkout_bindings.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/checkout-bindings` | none → CheckoutBindingPage (200) | `checkout_bindings.list` |
+| `checkout_bindings.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/checkout-bindings/{checkout_binding_id}` | none → CheckoutBinding (200) | `checkout_bindings.get` |
+| `checkout_bindings.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/checkout-bindings` | CheckoutBindingCreate → CheckoutBinding (201) | `checkout_bindings.create` |
+| `checkout_bindings.revoke` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/checkout-bindings/{checkout_binding_id}/revoke` | RevocationRequest → Accepted (202) | `checkout_bindings.revoke` |
 
 ### Repo config
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `repo_config.export` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repo-config/exports` | RepoExportRequest → RepoExport (200) | `repo_config.export` |
-| `repo_config.plan` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repo-config/plans` | RepoConfigPlanRequest → RepoConfigPlan (201) | `repo_config.plan` |
-| `repo_config.apply` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repo-config/plans/{plan_id}/apply` | RepoConfigApply → SyncReceipt (200) | `repo_config.apply` |
-| `repo_config.validate` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repo-config/validate` | RepoValidate → ValidationResult (200) | `repo_config.validate` |
-| `repo_config.receipt.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repo-config/sync-receipts/{receipt_id}` | none → SyncReceipt (200) | `repo_config.receipt.get` |
-| `run.start_receipt` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}/start-receipt` | none → LaunchReceipt (200) | `run.start_receipt` |
+| `repo_config.export` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/repo-config/exports` | RepoExportRequest → RepoExport (200) | `repo_config.export` |
+| `repo_config.plan` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/repo-config/plans` | RepoConfigPlanRequest → RepoConfigPlan (201) | `repo_config.plan` |
+| `repo_config.apply` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/repo-config/plans/{plan_id}/apply` | RepoConfigApply → SyncReceipt (200) | `repo_config.apply` |
+| `repo_config.validate` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/repo-config/validate` | RepoValidate → ValidationResult (200) | `repo_config.validate` |
+| `repo_config.receipt.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/repo-config/sync-receipts/{receipt_id}` | none → SyncReceipt (200) | `repo_config.receipt.get` |
+| `run.start_receipt` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}/start-receipt` | none → LaunchReceipt (200) | `run.start_receipt` |
 
 ### Agent definitions
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `personas.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/personas` | none → PersonaPage (200) | `personas.list` |
-| `personas.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/personas/{persona_id}` | none → Persona (200) | `personas.get` |
-| `personas.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/personas` | PersonaCreate → Persona (201) | `personas.create` |
-| `personas.update` | `PATCH /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/personas/{persona_id}` | PersonaPatch → Persona (200) | `personas.update` |
-| `personas.revoke` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/personas/{persona_id}/revoke` | RevocationRequest → Accepted (202) | `personas.revoke` |
-| `persona_versions.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/persona-versions` | none → PersonaVersionPage (200) | `persona_versions.list` |
-| `persona_versions.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/persona-versions/{persona_version_id}` | none → PersonaVersion (200) | `persona_versions.get` |
-| `persona_versions.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/persona-versions` | PersonaVersionCreate → PersonaVersion (201) | `persona_versions.create` |
-| `agents.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agents` | none → AgentPage (200) | `agents.list` |
-| `agents.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agents/{agent_id}` | none → Agent (200) | `agents.get` |
-| `agents.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agents` | AgentCreate → Agent (201) | `agents.create` |
-| `agents.update` | `PATCH /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agents/{agent_id}` | AgentPatch → Agent (200) | `agents.update` |
-| `agents.revoke` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agents/{agent_id}/revoke` | RevocationRequest → Accepted (202) | `agents.revoke` |
-| `agent_releases.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-releases` | none → AgentReleasePage (200) | `agent_releases.list` |
-| `agent_releases.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-releases/{agent_release_id}` | none → AgentRelease (200) | `agent_releases.get` |
-| `agent_releases.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-releases` | AgentReleaseCreate → AgentRelease (201) | `agent_releases.create` |
-| `agent_modes.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-modes` | none → AgentModePage (200) | `agent_modes.list` |
-| `agent_modes.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-modes/{agent_mode_id}` | none → AgentMode (200) | `agent_modes.get` |
-| `agent_modes.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-modes` | AgentModeCreate → AgentMode (201) | `agent_modes.create` |
-| `skills.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/skills` | none → SkillPage (200) | `skills.list` |
-| `skills.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/skills/{skill_id}` | none → Skill (200) | `skills.get` |
-| `skills.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/skills` | SkillCreate → Skill (201) | `skills.create` |
-| `skills.update` | `PATCH /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/skills/{skill_id}` | SkillPatch → Skill (200) | `skills.update` |
-| `skills.revoke` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/skills/{skill_id}/revoke` | RevocationRequest → Accepted (202) | `skills.revoke` |
-| `skill_versions.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/skill-versions` | none → SkillVersionPage (200) | `skill_versions.list` |
-| `skill_versions.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/skill-versions/{skill_version_id}` | none → SkillVersion (200) | `skill_versions.get` |
-| `skill_versions.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/skill-versions` | SkillVersionCreate → SkillVersion (201) | `skill_versions.create` |
-| `agent.resolve` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agents/resolve` | AgentResolveRequest → AgentResolution (200) | `agent.resolve` |
-| `projection.compile` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/projections/compile` | ProjectionCompileRequest → Projection (200) | `projection.compile` |
-| `projection.verify` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/projections/verify` | ProjectionVerifyRequest → ValidationResult (200) | `projection.verify` |
+| `personas.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/personas` | none → PersonaPage (200) | `personas.list` |
+| `personas.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/personas/{persona_id}` | none → Persona (200) | `personas.get` |
+| `personas.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/personas` | PersonaCreate → Persona (201) | `personas.create` |
+| `personas.update` | `PATCH /v0.1/organizations/{org_id}/workspaces/{workspace_id}/personas/{persona_id}` | PersonaPatch → Persona (200) | `personas.update` |
+| `personas.revoke` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/personas/{persona_id}/revoke` | RevocationRequest → Accepted (202) | `personas.revoke` |
+| `persona_versions.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/persona-versions` | none → PersonaVersionPage (200) | `persona_versions.list` |
+| `persona_versions.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/persona-versions/{persona_version_id}` | none → PersonaVersion (200) | `persona_versions.get` |
+| `persona_versions.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/persona-versions` | PersonaVersionCreate → PersonaVersion (201) | `persona_versions.create` |
+| `agents.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agents` | none → AgentPage (200) | `agents.list` |
+| `agents.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agents/{agent_id}` | none → Agent (200) | `agents.get` |
+| `agents.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agents` | AgentCreate → Agent (201) | `agents.create` |
+| `agents.update` | `PATCH /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agents/{agent_id}` | AgentPatch → Agent (200) | `agents.update` |
+| `agents.revoke` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agents/{agent_id}/revoke` | RevocationRequest → Accepted (202) | `agents.revoke` |
+| `agent_releases.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-releases` | none → AgentReleasePage (200) | `agent_releases.list` |
+| `agent_releases.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-releases/{agent_release_id}` | none → AgentRelease (200) | `agent_releases.get` |
+| `agent_releases.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-releases` | AgentReleaseCreate → AgentRelease (201) | `agent_releases.create` |
+| `agent_modes.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-modes` | none → AgentModePage (200) | `agent_modes.list` |
+| `agent_modes.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-modes/{agent_mode_id}` | none → AgentMode (200) | `agent_modes.get` |
+| `agent_modes.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-modes` | AgentModeCreate → AgentMode (201) | `agent_modes.create` |
+| `skills.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/skills` | none → SkillPage (200) | `skills.list` |
+| `skills.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/skills/{skill_id}` | none → Skill (200) | `skills.get` |
+| `skills.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/skills` | SkillCreate → Skill (201) | `skills.create` |
+| `skills.update` | `PATCH /v0.1/organizations/{org_id}/workspaces/{workspace_id}/skills/{skill_id}` | SkillPatch → Skill (200) | `skills.update` |
+| `skills.revoke` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/skills/{skill_id}/revoke` | RevocationRequest → Accepted (202) | `skills.revoke` |
+| `skill_versions.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/skill-versions` | none → SkillVersionPage (200) | `skill_versions.list` |
+| `skill_versions.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/skill-versions/{skill_version_id}` | none → SkillVersion (200) | `skill_versions.get` |
+| `skill_versions.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/skill-versions` | SkillVersionCreate → SkillVersion (201) | `skill_versions.create` |
+| `agent.resolve` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agents/resolve` | AgentResolveRequest → AgentResolution (200) | `agent.resolve` |
+| `projection.compile` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/projections/compile` | ProjectionCompileRequest → Projection (200) | `projection.compile` |
+| `projection.verify` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/projections/verify` | ProjectionVerifyRequest → ValidationResult (200) | `projection.verify` |
 
 ### Tools
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `tool_definitions.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-definitions` | none → ToolDefinitionPage (200) | `tool_definitions.list` |
-| `tool_definitions.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-definitions/{tool_definition_id}` | none → ToolDefinition (200) | `tool_definitions.get` |
-| `tool_definitions.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-definitions` | ToolDefinitionCreate → ToolDefinition (201) | `tool_definitions.create` |
-| `tool_definitions.update` | `PATCH /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-definitions/{tool_definition_id}` | ToolDefinitionPatch → ToolDefinition (200) | `tool_definitions.update` |
-| `tool_definitions.revoke` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-definitions/{tool_definition_id}/revoke` | RevocationRequest → Accepted (202) | `tool_definitions.revoke` |
-| `tool_releases.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-releases` | none → ToolReleasePage (200) | `tool_releases.list` |
-| `tool_releases.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-releases/{tool_release_id}` | none → ToolRelease (200) | `tool_releases.get` |
-| `tool_releases.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-releases` | ToolReleaseCreate → ToolRelease (201) | `tool_releases.create` |
-| `tool_bindings.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-bindings` | none → ToolBindingPage (200) | `tool_bindings.list` |
-| `tool_bindings.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-bindings/{tool_binding_id}` | none → ToolBinding (200) | `tool_bindings.get` |
-| `tool_bindings.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-bindings` | ToolBindingCreate → ToolBinding (201) | `tool_bindings.create` |
-| `tool_bindings.revoke` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-bindings/{tool_binding_id}/revoke` | RevocationRequest → Accepted (202) | `tool_bindings.revoke` |
-| `agent_tool_rules.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-tool-rules` | none → AgentToolRulePage (200) | `agent_tool_rules.list` |
-| `agent_tool_rules.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-tool-rules/{agent_tool_rule_id}` | none → AgentToolRule (200) | `agent_tool_rules.get` |
-| `agent_tool_rules.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-tool-rules` | AgentToolRuleCreate → AgentToolRule (201) | `agent_tool_rules.create` |
-| `toolbelt.resolve` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-belts/resolve` | ToolBeltResolve → ToolBelt (200) | `toolbelt.resolve` |
-| `toolbelt.status` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-belts/{snapshot_id}` | none → ToolBelt (200) | `toolbelt.status` |
-| `toolbelt.prepare` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-belts/prepare` | PreparedToolBeltRequest → PreparedToolBelt (200) | `toolbelt.prepare` |
+| `tool_definitions.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-definitions` | none → ToolDefinitionPage (200) | `tool_definitions.list` |
+| `tool_definitions.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-definitions/{tool_definition_id}` | none → ToolDefinition (200) | `tool_definitions.get` |
+| `tool_definitions.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-definitions` | ToolDefinitionCreate → ToolDefinition (201) | `tool_definitions.create` |
+| `tool_definitions.update` | `PATCH /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-definitions/{tool_definition_id}` | ToolDefinitionPatch → ToolDefinition (200) | `tool_definitions.update` |
+| `tool_definitions.revoke` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-definitions/{tool_definition_id}/revoke` | RevocationRequest → Accepted (202) | `tool_definitions.revoke` |
+| `tool_releases.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-releases` | none → ToolReleasePage (200) | `tool_releases.list` |
+| `tool_releases.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-releases/{tool_release_id}` | none → ToolRelease (200) | `tool_releases.get` |
+| `tool_releases.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-releases` | ToolReleaseCreate → ToolRelease (201) | `tool_releases.create` |
+| `tool_bindings.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-bindings` | none → ToolBindingPage (200) | `tool_bindings.list` |
+| `tool_bindings.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-bindings/{tool_binding_id}` | none → ToolBinding (200) | `tool_bindings.get` |
+| `tool_bindings.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-bindings` | ToolBindingCreate → ToolBinding (201) | `tool_bindings.create` |
+| `tool_bindings.revoke` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-bindings/{tool_binding_id}/revoke` | RevocationRequest → Accepted (202) | `tool_bindings.revoke` |
+| `agent_tool_rules.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-tool-rules` | none → AgentToolRulePage (200) | `agent_tool_rules.list` |
+| `agent_tool_rules.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-tool-rules/{agent_tool_rule_id}` | none → AgentToolRule (200) | `agent_tool_rules.get` |
+| `agent_tool_rules.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-tool-rules` | AgentToolRuleCreate → AgentToolRule (201) | `agent_tool_rules.create` |
+| `toolbelt.resolve` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-belts/resolve` | ToolBeltResolve → ToolBelt (200) | `toolbelt.resolve` |
+| `toolbelt.status` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-belts/{snapshot_id}` | none → ToolBelt (200) | `toolbelt.status` |
+| `toolbelt.prepare` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-belts/prepare` | PreparedToolBeltRequest → PreparedToolBelt (200) | `toolbelt.prepare` |
 
 ### Models
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `model_providers.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-providers` | none → ModelProviderPage (200) | `model_providers.list` |
-| `model_providers.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-providers/{model_provider_id}` | none → ModelProvider (200) | `model_providers.get` |
-| `model_providers.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-providers` | ModelProviderCreate → ModelProvider (201) | `model_providers.create` |
-| `model_providers.revoke` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-providers/{model_provider_id}/revoke` | RevocationRequest → Accepted (202) | `model_providers.revoke` |
-| `model_releases.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-releases` | none → ModelReleasePage (200) | `model_releases.list` |
-| `model_releases.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-releases/{model_release_id}` | none → ModelRelease (200) | `model_releases.get` |
-| `model_releases.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-releases` | ModelReleaseCreate → ModelRelease (201) | `model_releases.create` |
-| `model_routes.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-routes` | none → ModelRoutePage (200) | `model_routes.list` |
-| `model_routes.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-routes/{model_route_id}` | none → ModelRoute (200) | `model_routes.get` |
-| `model_routes.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-routes` | ModelRouteCreate → ModelRoute (201) | `model_routes.create` |
-| `model_routes.revoke` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-routes/{model_route_id}/revoke` | RevocationRequest → Accepted (202) | `model_routes.revoke` |
+| `model_providers.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-providers` | none → ModelProviderPage (200) | `model_providers.list` |
+| `model_providers.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-providers/{model_provider_id}` | none → ModelProvider (200) | `model_providers.get` |
+| `model_providers.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-providers` | ModelProviderCreate → ModelProvider (201) | `model_providers.create` |
+| `model_providers.revoke` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-providers/{model_provider_id}/revoke` | RevocationRequest → Accepted (202) | `model_providers.revoke` |
+| `model_releases.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-releases` | none → ModelReleasePage (200) | `model_releases.list` |
+| `model_releases.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-releases/{model_release_id}` | none → ModelRelease (200) | `model_releases.get` |
+| `model_releases.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-releases` | ModelReleaseCreate → ModelRelease (201) | `model_releases.create` |
+| `model_routes.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-routes` | none → ModelRoutePage (200) | `model_routes.list` |
+| `model_routes.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-routes/{model_route_id}` | none → ModelRoute (200) | `model_routes.get` |
+| `model_routes.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-routes` | ModelRouteCreate → ModelRoute (201) | `model_routes.create` |
+| `model_routes.revoke` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-routes/{model_route_id}/revoke` | RevocationRequest → Accepted (202) | `model_routes.revoke` |
 
 ### Connectors
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `secret_backend_bindings.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/secret-backend-bindings` | none → SecretBackendBindingPage (200) | `secret_backend_bindings.list` |
-| `secret_backend_bindings.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/secret-backend-bindings/{secret_backend_binding_id}` | none → SecretBackendBinding (200) | `secret_backend_bindings.get` |
-| `secret_backend_bindings.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/secret-backend-bindings` | SecretBackendBindingCreate → SecretBackendBinding (201) | `secret_backend_bindings.create` |
-| `secret_backend_bindings.revoke` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/secret-backend-bindings/{secret_backend_binding_id}/revoke` | RevocationRequest → Accepted (202) | `secret_backend_bindings.revoke` |
-| `credential_references.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/credential-references` | none → CredentialReferencePage (200) | `credential_references.list` |
-| `credential_references.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/credential-references/{credential_reference_id}` | none → CredentialReference (200) | `credential_references.get` |
-| `credential_references.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/credential-references` | CredentialReferenceCreate → CredentialReference (201) | `credential_references.create` |
-| `credential_references.revoke` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/credential-references/{credential_reference_id}/revoke` | RevocationRequest → Accepted (202) | `credential_references.revoke` |
-| `connectors.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connectors` | none → ConnectorPage (200) | `connectors.list` |
-| `connectors.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connectors/{connector_id}` | none → Connector (200) | `connectors.get` |
-| `connectors.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connectors` | ConnectorCreate → Connector (201) | `connectors.create` |
-| `connectors.update` | `PATCH /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connectors/{connector_id}` | ConnectorPatch → Connector (200) | `connectors.update` |
-| `connectors.revoke` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connectors/{connector_id}/revoke` | RevocationRequest → Accepted (202) | `connectors.revoke` |
-| `connector_releases.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connector-releases` | none → ConnectorReleasePage (200) | `connector_releases.list` |
-| `connector_releases.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connector-releases/{connector_release_id}` | none → ConnectorRelease (200) | `connector_releases.get` |
-| `connector_releases.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connector-releases` | ConnectorReleaseCreate → ConnectorRelease (201) | `connector_releases.create` |
-| `connector_deployments.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connector-deployments` | none → ConnectorDeploymentPage (200) | `connector_deployments.list` |
-| `connector_deployments.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connector-deployments/{connector_deployment_id}` | none → ConnectorDeployment (200) | `connector_deployments.get` |
-| `connector_deployments.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connector-deployments` | ConnectorDeploymentCreate → ConnectorDeployment (201) | `connector_deployments.create` |
-| `connector_deployments.revoke` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connector-deployments/{connector_deployment_id}/revoke` | RevocationRequest → Accepted (202) | `connector_deployments.revoke` |
-| `connector.receipt.ingest` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connector-receipts` | OutcomeReceipt → Reference (201) | `connector.receipt.ingest` |
-| `credential.lease` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/credential-leases` | CredentialLeaseRequest → CredentialLease (201) | `credential.lease` |
+| `secret_backend_bindings.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/secret-backend-bindings` | none → SecretBackendBindingPage (200) | `secret_backend_bindings.list` |
+| `secret_backend_bindings.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/secret-backend-bindings/{secret_backend_binding_id}` | none → SecretBackendBinding (200) | `secret_backend_bindings.get` |
+| `secret_backend_bindings.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/secret-backend-bindings` | SecretBackendBindingCreate → SecretBackendBinding (201) | `secret_backend_bindings.create` |
+| `secret_backend_bindings.revoke` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/secret-backend-bindings/{secret_backend_binding_id}/revoke` | RevocationRequest → Accepted (202) | `secret_backend_bindings.revoke` |
+| `credential_references.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/credential-references` | none → CredentialReferencePage (200) | `credential_references.list` |
+| `credential_references.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/credential-references/{credential_reference_id}` | none → CredentialReference (200) | `credential_references.get` |
+| `credential_references.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/credential-references` | CredentialReferenceCreate → CredentialReference (201) | `credential_references.create` |
+| `credential_references.revoke` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/credential-references/{credential_reference_id}/revoke` | RevocationRequest → Accepted (202) | `credential_references.revoke` |
+| `connectors.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/connectors` | none → ConnectorPage (200) | `connectors.list` |
+| `connectors.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/connectors/{connector_id}` | none → Connector (200) | `connectors.get` |
+| `connectors.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/connectors` | ConnectorCreate → Connector (201) | `connectors.create` |
+| `connectors.update` | `PATCH /v0.1/organizations/{org_id}/workspaces/{workspace_id}/connectors/{connector_id}` | ConnectorPatch → Connector (200) | `connectors.update` |
+| `connectors.revoke` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/connectors/{connector_id}/revoke` | RevocationRequest → Accepted (202) | `connectors.revoke` |
+| `connector_releases.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/connector-releases` | none → ConnectorReleasePage (200) | `connector_releases.list` |
+| `connector_releases.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/connector-releases/{connector_release_id}` | none → ConnectorRelease (200) | `connector_releases.get` |
+| `connector_releases.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/connector-releases` | ConnectorReleaseCreate → ConnectorRelease (201) | `connector_releases.create` |
+| `connector_deployments.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/connector-deployments` | none → ConnectorDeploymentPage (200) | `connector_deployments.list` |
+| `connector_deployments.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/connector-deployments/{connector_deployment_id}` | none → ConnectorDeployment (200) | `connector_deployments.get` |
+| `connector_deployments.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/connector-deployments` | ConnectorDeploymentCreate → ConnectorDeployment (201) | `connector_deployments.create` |
+| `connector_deployments.revoke` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/connector-deployments/{connector_deployment_id}/revoke` | RevocationRequest → Accepted (202) | `connector_deployments.revoke` |
+| `connector.receipt.ingest` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/connector-receipts` | OutcomeReceipt → Reference (201) | `connector.receipt.ingest` |
+| `credential.lease` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/credential-leases` | CredentialLeaseRequest → CredentialLease (201) | `credential.lease` |
 
 ### Policies
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `policy_templates.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-templates` | none → PolicyTemplatePage (200) | `policy_templates.list` |
-| `policy_templates.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-templates/{policy_template_id}` | none → PolicyTemplate (200) | `policy_templates.get` |
-| `policy_templates.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-templates` | PolicyTemplateCreate → PolicyTemplate (201) | `policy_templates.create` |
-| `policies.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policies` | none → PolicyPage (200) | `policies.list` |
-| `policies.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policies/{policy_id}` | none → Policy (200) | `policies.get` |
-| `policies.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policies` | PolicyCreate → Policy (201) | `policies.create` |
-| `policies.update` | `PATCH /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policies/{policy_id}` | PolicyPatch → Policy (200) | `policies.update` |
-| `policies.revoke` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policies/{policy_id}/revoke` | RevocationRequest → Accepted (202) | `policies.revoke` |
-| `policy_revisions.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-revisions` | none → PolicyRevisionPage (200) | `policy_revisions.list` |
-| `policy_revisions.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-revisions/{policy_revision_id}` | none → PolicyRevision (200) | `policy_revisions.get` |
-| `policy_revisions.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-revisions` | PolicyRevisionCreate → PolicyRevision (201) | `policy_revisions.create` |
-| `policy.validate` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policies/validate` | PolicyValidation → ValidationResult (200) | `policy.validate` |
-| `policy_activations.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-activations` | none → PolicyActivationPage (200) | `policy_activations.list` |
-| `policy_activations.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-activations/{policy_activation_id}` | none → PolicyActivation (200) | `policy_activations.get` |
-| `policy_activations.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-activations` | PolicyActivationCreate → PolicyActivation (201) | `policy_activations.create` |
-| `policy_activations.revoke` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-activations/{policy_activation_id}/revoke` | RevocationRequest → Accepted (202) | `policy_activations.revoke` |
-| `policy.explain` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policies/explain` | PolicyExplainRequest → PolicyExplanation (200) | `policy.explain` |
-| `policy.target_receipt` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-target-receipts` | PolicyReceiptRequest → Reference (201) | `policy.target_receipt` |
+| `policy_templates.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-templates` | none → PolicyTemplatePage (200) | `policy_templates.list` |
+| `policy_templates.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-templates/{policy_template_id}` | none → PolicyTemplate (200) | `policy_templates.get` |
+| `policy_templates.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-templates` | PolicyTemplateCreate → PolicyTemplate (201) | `policy_templates.create` |
+| `policies.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policies` | none → PolicyPage (200) | `policies.list` |
+| `policies.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policies/{policy_id}` | none → Policy (200) | `policies.get` |
+| `policies.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policies` | PolicyCreate → Policy (201) | `policies.create` |
+| `policies.update` | `PATCH /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policies/{policy_id}` | PolicyPatch → Policy (200) | `policies.update` |
+| `policies.revoke` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policies/{policy_id}/revoke` | RevocationRequest → Accepted (202) | `policies.revoke` |
+| `policy_revisions.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-revisions` | none → PolicyRevisionPage (200) | `policy_revisions.list` |
+| `policy_revisions.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-revisions/{policy_revision_id}` | none → PolicyRevision (200) | `policy_revisions.get` |
+| `policy_revisions.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-revisions` | PolicyRevisionCreate → PolicyRevision (201) | `policy_revisions.create` |
+| `policy.validate` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policies/validate` | PolicyValidation → ValidationResult (200) | `policy.validate` |
+| `policy_activations.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-activations` | none → PolicyActivationPage (200) | `policy_activations.list` |
+| `policy_activations.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-activations/{policy_activation_id}` | none → PolicyActivation (200) | `policy_activations.get` |
+| `policy_activations.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-activations` | PolicyActivationCreate → PolicyActivation (201) | `policy_activations.create` |
+| `policy_activations.revoke` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-activations/{policy_activation_id}/revoke` | RevocationRequest → Accepted (202) | `policy_activations.revoke` |
+| `policy.explain` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policies/explain` | PolicyExplainRequest → PolicyExplanation (200) | `policy.explain` |
+| `policy.target_receipt` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-target-receipts` | PolicyReceiptRequest → Reference (201) | `policy.target_receipt` |
 
 ### Data protection
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `data_protection_profiles.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/data-protection-profiles` | none → DataProtectionProfilePage (200) | `data_protection_profiles.list` |
-| `data_protection_profiles.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/data-protection-profiles/{data_protection_profile_id}` | none → DataProtectionProfile (200) | `data_protection_profiles.get` |
-| `data_protection_profiles.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/data-protection-profiles` | DataProtectionProfileCreate → DataProtectionProfile (201) | `data_protection_profiles.create` |
-| `scan_receipt.register` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/scan-receipts` | ScanReceipt → Reference (201) | `scan_receipt.register` |
-| `scan_receipt.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/scan-receipts/{receipt_id}` | none → ScanReceipt (200) | `scan_receipt.get` |
-| `tenant.scan_receipt.register` | `POST /v0.1/tenants/{tenant_id}/scan-receipts` | ScanReceipt → Reference (201) | `tenant.scan_receipt.register` |
+| `data_protection_profiles.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/data-protection-profiles` | none → DataProtectionProfilePage (200) | `data_protection_profiles.list` |
+| `data_protection_profiles.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/data-protection-profiles/{data_protection_profile_id}` | none → DataProtectionProfile (200) | `data_protection_profiles.get` |
+| `data_protection_profiles.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/data-protection-profiles` | DataProtectionProfileCreate → DataProtectionProfile (201) | `data_protection_profiles.create` |
+| `scan_receipt.register` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/scan-receipts` | ScanReceipt → Reference (201) | `scan_receipt.register` |
+| `scan_receipt.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/scan-receipts/{receipt_id}` | none → ScanReceipt (200) | `scan_receipt.get` |
+| `organization.scan_receipt.register` | `POST /v0.1/organizations/{org_id}/scan-receipts` | ScanReceipt → Reference (201) | `organization.scan_receipt.register` |
 
 ### Work
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `work_orders.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-orders` | none → WorkOrderPage (200) | `work_orders.list` |
-| `work_orders.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-orders/{work_order_id}` | none → WorkOrder (200) | `work_orders.get` |
-| `work_orders.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-orders` | WorkOrderCreate → WorkOrder (201) | `work_orders.create` |
-| `work_orders.update` | `PATCH /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-orders/{work_order_id}` | WorkOrderPatch → WorkOrder (200) | `work_orders.update` |
-| `work_orders.revoke` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-orders/{work_order_id}/revoke` | RevocationRequest → Accepted (202) | `work_orders.revoke` |
-| `work_order_revisions.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-order-revisions` | none → WorkOrderRevisionPage (200) | `work_order_revisions.list` |
-| `work_order_revisions.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-order-revisions/{work_order_revision_id}` | none → WorkOrderRevision (200) | `work_order_revisions.get` |
-| `work_order_revisions.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-order-revisions` | WorkOrderRevisionCreate → WorkOrderRevision (201) | `work_order_revisions.create` |
-| `work.submit` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-requests` | WorkSubmit → Accepted (202) | `work.submit` |
-| `work.status` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-requests/{work_request_id}` | none → WorkStatus (200) | `work.status` |
-| `work.cancel` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-requests/{work_request_id}/cancel` | ReasonRequest → Accepted (202) | `work.cancel` |
+| `work_orders.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-orders` | none → WorkOrderPage (200) | `work_orders.list` |
+| `work_orders.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-orders/{work_order_id}` | none → WorkOrder (200) | `work_orders.get` |
+| `work_orders.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-orders` | WorkOrderCreate → WorkOrder (201) | `work_orders.create` |
+| `work_orders.update` | `PATCH /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-orders/{work_order_id}` | WorkOrderPatch → WorkOrder (200) | `work_orders.update` |
+| `work_orders.revoke` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-orders/{work_order_id}/revoke` | RevocationRequest → Accepted (202) | `work_orders.revoke` |
+| `work_order_revisions.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-order-revisions` | none → WorkOrderRevisionPage (200) | `work_order_revisions.list` |
+| `work_order_revisions.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-order-revisions/{work_order_revision_id}` | none → WorkOrderRevision (200) | `work_order_revisions.get` |
+| `work_order_revisions.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-order-revisions` | WorkOrderRevisionCreate → WorkOrderRevision (201) | `work_order_revisions.create` |
+| `work.submit` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-requests` | WorkSubmit → Accepted (202) | `work.submit` |
+| `work.status` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-requests/{work_request_id}` | none → WorkStatus (200) | `work.status` |
+| `work.cancel` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-requests/{work_request_id}/cancel` | ReasonRequest → Accepted (202) | `work.cancel` |
 
 ### Runs
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `run.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs` | none → RunPage (200) | `run.list` |
-| `run.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}` | none → Run (200) | `run.get` |
-| `steering.submit` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/steering` | SteeringRequest → Accepted (202) | `steering.submit` |
-| `steering.status` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/steering/{steering_id}` | none → SteeringStatus (200) | `steering.status` |
-| `run.pause` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}/pause` | RunControlRequest → Accepted (202) | `run.pause` |
-| `run.stop` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}/stop` | RunControlRequest → Accepted (202) | `run.stop` |
-| `run.force_continue` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}/force-continue` | RunControlRequest → Accepted (202) | `run.force_continue` |
-| `run.pause_status` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}/pause` | none → PauseStatus (200) | `run.pause_status` |
-| `run.resume` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}/resume` | ResumeRequest → Accepted (202) | `run.resume` |
-| `run.mode.change` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}/mode` | ModeChangeRequest → Accepted (202) | `run.mode.change` |
+| `run.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs` | none → RunPage (200) | `run.list` |
+| `run.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}` | none → Run (200) | `run.get` |
+| `steering.submit` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/steering` | SteeringRequest → Accepted (202) | `steering.submit` |
+| `steering.status` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/steering/{steering_id}` | none → SteeringStatus (200) | `steering.status` |
+| `run.pause` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}/pause` | RunControlRequest → Accepted (202) | `run.pause` |
+| `run.stop` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}/stop` | RunControlRequest → Accepted (202) | `run.stop` |
+| `run.force_continue` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}/force-continue` | RunControlRequest → Accepted (202) | `run.force_continue` |
+| `run.pause_status` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}/pause` | none → PauseStatus (200) | `run.pause_status` |
+| `run.resume` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}/resume` | ResumeRequest → Accepted (202) | `run.resume` |
+| `run.mode.change` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}/mode` | ModeChangeRequest → Accepted (202) | `run.mode.change` |
 
 ### Actions
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `action.propose` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/actions` | ActionProposal → GovernedAction (201) | `action.propose` |
-| `admin_action.propose` | `POST /v0.1/tenants/{tenant_id}/admin-actions` | ActionProposal → GovernedAction (201) | `admin_action.propose` |
-| `action.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/actions/{action_id}` | none → GovernedAction (200) | `action.get` |
-| `action.attempt.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/actions/{action_id}/attempts` | AttemptCreate → ActionAttempt (201) | `action.attempt.create` |
-| `action.authorize` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/actions/{action_id}/authorize` | AuthorizeRequest → AuthorizationDecision (200) | `action.authorize` |
-| `action.dispatch` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/actions/{action_id}/dispatch` | DispatchRequest → Accepted (202) | `action.dispatch` |
-| `action.reconcile` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/actions/{action_id}/reconcile` | ReconcileRequest → GovernedAction (200) | `action.reconcile` |
-| `response.adopt` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/responses/{response_id}/adopt` | AdoptResponse → Accepted (202) | `response.adopt` |
-| `admin_action.get` | `GET /v0.1/tenants/{tenant_id}/admin-actions/{action_id}` | none → GovernedAction (200) | `admin_action.get` |
-| `admin_action.attempt.create` | `POST /v0.1/tenants/{tenant_id}/admin-actions/{action_id}/attempts` | AttemptCreate → ActionAttempt (201) | `admin_action.attempt.create` |
-| `admin_action.authorize` | `POST /v0.1/tenants/{tenant_id}/admin-actions/{action_id}/authorize` | AuthorizeRequest → AuthorizationDecision (200) | `admin_action.authorize` |
-| `admin_action.dispatch` | `POST /v0.1/tenants/{tenant_id}/admin-actions/{action_id}/dispatch` | DispatchRequest → Accepted (202) | `admin_action.dispatch` |
-| `admin_action.reconcile` | `POST /v0.1/tenants/{tenant_id}/admin-actions/{action_id}/reconcile` | ReconcileRequest → GovernedAction (200) | `admin_action.reconcile` |
+| `action.propose` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/actions` | ActionProposal → GovernedAction (201) | `action.propose` |
+| `admin_action.propose` | `POST /v0.1/organizations/{org_id}/admin-actions` | ActionProposal → GovernedAction (201) | `admin_action.propose` |
+| `action.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/actions/{action_id}` | none → GovernedAction (200) | `action.get` |
+| `action.attempt.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/actions/{action_id}/attempts` | AttemptCreate → ActionAttempt (201) | `action.attempt.create` |
+| `action.authorize` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/actions/{action_id}/authorize` | AuthorizeRequest → AuthorizationDecision (200) | `action.authorize` |
+| `action.dispatch` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/actions/{action_id}/dispatch` | DispatchRequest → Accepted (202) | `action.dispatch` |
+| `action.reconcile` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/actions/{action_id}/reconcile` | ReconcileRequest → GovernedAction (200) | `action.reconcile` |
+| `response.adopt` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/responses/{response_id}/adopt` | AdoptResponse → Accepted (202) | `response.adopt` |
+| `admin_action.get` | `GET /v0.1/organizations/{org_id}/admin-actions/{action_id}` | none → GovernedAction (200) | `admin_action.get` |
+| `admin_action.attempt.create` | `POST /v0.1/organizations/{org_id}/admin-actions/{action_id}/attempts` | AttemptCreate → ActionAttempt (201) | `admin_action.attempt.create` |
+| `admin_action.authorize` | `POST /v0.1/organizations/{org_id}/admin-actions/{action_id}/authorize` | AuthorizeRequest → AuthorizationDecision (200) | `admin_action.authorize` |
+| `admin_action.dispatch` | `POST /v0.1/organizations/{org_id}/admin-actions/{action_id}/dispatch` | DispatchRequest → Accepted (202) | `admin_action.dispatch` |
+| `admin_action.reconcile` | `POST /v0.1/organizations/{org_id}/admin-actions/{action_id}/reconcile` | ReconcileRequest → GovernedAction (200) | `admin_action.reconcile` |
 
 ### Gateway
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `gateway.model_dispatch` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/gateway/model-dispatches` | DispatchRequest → Accepted (202) | `gateway.model_dispatch` |
-| `model.response.ingest` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-response-receipts` | OutcomeReceipt → Reference (201) | `model.response.ingest` |
+| `gateway.model_dispatch` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/gateway/model-dispatches` | DispatchRequest → Accepted (202) | `gateway.model_dispatch` |
+| `model.response.ingest` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-response-receipts` | OutcomeReceipt → Reference (201) | `model.response.ingest` |
 
 ### Approvals
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `access_requests.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/access-requests` | none → AccessRequestPage (200) | `access_requests.list` |
-| `access_requests.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/access-requests/{access_request_id}` | none → AccessRequest (200) | `access_requests.get` |
-| `access_requests.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/access-requests` | AccessRequestCreate → AccessRequest (201) | `access_requests.create` |
-| `access.approve` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/access-requests/{request_id}/approve` | AccessApproval → Accepted (202) | `access.approve` |
-| `approval_requests.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/approval-requests` | none → ApprovalRequestPage (200) | `approval_requests.list` |
-| `approval_requests.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/approval-requests/{approval_request_id}` | none → ApprovalRequest (200) | `approval_requests.get` |
-| `approval_requests.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/approval-requests` | ApprovalRequestCreate → ApprovalRequest (201) | `approval_requests.create` |
-| `approval.decide` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/approval-requests/{request_id}/decide` | ExceptionDecision → Accepted (202) | `approval.decide` |
+| `access_requests.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/access-requests` | none → AccessRequestPage (200) | `access_requests.list` |
+| `access_requests.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/access-requests/{access_request_id}` | none → AccessRequest (200) | `access_requests.get` |
+| `access_requests.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/access-requests` | AccessRequestCreate → AccessRequest (201) | `access_requests.create` |
+| `access.approve` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/access-requests/{request_id}/approve` | AccessApproval → Accepted (202) | `access.approve` |
+| `approval_requests.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/approval-requests` | none → ApprovalRequestPage (200) | `approval_requests.list` |
+| `approval_requests.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/approval-requests/{approval_request_id}` | none → ApprovalRequest (200) | `approval_requests.get` |
+| `approval_requests.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/approval-requests` | ApprovalRequestCreate → ApprovalRequest (201) | `approval_requests.create` |
+| `approval.decide` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/approval-requests/{request_id}/decide` | ExceptionDecision → Accepted (202) | `approval.decide` |
 
 ### Budgets
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `limit_accounts.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/limit-accounts` | none → LimitAccountPage (200) | `limit_accounts.list` |
-| `limit_accounts.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/limit-accounts/{limit_account_id}` | none → LimitAccount (200) | `limit_accounts.get` |
-| `limit_accounts.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/limit-accounts` | LimitAccountCreate → LimitAccount (201) | `limit_accounts.create` |
-| `limit_accounts.revoke` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/limit-accounts/{limit_account_id}/revoke` | RevocationRequest → Accepted (202) | `limit_accounts.revoke` |
-| `budget.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/limit-accounts/{account_id}/balance` | none → BudgetBalance (200) | `budget.get` |
-| `budget.configure` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/limit-accounts/{account_id}/configure` | BudgetChange → Accepted (202) | `budget.configure` |
-| `budget.reserve` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/budget-reservations` | ReservationRequest → Reservation (201) | `budget.reserve` |
-| `budget.settle` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/budget-settlements` | SettlementRequest → Reference (201) | `budget.settle` |
-| `budget.release` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/budget-reservations/{hold_id}/release` | ReasonRequest → Reservation (200) | `budget.release` |
-| `price_schedules.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/price-schedules` | none → PriceSchedulePage (200) | `price_schedules.list` |
-| `price_schedules.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/price-schedules/{price_schedule_id}` | none → PriceSchedule (200) | `price_schedules.get` |
-| `price_schedules.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/price-schedules` | PriceScheduleCreate → PriceSchedule (201) | `price_schedules.create` |
-| `limit_definitions.list` | `GET /v0.1/tenants/{tenant_id}/limit-definitions` | none → LimitDefinitionPage (200) | `limit_definitions.list` |
-| `limit_definitions.get` | `GET /v0.1/tenants/{tenant_id}/limit-definitions/{limit_definition_id}` | none → LimitDefinition (200) | `limit_definitions.get` |
-| `limit_definitions.create` | `POST /v0.1/tenants/{tenant_id}/limit-definitions` | LimitDefinitionCreate → LimitDefinition (201) | `limit_definitions.create` |
-| `limit_definitions.revoke` | `POST /v0.1/tenants/{tenant_id}/limit-definitions/{limit_definition_id}/revoke` | RevocationRequest → Accepted (202) | `limit_definitions.revoke` |
-| `limit_definition_terms.list` | `GET /v0.1/tenants/{tenant_id}/limit-definition-terms` | none → LimitDefinitionTermsPage (200) | `limit_definition_terms.list` |
-| `limit_definition_terms.get` | `GET /v0.1/tenants/{tenant_id}/limit-definition-terms/{limit_definition_terms_id}` | none → LimitDefinitionTerms (200) | `limit_definition_terms.get` |
-| `limit_definition_terms.create` | `POST /v0.1/tenants/{tenant_id}/limit-definition-terms` | LimitDefinitionTermsCreate → LimitDefinitionTerms (201) | `limit_definition_terms.create` |
-| `tenant.limit_accounts.list` | `GET /v0.1/tenants/{tenant_id}/limit-accounts` | none → LimitAccountPage (200) | `tenant.limit_accounts.list` |
-| `tenant.limit_accounts.get` | `GET /v0.1/tenants/{tenant_id}/limit-accounts/{account_id}` | none → LimitAccount (200) | `tenant.limit_accounts.get` |
-| `tenant.limit_accounts.create` | `POST /v0.1/tenants/{tenant_id}/limit-accounts` | LimitAccountCreate → LimitAccount (201) | `tenant.limit_accounts.create` |
-| `tenant.budget.get` | `GET /v0.1/tenants/{tenant_id}/limit-accounts/{account_id}/balance` | none → BudgetBalance (200) | `tenant.budget.get` |
-| `tenant.budget.configure` | `POST /v0.1/tenants/{tenant_id}/limit-accounts/{account_id}/configure` | BudgetChange → Accepted (202) | `tenant.budget.configure` |
-| `tenant.limit_accounts.revoke` | `POST /v0.1/tenants/{tenant_id}/limit-accounts/{account_id}/revoke` | RevocationRequest → Accepted (202) | `tenant.limit_accounts.revoke` |
-| `tenant.budget.reserve` | `POST /v0.1/tenants/{tenant_id}/budget-reservations` | ReservationRequest → Reservation (201) | `tenant.budget.reserve` |
-| `tenant.budget.settle` | `POST /v0.1/tenants/{tenant_id}/budget-settlements` | SettlementRequest → Reference (201) | `tenant.budget.settle` |
-| `tenant.budget.release` | `POST /v0.1/tenants/{tenant_id}/budget-reservations/{hold_id}/release` | ReasonRequest → Reservation (200) | `tenant.budget.release` |
+| `limit_accounts.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/limit-accounts` | none → LimitAccountPage (200) | `limit_accounts.list` |
+| `limit_accounts.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/limit-accounts/{limit_account_id}` | none → LimitAccount (200) | `limit_accounts.get` |
+| `limit_accounts.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/limit-accounts` | LimitAccountCreate → LimitAccount (201) | `limit_accounts.create` |
+| `limit_accounts.revoke` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/limit-accounts/{limit_account_id}/revoke` | RevocationRequest → Accepted (202) | `limit_accounts.revoke` |
+| `budget.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/limit-accounts/{account_id}/balance` | none → BudgetBalance (200) | `budget.get` |
+| `budget.configure` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/limit-accounts/{account_id}/configure` | BudgetChange → Accepted (202) | `budget.configure` |
+| `budget.reserve` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/budget-reservations` | ReservationRequest → Reservation (201) | `budget.reserve` |
+| `budget.settle` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/budget-settlements` | SettlementRequest → Reference (201) | `budget.settle` |
+| `budget.release` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/budget-reservations/{hold_id}/release` | ReasonRequest → Reservation (200) | `budget.release` |
+| `price_schedules.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/price-schedules` | none → PriceSchedulePage (200) | `price_schedules.list` |
+| `price_schedules.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/price-schedules/{price_schedule_id}` | none → PriceSchedule (200) | `price_schedules.get` |
+| `price_schedules.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/price-schedules` | PriceScheduleCreate → PriceSchedule (201) | `price_schedules.create` |
+| `limit_definitions.list` | `GET /v0.1/organizations/{org_id}/limit-definitions` | none → LimitDefinitionPage (200) | `limit_definitions.list` |
+| `limit_definitions.get` | `GET /v0.1/organizations/{org_id}/limit-definitions/{limit_definition_id}` | none → LimitDefinition (200) | `limit_definitions.get` |
+| `limit_definitions.create` | `POST /v0.1/organizations/{org_id}/limit-definitions` | LimitDefinitionCreate → LimitDefinition (201) | `limit_definitions.create` |
+| `limit_definitions.revoke` | `POST /v0.1/organizations/{org_id}/limit-definitions/{limit_definition_id}/revoke` | RevocationRequest → Accepted (202) | `limit_definitions.revoke` |
+| `limit_definition_terms.list` | `GET /v0.1/organizations/{org_id}/limit-definition-terms` | none → LimitDefinitionTermsPage (200) | `limit_definition_terms.list` |
+| `limit_definition_terms.get` | `GET /v0.1/organizations/{org_id}/limit-definition-terms/{limit_definition_terms_id}` | none → LimitDefinitionTerms (200) | `limit_definition_terms.get` |
+| `limit_definition_terms.create` | `POST /v0.1/organizations/{org_id}/limit-definition-terms` | LimitDefinitionTermsCreate → LimitDefinitionTerms (201) | `limit_definition_terms.create` |
+| `organization.limit_accounts.list` | `GET /v0.1/organizations/{org_id}/limit-accounts` | none → LimitAccountPage (200) | `organization.limit_accounts.list` |
+| `organization.limit_accounts.get` | `GET /v0.1/organizations/{org_id}/limit-accounts/{account_id}` | none → LimitAccount (200) | `organization.limit_accounts.get` |
+| `organization.limit_accounts.create` | `POST /v0.1/organizations/{org_id}/limit-accounts` | LimitAccountCreate → LimitAccount (201) | `organization.limit_accounts.create` |
+| `organization.budget.get` | `GET /v0.1/organizations/{org_id}/limit-accounts/{account_id}/balance` | none → BudgetBalance (200) | `organization.budget.get` |
+| `organization.budget.configure` | `POST /v0.1/organizations/{org_id}/limit-accounts/{account_id}/configure` | BudgetChange → Accepted (202) | `organization.budget.configure` |
+| `organization.limit_accounts.revoke` | `POST /v0.1/organizations/{org_id}/limit-accounts/{account_id}/revoke` | RevocationRequest → Accepted (202) | `organization.limit_accounts.revoke` |
+| `organization.budget.reserve` | `POST /v0.1/organizations/{org_id}/budget-reservations` | ReservationRequest → Reservation (201) | `organization.budget.reserve` |
+| `organization.budget.settle` | `POST /v0.1/organizations/{org_id}/budget-settlements` | SettlementRequest → Reference (201) | `organization.budget.settle` |
+| `organization.budget.release` | `POST /v0.1/organizations/{org_id}/budget-reservations/{hold_id}/release` | ReasonRequest → Reservation (200) | `organization.budget.release` |
 
 ### Graph
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `source_bindings.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/source-bindings` | none → SourceBindingPage (200) | `source_bindings.list` |
-| `source_bindings.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/source-bindings/{source_binding_id}` | none → SourceBinding (200) | `source_bindings.get` |
-| `source_bindings.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/source-bindings` | SourceBindingCreate → SourceBinding (201) | `source_bindings.create` |
-| `source_bindings.revoke` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/source-bindings/{source_binding_id}/revoke` | RevocationRequest → Accepted (202) | `source_bindings.revoke` |
-| `ontology_versions.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/ontology-versions` | none → OntologyVersionPage (200) | `ontology_versions.list` |
-| `ontology_versions.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/ontology-versions/{ontology_version_id}` | none → OntologyVersion (200) | `ontology_versions.get` |
-| `ontology_versions.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/ontology-versions` | OntologyVersionCreate → OntologyVersion (201) | `ontology_versions.create` |
-| `graph_entities.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-entities` | none → GraphEntityPage (200) | `graph_entities.list` |
-| `graph_entities.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-entities/{graph_entity_id}` | none → GraphEntity (200) | `graph_entities.get` |
-| `graph_entities.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-entities` | GraphEntityCreate → GraphEntity (201) | `graph_entities.create` |
-| `graph_entity_revisions.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-entity-revisions` | none → GraphEntityRevisionPage (200) | `graph_entity_revisions.list` |
-| `graph_entity_revisions.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-entity-revisions/{graph_entity_revision_id}` | none → GraphEntityRevision (200) | `graph_entity_revisions.get` |
-| `graph_entity_revisions.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-entity-revisions` | GraphEntityRevisionCreate → GraphEntityRevision (201) | `graph_entity_revisions.create` |
-| `graph_relations.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-relations` | none → GraphRelationPage (200) | `graph_relations.list` |
-| `graph_relations.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-relations/{graph_relation_id}` | none → GraphRelation (200) | `graph_relations.get` |
-| `graph_relations.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-relations` | GraphRelationCreate → GraphRelation (201) | `graph_relations.create` |
-| `graph.relation.revise` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-relation-revisions` | GraphRelationRevisionRequest → Reference (201) | `graph.relation.revise` |
-| `graph.query` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph/query` | GraphQuery → GraphResult (200) | `graph.query` |
-| `source.sync` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/source-bindings/{binding_id}/sync` | ReasonRequest → Accepted (202) | `source.sync` |
+| `source_bindings.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/source-bindings` | none → SourceBindingPage (200) | `source_bindings.list` |
+| `source_bindings.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/source-bindings/{source_binding_id}` | none → SourceBinding (200) | `source_bindings.get` |
+| `source_bindings.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/source-bindings` | SourceBindingCreate → SourceBinding (201) | `source_bindings.create` |
+| `source_bindings.revoke` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/source-bindings/{source_binding_id}/revoke` | RevocationRequest → Accepted (202) | `source_bindings.revoke` |
+| `ontology_versions.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/ontology-versions` | none → OntologyVersionPage (200) | `ontology_versions.list` |
+| `ontology_versions.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/ontology-versions/{ontology_version_id}` | none → OntologyVersion (200) | `ontology_versions.get` |
+| `ontology_versions.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/ontology-versions` | OntologyVersionCreate → OntologyVersion (201) | `ontology_versions.create` |
+| `graph_entities.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-entities` | none → GraphEntityPage (200) | `graph_entities.list` |
+| `graph_entities.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-entities/{graph_entity_id}` | none → GraphEntity (200) | `graph_entities.get` |
+| `graph_entities.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-entities` | GraphEntityCreate → GraphEntity (201) | `graph_entities.create` |
+| `graph_entity_revisions.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-entity-revisions` | none → GraphEntityRevisionPage (200) | `graph_entity_revisions.list` |
+| `graph_entity_revisions.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-entity-revisions/{graph_entity_revision_id}` | none → GraphEntityRevision (200) | `graph_entity_revisions.get` |
+| `graph_entity_revisions.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-entity-revisions` | GraphEntityRevisionCreate → GraphEntityRevision (201) | `graph_entity_revisions.create` |
+| `graph_relations.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-relations` | none → GraphRelationPage (200) | `graph_relations.list` |
+| `graph_relations.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-relations/{graph_relation_id}` | none → GraphRelation (200) | `graph_relations.get` |
+| `graph_relations.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-relations` | GraphRelationCreate → GraphRelation (201) | `graph_relations.create` |
+| `graph.relation.revise` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-relation-revisions` | GraphRelationRevisionRequest → Reference (201) | `graph.relation.revise` |
+| `graph.query` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph/query` | GraphQuery → GraphResult (200) | `graph.query` |
+| `source.sync` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/source-bindings/{binding_id}/sync` | ReasonRequest → Accepted (202) | `source.sync` |
 
 ### Context
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `context_records.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/context-records` | none → ContextRecordPage (200) | `context_records.list` |
-| `context_records.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/context-records/{context_record_id}` | none → ContextRecord (200) | `context_records.get` |
-| `context_records.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/context-records` | ContextRecordCreate → ContextRecord (201) | `context_records.create` |
-| `context_records.revoke` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/context-records/{context_record_id}/revoke` | RevocationRequest → Accepted (202) | `context_records.revoke` |
-| `context_revisions.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/context-revisions` | none → ContextRevisionPage (200) | `context_revisions.list` |
-| `context_revisions.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/context-revisions/{context_revision_id}` | none → ContextRevision (200) | `context_revisions.get` |
-| `context_revisions.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/context-revisions` | ContextRevisionCreate → ContextRevision (201) | `context_revisions.create` |
-| `memory_views.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/memory-views` | none → MemoryViewPage (200) | `memory_views.list` |
-| `memory_views.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/memory-views/{memory_view_id}` | none → MemoryView (200) | `memory_views.get` |
-| `memory_views.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/memory-views` | MemoryViewCreate → MemoryView (201) | `memory_views.create` |
-| `cgp_providers.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/cgp-providers` | none → CGPProviderPage (200) | `cgp_providers.list` |
-| `cgp_providers.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/cgp-providers/{c_g_p_provider_id}` | none → CGPProvider (200) | `cgp_providers.get` |
-| `cgp_providers.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/cgp-providers` | CGPProviderCreate → CGPProvider (201) | `cgp_providers.create` |
-| `cgp_providers.revoke` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/cgp-providers/{c_g_p_provider_id}/revoke` | RevocationRequest → Accepted (202) | `cgp_providers.revoke` |
-| `context.resolve` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/context/resolve` | ContextResolveRequest → ContextResult (200) | `context.resolve` |
-| `memory.query` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/memory/query` | ContextResolveRequest → ContextResult (200) | `memory.query` |
-| `memory.propose` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/memory/proposals` | MemoryProposal → Reference (201) | `memory.propose` |
-| `memory.promote` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/memory/proposals/{proposal_id}/promote` | MemoryPromotion → Reference (201) | `memory.promote` |
-| `tenant.context.resolve` | `POST /v0.1/tenants/{tenant_id}/context/resolve` | ContextResolveRequest → ContextResult (200) | `tenant.context.resolve` |
+| `context_records.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/context-records` | none → ContextRecordPage (200) | `context_records.list` |
+| `context_records.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/context-records/{context_record_id}` | none → ContextRecord (200) | `context_records.get` |
+| `context_records.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/context-records` | ContextRecordCreate → ContextRecord (201) | `context_records.create` |
+| `context_records.revoke` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/context-records/{context_record_id}/revoke` | RevocationRequest → Accepted (202) | `context_records.revoke` |
+| `context_revisions.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/context-revisions` | none → ContextRevisionPage (200) | `context_revisions.list` |
+| `context_revisions.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/context-revisions/{context_revision_id}` | none → ContextRevision (200) | `context_revisions.get` |
+| `context_revisions.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/context-revisions` | ContextRevisionCreate → ContextRevision (201) | `context_revisions.create` |
+| `memory_views.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/memory-views` | none → MemoryViewPage (200) | `memory_views.list` |
+| `memory_views.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/memory-views/{memory_view_id}` | none → MemoryView (200) | `memory_views.get` |
+| `memory_views.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/memory-views` | MemoryViewCreate → MemoryView (201) | `memory_views.create` |
+| `cgp_providers.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/cgp-providers` | none → CGPProviderPage (200) | `cgp_providers.list` |
+| `cgp_providers.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/cgp-providers/{c_g_p_provider_id}` | none → CGPProvider (200) | `cgp_providers.get` |
+| `cgp_providers.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/cgp-providers` | CGPProviderCreate → CGPProvider (201) | `cgp_providers.create` |
+| `cgp_providers.revoke` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/cgp-providers/{c_g_p_provider_id}/revoke` | RevocationRequest → Accepted (202) | `cgp_providers.revoke` |
+| `context.resolve` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/context/resolve` | ContextResolveRequest → ContextResult (200) | `context.resolve` |
+| `memory.query` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/memory/query` | ContextResolveRequest → ContextResult (200) | `memory.query` |
+| `memory.propose` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/memory/proposals` | MemoryProposal → Reference (201) | `memory.propose` |
+| `memory.promote` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/memory/proposals/{proposal_id}/promote` | MemoryPromotion → Reference (201) | `memory.promote` |
+| `organization.context.resolve` | `POST /v0.1/organizations/{org_id}/context/resolve` | ContextResolveRequest → ContextResult (200) | `organization.context.resolve` |
 
 ### Evidence
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `artifact.upload.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/artifact-uploads` | ArtifactUploadRequest → ArtifactUpload (201) | `artifact.upload.create` |
-| `artifact.upload.content` | `PUT /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/artifact-uploads/{upload_id}/content` | binary cleaned bytes → Reference (200) | `artifact.upload.content` |
-| `artifact.upload.commit` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/artifact-uploads/{upload_id}/commit` | ArtifactUploadRequest → ArtifactRef (200) | `artifact.upload.commit` |
-| `artifact.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/artifacts/{artifact_id}` | none → ArtifactRef (200) | `artifact.get` |
-| `artifact.content.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/artifacts/{artifact_id}/content` | none → binary cleaned bytes (200) | `artifact.content.get` |
-| `events.append` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/events` | EventBatch → Reference (201) | `events.append` |
-| `events.subscribe` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/events` | none → Event (200) | `events.subscribe` |
-| `run.events.subscribe` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}/events` | none → Event (200) | `run.events.subscribe` |
+| `artifact.upload.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/artifact-uploads` | ArtifactUploadRequest → ArtifactUpload (201) | `artifact.upload.create` |
+| `artifact.upload.content` | `PUT /v0.1/organizations/{org_id}/workspaces/{workspace_id}/artifact-uploads/{upload_id}/content` | binary cleaned bytes → Reference (200) | `artifact.upload.content` |
+| `artifact.upload.commit` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/artifact-uploads/{upload_id}/commit` | ArtifactUploadRequest → ArtifactRef (200) | `artifact.upload.commit` |
+| `artifact.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/artifacts/{artifact_id}` | none → ArtifactRef (200) | `artifact.get` |
+| `artifact.content.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/artifacts/{artifact_id}/content` | none → binary cleaned bytes (200) | `artifact.content.get` |
+| `events.append` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/events` | EventBatch → Reference (201) | `events.append` |
+| `events.subscribe` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/events` | none → Event (200) | `events.subscribe` |
+| `run.events.subscribe` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}/events` | none → Event (200) | `run.events.subscribe` |
 
 ### Continuation
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `checkpoint.prepare` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/checkpoints/prepare` | CheckpointRequest → Accepted (202) | `checkpoint.prepare` |
-| `checkpoint.commit` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/checkpoints` | CheckpointCommit → Checkpoint (201) | `checkpoint.commit` |
-| `checkpoint.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/checkpoints/{checkpoint_id}` | none → Checkpoint (200) | `checkpoint.get` |
-| `fork.plan` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/fork-plans` | ForkPlanRequest → ForkPlan (201) | `fork.plan` |
-| `fork.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/fork-plans/{plan_id}/create` | ForkCreate → Accepted (202) | `fork.create` |
-| `migration.commit` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/migrations` | MigrationCommit → Accepted (202) | `migration.commit` |
+| `checkpoint.prepare` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/checkpoints/prepare` | CheckpointRequest → Accepted (202) | `checkpoint.prepare` |
+| `checkpoint.commit` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/checkpoints` | CheckpointCommit → Checkpoint (201) | `checkpoint.commit` |
+| `checkpoint.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/checkpoints/{checkpoint_id}` | none → Checkpoint (200) | `checkpoint.get` |
+| `fork.plan` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/fork-plans` | ForkPlanRequest → ForkPlan (201) | `fork.plan` |
+| `fork.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/fork-plans/{plan_id}/create` | ForkCreate → Accepted (202) | `fork.create` |
+| `migration.commit` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/migrations` | MigrationCommit → Accepted (202) | `migration.commit` |
 
 ### Retention
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `retention_policies.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/retention-policies` | none → RetentionPolicyPage (200) | `retention_policies.list` |
-| `retention_policies.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/retention-policies/{retention_policy_id}` | none → RetentionPolicy (200) | `retention_policies.get` |
-| `retention_policies.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/retention-policies` | RetentionPolicyCreate → RetentionPolicy (201) | `retention_policies.create` |
-| `legal_holds.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/legal-holds` | none → LegalHoldPage (200) | `legal_holds.list` |
-| `legal_holds.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/legal-holds/{legal_hold_id}` | none → LegalHold (200) | `legal_holds.get` |
-| `legal_holds.create` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/legal-holds` | LegalHoldCreate → LegalHold (201) | `legal_holds.create` |
-| `legal_holds.revoke` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/legal-holds/{legal_hold_id}/revoke` | RevocationRequest → Accepted (202) | `legal_holds.revoke` |
-| `retention.delete` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/deletion-requests` | DeleteRequest → Accepted (202) | `retention.delete` |
-| `audit.query` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/audit/query` | AuditQuery → AuditPage (200) | `audit.query` |
-| `audit.export` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/audit/exports` | AuditQuery → Accepted (202) | `audit.export` |
+| `retention_policies.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/retention-policies` | none → RetentionPolicyPage (200) | `retention_policies.list` |
+| `retention_policies.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/retention-policies/{retention_policy_id}` | none → RetentionPolicy (200) | `retention_policies.get` |
+| `retention_policies.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/retention-policies` | RetentionPolicyCreate → RetentionPolicy (201) | `retention_policies.create` |
+| `legal_holds.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/legal-holds` | none → LegalHoldPage (200) | `legal_holds.list` |
+| `legal_holds.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/legal-holds/{legal_hold_id}` | none → LegalHold (200) | `legal_holds.get` |
+| `legal_holds.create` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/legal-holds` | LegalHoldCreate → LegalHold (201) | `legal_holds.create` |
+| `legal_holds.revoke` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/legal-holds/{legal_hold_id}/revoke` | RevocationRequest → Accepted (202) | `legal_holds.revoke` |
+| `retention.delete` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/deletion-requests` | DeleteRequest → Accepted (202) | `retention.delete` |
+| `audit.query` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/audit/query` | AuditQuery → AuditPage (200) | `audit.query` |
+| `audit.export` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/audit/exports` | AuditQuery → Accepted (202) | `audit.export` |
 
 ### Reports
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `work_report.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-reports` | none → WorkReportPage (200) | `work_report.list` |
-| `work_report.get` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-reports/{report_id}` | none → WorkReport (200) | `work_report.get` |
-| `work_report.refresh` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-reports/refresh` | ReportRefresh → Accepted (202) | `work_report.refresh` |
-| `work_report.ingest` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-reports` | WorkReport → Reference (201) | `work_report.ingest` |
-| `work_report.subscribe` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-reports/{report_id}/events` | none → Event (200) | `work_report.subscribe` |
-| `ci.ingest` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/ci-observations` | CIObservationBatch → Reference (201) | `ci.ingest` |
-| `work_report.files.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-reports/{report_id}/files` | none → ChangedFilePage (200) | `work_report.files.list` |
-| `work_report.ci.list` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-reports/{report_id}/ci-jobs` | none → CIJobPage (200) | `work_report.ci.list` |
+| `work_report.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-reports` | none → WorkReportPage (200) | `work_report.list` |
+| `work_report.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-reports/{report_id}` | none → WorkReport (200) | `work_report.get` |
+| `work_report.refresh` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-reports/refresh` | ReportRefresh → Accepted (202) | `work_report.refresh` |
+| `work_report.ingest` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-reports` | WorkReport → Reference (201) | `work_report.ingest` |
+| `work_report.subscribe` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-reports/{report_id}/events` | none → Event (200) | `work_report.subscribe` |
+| `ci.ingest` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/ci-observations` | CIObservationBatch → Reference (201) | `ci.ingest` |
+| `work_report.files.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-reports/{report_id}/files` | none → ChangedFilePage (200) | `work_report.files.list` |
+| `work_report.ci.list` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-reports/{report_id}/ci-jobs` | none → CIJobPage (200) | `work_report.ci.list` |
 
 ### Future plugins
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `plugin_packages.list` (disabled) | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugin-packages` | none → PluginPackagePage (501) | `plugin_packages.list` |
-| `plugin_packages.get` (disabled) | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugin-packages/{plugin_package_id}` | none → PluginPackage (501) | `plugin_packages.get` |
-| `plugin_packages.create` (disabled) | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugin-packages` | PluginPackageCreate → PluginPackage (501) | `plugin_packages.create` |
-| `plugin_installs.list` (disabled) | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugin-installs` | none → PluginInstallPage (501) | `plugin_installs.list` |
-| `plugin_installs.get` (disabled) | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugin-installs/{plugin_install_id}` | none → PluginInstall (501) | `plugin_installs.get` |
-| `plugin_installs.create` (disabled) | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugin-installs` | PluginInstallCreate → PluginInstall (501) | `plugin_installs.create` |
-| `plugin_installs.revoke` (disabled) | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugin-installs/{plugin_install_id}/revoke` | RevocationRequest → Accepted (501) | `plugin_installs.revoke` |
-| `plugin.control` (disabled) | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugins/control` | PluginControl → Accepted (501) | `plugin.control` |
-| `plugin.context.offer` (disabled) | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugins/context-offers` | PluginContextOffer → Reference (501) | `plugin.context.offer` |
-| `plugin.job.request` (disabled) | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugins/jobs` | PluginJobRequest → Accepted (501) | `plugin.job.request` |
-| `plugin.events.subscribe` (disabled) | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugins/events` | none → Event (501) | `plugin.events.subscribe` |
-| `plugin.events.ack` (disabled) | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugins/event-acks` | PluginEventAck → Reference (501) | `plugin.events.ack` |
-| `plugin.decision.submit` (disabled) | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugins/completion-decisions` | PluginDecision → Reference (501) | `plugin.decision.submit` |
+| `plugin_packages.list` (disabled) | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugin-packages` | none → PluginPackagePage (501) | `plugin_packages.list` |
+| `plugin_packages.get` (disabled) | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugin-packages/{plugin_package_id}` | none → PluginPackage (501) | `plugin_packages.get` |
+| `plugin_packages.create` (disabled) | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugin-packages` | PluginPackageCreate → PluginPackage (501) | `plugin_packages.create` |
+| `plugin_installs.list` (disabled) | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugin-installs` | none → PluginInstallPage (501) | `plugin_installs.list` |
+| `plugin_installs.get` (disabled) | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugin-installs/{plugin_install_id}` | none → PluginInstall (501) | `plugin_installs.get` |
+| `plugin_installs.create` (disabled) | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugin-installs` | PluginInstallCreate → PluginInstall (501) | `plugin_installs.create` |
+| `plugin_installs.revoke` (disabled) | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugin-installs/{plugin_install_id}/revoke` | RevocationRequest → Accepted (501) | `plugin_installs.revoke` |
+| `plugin.control` (disabled) | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugins/control` | PluginControl → Accepted (501) | `plugin.control` |
+| `plugin.context.offer` (disabled) | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugins/context-offers` | PluginContextOffer → Reference (501) | `plugin.context.offer` |
+| `plugin.job.request` (disabled) | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugins/jobs` | PluginJobRequest → Accepted (501) | `plugin.job.request` |
+| `plugin.events.subscribe` (disabled) | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugins/events` | none → Event (501) | `plugin.events.subscribe` |
+| `plugin.events.ack` (disabled) | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugins/event-acks` | PluginEventAck → Reference (501) | `plugin.events.ack` |
+| `plugin.decision.submit` (disabled) | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugins/completion-decisions` | PluginDecision → Reference (501) | `plugin.decision.submit` |
 
 ### Completion
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `completion.propose` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/completion-proposals` | CompletionProposalRequest → CompletionProposal (201) | `completion.propose` |
-| `completion.status` | `GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/completion-proposals/{proposal_id}` | none → CompletionProposal (200) | `completion.status` |
-| `hold.release` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/holds/{hold_id}/release` | HoldDecision → Accepted (202) | `hold.release` |
-| `hold.override` | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/holds/{hold_id}/override` | HoldDecision → Accepted (202) | `hold.override` |
+| `completion.propose` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/completion-proposals` | CompletionProposalRequest → CompletionProposal (201) | `completion.propose` |
+| `completion.status` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/completion-proposals/{proposal_id}` | none → CompletionProposal (200) | `completion.status` |
+| `hold.release` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/holds/{hold_id}/release` | HoldDecision → Accepted (202) | `hold.release` |
+| `hold.override` | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/holds/{hold_id}/override` | HoldDecision → Accepted (202) | `hold.override` |
 
 ### Future business data
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `business.correlation.create` (disabled) | `POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/business-correlations` | BusinessCorrelationRequest → Reference (501) | `business.correlation.create` |
+| `business.correlation.create` (disabled) | `POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/business-correlations` | BusinessCorrelationRequest → Reference (501) | `business.correlation.create` |
 
 ### Platform bootstrap
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
 | `platform.deployment_profiles.list` | `GET /v0.1/platform/deployment-profiles` | none → DeploymentProfilePage (200) | `platform.deployment_profiles.list` |
-| `platform.tenant.provision` | `POST /v0.1/platform/tenant-provisions` | TenantProvisionRequest → TenantProvisionOperation (202) | `platform.tenant.provision` |
-| `platform.tenant.provision.get` | `GET /v0.1/platform/tenant-provisions/{provision_id}` | none → TenantProvisionOperation (200) | `platform.tenant.provision.get` |
-| `platform.tenant.activate` | `POST /v0.1/platform/tenant-provisions/{provision_id}/activate` | TenantActivationRequest → TenantProvisionOperation (202) | `platform.tenant.activate` |
+| `platform.organization.provision` | `POST /v0.1/platform/tenant-provisions` | OrganizationProvisionRequest → OrganizationProvisionOperation (202) | `platform.organization.provision` |
+| `platform.organization.provision.get` | `GET /v0.1/platform/tenant-provisions/{provision_id}` | none → OrganizationProvisionOperation (200) | `platform.organization.provision.get` |
+| `platform.organization.activate` | `POST /v0.1/platform/tenant-provisions/{provision_id}/activate` | OrganizationActivationRequest → OrganizationProvisionOperation (202) | `platform.organization.activate` |
 
 ### Financial evidence
 
 | Operation | Method and path | Request → result | Permission |
 |---|---|---|---|
-| `financial_sources.list` | `GET /v0.1/tenants/{tenant_id}/financial-sources` | none → FinancialSourcePage (200) | `financial_sources.list` |
-| `financial_sources.get` | `GET /v0.1/tenants/{tenant_id}/financial-sources/{financial_source_id}` | none → FinancialSource (200) | `financial_sources.get` |
-| `financial_sources.create` | `POST /v0.1/tenants/{tenant_id}/financial-sources` | FinancialSourceCreate → FinancialSource (201) | `financial_sources.create` |
-| `financial_effects.list` | `GET /v0.1/tenants/{tenant_id}/financial-effects` | none → FinancialEffectPage (200) | `financial_effects.list` |
-| `financial_effects.get` | `GET /v0.1/tenants/{tenant_id}/financial-effects/{financial_effect_id}` | none → FinancialEffect (200) | `financial_effects.get` |
-| `financial_effects.create` | `POST /v0.1/tenants/{tenant_id}/financial-effects` | FinancialEffectCreate → FinancialEffect (201) | `financial_effects.create` |
-| `financial_effect_revisions.list` | `GET /v0.1/tenants/{tenant_id}/financial-effect-revisions` | none → FinancialEffectRevisionPage (200) | `financial_effect_revisions.list` |
-| `financial_effect_revisions.get` | `GET /v0.1/tenants/{tenant_id}/financial-effect-revisions/{financial_effect_revision_id}` | none → FinancialEffectRevision (200) | `financial_effect_revisions.get` |
-| `financial_effect_revisions.create` | `POST /v0.1/tenants/{tenant_id}/financial-effect-revisions` | FinancialEffectRevisionCreate → FinancialEffectRevision (201) | `financial_effect_revisions.create` |
-| `financial_effect.observation.record` | `POST /v0.1/tenants/{tenant_id}/financial-effect-observations` | FinancialEffectObservation → Reference (201) | `financial_effect.observation.record` |
+| `financial_sources.list` | `GET /v0.1/organizations/{org_id}/financial-sources` | none → FinancialSourcePage (200) | `financial_sources.list` |
+| `financial_sources.get` | `GET /v0.1/organizations/{org_id}/financial-sources/{financial_source_id}` | none → FinancialSource (200) | `financial_sources.get` |
+| `financial_sources.create` | `POST /v0.1/organizations/{org_id}/financial-sources` | FinancialSourceCreate → FinancialSource (201) | `financial_sources.create` |
+| `financial_effects.list` | `GET /v0.1/organizations/{org_id}/financial-effects` | none → FinancialEffectPage (200) | `financial_effects.list` |
+| `financial_effects.get` | `GET /v0.1/organizations/{org_id}/financial-effects/{financial_effect_id}` | none → FinancialEffect (200) | `financial_effects.get` |
+| `financial_effects.create` | `POST /v0.1/organizations/{org_id}/financial-effects` | FinancialEffectCreate → FinancialEffect (201) | `financial_effects.create` |
+| `financial_effect_revisions.list` | `GET /v0.1/organizations/{org_id}/financial-effect-revisions` | none → FinancialEffectRevisionPage (200) | `financial_effect_revisions.list` |
+| `financial_effect_revisions.get` | `GET /v0.1/organizations/{org_id}/financial-effect-revisions/{financial_effect_revision_id}` | none → FinancialEffectRevision (200) | `financial_effect_revisions.get` |
+| `financial_effect_revisions.create` | `POST /v0.1/organizations/{org_id}/financial-effect-revisions` | FinancialEffectRevisionCreate → FinancialEffectRevision (201) | `financial_effect_revisions.create` |
+| `financial_effect.observation.record` | `POST /v0.1/organizations/{org_id}/financial-effect-observations` | FinancialEffectObservation → Reference (201) | `financial_effect.observation.record` |
 
 ### Endpoint details
 
 ### capabilities.negotiate
 
-`POST /v0.1/tenants/{tenant_id}/capabilities/negotiate`
+`POST /v0.1/organizations/{org_id}/capabilities/negotiate`
 
 Negotiate required capabilities. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -642,25 +642,25 @@ Read the authenticated identity.
 
 Request: **none**. Result: **Identity**, HTTP **200**. Permission: `identity.read`. Expected version: **not a changing existing aggregate**. Local scan: **no content body or narrow bootstrap/receipt registration**. Caller: **authorized principal**.
 
-### tenant.get
+### organization.get
 
-`GET /v0.1/tenants/{tenant_id}`
+`GET /v0.1/organizations/{org_id}`
 
 Read tenant settings.
 
-Request: **none**. Result: **Tenant**, HTTP **200**. Permission: `tenant.get`. Expected version: **not a changing existing aggregate**. Local scan: **no content body or narrow bootstrap/receipt registration**. Caller: **authorized principal**.
+Request: **none**. Result: **Tenant**, HTTP **200**. Permission: `organization.get`. Expected version: **not a changing existing aggregate**. Local scan: **no content body or narrow bootstrap/receipt registration**. Caller: **authorized principal**.
 
-### tenant.configure
+### organization.configure
 
-`PATCH /v0.1/tenants/{tenant_id}`
+`PATCH /v0.1/organizations/{org_id}`
 
 Configure tenant settings. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
-Request: **TenantPatch**. Result: **Tenant**, HTTP **200**. Permission: `tenant.configure`. Expected version: **required**. Local scan: **required**. Caller: **authorized principal**.
+Request: **OrganizationPatch**. Result: **Tenant**, HTTP **200**. Permission: `organization.configure`. Expected version: **required**. Local scan: **required**. Caller: **authorized principal**.
 
 ### workspaces.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces`
+`GET /v0.1/organizations/{org_id}/workspaces`
 
 List workspaces.
 
@@ -668,7 +668,7 @@ Request: **none**. Result: **WorkspacePage**, HTTP **200**. Permission: `workspa
 
 ### workspaces.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}`
 
 Get Workspace.
 
@@ -676,7 +676,7 @@ Request: **none**. Result: **Workspace**, HTTP **200**. Permission: `workspaces.
 
 ### workspaces.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces`
+`POST /v0.1/organizations/{org_id}/workspaces`
 
 Create Workspace. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -684,7 +684,7 @@ Request: **WorkspaceCreate**. Result: **Workspace**, HTTP **201**. Permission: `
 
 ### workspaces.update
 
-`PATCH /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}`
+`PATCH /v0.1/organizations/{org_id}/workspaces/{workspace_id}`
 
 Update Workspace. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -692,7 +692,7 @@ Request: **WorkspacePatch**. Result: **Workspace**, HTTP **200**. Permission: `w
 
 ### workspaces.revoke
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/revoke`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/revoke`
 
 Revoke Workspace. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -700,7 +700,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### principals.list
 
-`GET /v0.1/tenants/{tenant_id}/principals`
+`GET /v0.1/organizations/{org_id}/principals`
 
 List principals.
 
@@ -708,7 +708,7 @@ Request: **none**. Result: **PrincipalPage**, HTTP **200**. Permission: `princip
 
 ### principals.get
 
-`GET /v0.1/tenants/{tenant_id}/principals/{principal_id}`
+`GET /v0.1/organizations/{org_id}/principals/{principal_id}`
 
 Get Principal.
 
@@ -716,7 +716,7 @@ Request: **none**. Result: **Principal**, HTTP **200**. Permission: `principals.
 
 ### principals.create
 
-`POST /v0.1/tenants/{tenant_id}/principals`
+`POST /v0.1/organizations/{org_id}/principals`
 
 Create Principal. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -724,7 +724,7 @@ Request: **PrincipalCreate**. Result: **Principal**, HTTP **201**. Permission: `
 
 ### principals.update
 
-`PATCH /v0.1/tenants/{tenant_id}/principals/{principal_id}`
+`PATCH /v0.1/organizations/{org_id}/principals/{principal_id}`
 
 Update Principal. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -732,7 +732,7 @@ Request: **PrincipalPatch**. Result: **Principal**, HTTP **200**. Permission: `p
 
 ### principals.revoke
 
-`POST /v0.1/tenants/{tenant_id}/principals/{principal_id}/revoke`
+`POST /v0.1/organizations/{org_id}/principals/{principal_id}/revoke`
 
 Revoke Principal. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -740,7 +740,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### identity_providers.list
 
-`GET /v0.1/tenants/{tenant_id}/identity-providers`
+`GET /v0.1/organizations/{org_id}/identity-providers`
 
 List identity-providers.
 
@@ -748,7 +748,7 @@ Request: **none**. Result: **IdentityProviderPage**, HTTP **200**. Permission: `
 
 ### identity_providers.get
 
-`GET /v0.1/tenants/{tenant_id}/identity-providers/{identity_provider_id}`
+`GET /v0.1/organizations/{org_id}/identity-providers/{identity_provider_id}`
 
 Get IdentityProvider.
 
@@ -756,7 +756,7 @@ Request: **none**. Result: **IdentityProvider**, HTTP **200**. Permission: `iden
 
 ### identity_providers.create
 
-`POST /v0.1/tenants/{tenant_id}/identity-providers`
+`POST /v0.1/organizations/{org_id}/identity-providers`
 
 Create IdentityProvider. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -764,7 +764,7 @@ Request: **IdentityProviderCreate**. Result: **IdentityProvider**, HTTP **201**.
 
 ### identity_providers.revoke
 
-`POST /v0.1/tenants/{tenant_id}/identity-providers/{identity_provider_id}/revoke`
+`POST /v0.1/organizations/{org_id}/identity-providers/{identity_provider_id}/revoke`
 
 Revoke IdentityProvider. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -772,7 +772,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### groups.list
 
-`GET /v0.1/tenants/{tenant_id}/groups`
+`GET /v0.1/organizations/{org_id}/groups`
 
 List groups.
 
@@ -780,7 +780,7 @@ Request: **none**. Result: **GroupPage**, HTTP **200**. Permission: `groups.list
 
 ### groups.get
 
-`GET /v0.1/tenants/{tenant_id}/groups/{group_id}`
+`GET /v0.1/organizations/{org_id}/groups/{group_id}`
 
 Get Group.
 
@@ -788,7 +788,7 @@ Request: **none**. Result: **Group**, HTTP **200**. Permission: `groups.get`. Ex
 
 ### groups.create
 
-`POST /v0.1/tenants/{tenant_id}/groups`
+`POST /v0.1/organizations/{org_id}/groups`
 
 Create Group. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -796,7 +796,7 @@ Request: **GroupCreate**. Result: **Group**, HTTP **201**. Permission: `groups.c
 
 ### groups.update
 
-`PATCH /v0.1/tenants/{tenant_id}/groups/{group_id}`
+`PATCH /v0.1/organizations/{org_id}/groups/{group_id}`
 
 Update Group. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -804,7 +804,7 @@ Request: **GroupPatch**. Result: **Group**, HTTP **200**. Permission: `groups.up
 
 ### groups.revoke
 
-`POST /v0.1/tenants/{tenant_id}/groups/{group_id}/revoke`
+`POST /v0.1/organizations/{org_id}/groups/{group_id}/revoke`
 
 Revoke Group. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -812,7 +812,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### group_memberships.list
 
-`GET /v0.1/tenants/{tenant_id}/group-memberships`
+`GET /v0.1/organizations/{org_id}/group-memberships`
 
 List group-memberships.
 
@@ -820,7 +820,7 @@ Request: **none**. Result: **GroupMembershipPage**, HTTP **200**. Permission: `g
 
 ### group_memberships.get
 
-`GET /v0.1/tenants/{tenant_id}/group-memberships/{group_membership_id}`
+`GET /v0.1/organizations/{org_id}/group-memberships/{group_membership_id}`
 
 Get GroupMembership.
 
@@ -828,7 +828,7 @@ Request: **none**. Result: **GroupMembership**, HTTP **200**. Permission: `group
 
 ### group_memberships.create
 
-`POST /v0.1/tenants/{tenant_id}/group-memberships`
+`POST /v0.1/organizations/{org_id}/group-memberships`
 
 Create GroupMembership. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -836,7 +836,7 @@ Request: **GroupMembershipCreate**. Result: **GroupMembership**, HTTP **201**. P
 
 ### group_memberships.revoke
 
-`POST /v0.1/tenants/{tenant_id}/group-memberships/{group_membership_id}/revoke`
+`POST /v0.1/organizations/{org_id}/group-memberships/{group_membership_id}/revoke`
 
 Revoke GroupMembership. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -844,7 +844,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### permissions.list
 
-`GET /v0.1/tenants/{tenant_id}/permissions`
+`GET /v0.1/organizations/{org_id}/permissions`
 
 List permissions.
 
@@ -852,7 +852,7 @@ Request: **none**. Result: **PermissionPage**, HTTP **200**. Permission: `permis
 
 ### permissions.get
 
-`GET /v0.1/tenants/{tenant_id}/permissions/{permission_id}`
+`GET /v0.1/organizations/{org_id}/permissions/{permission_id}`
 
 Get Permission.
 
@@ -860,7 +860,7 @@ Request: **none**. Result: **Permission**, HTTP **200**. Permission: `permission
 
 ### roles.list
 
-`GET /v0.1/tenants/{tenant_id}/roles`
+`GET /v0.1/organizations/{org_id}/roles`
 
 List roles.
 
@@ -868,7 +868,7 @@ Request: **none**. Result: **RolePage**, HTTP **200**. Permission: `roles.list`.
 
 ### roles.get
 
-`GET /v0.1/tenants/{tenant_id}/roles/{role_id}`
+`GET /v0.1/organizations/{org_id}/roles/{role_id}`
 
 Get Role.
 
@@ -876,7 +876,7 @@ Request: **none**. Result: **Role**, HTTP **200**. Permission: `roles.get`. Expe
 
 ### roles.create
 
-`POST /v0.1/tenants/{tenant_id}/roles`
+`POST /v0.1/organizations/{org_id}/roles`
 
 Create Role. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -884,7 +884,7 @@ Request: **RoleCreate**. Result: **Role**, HTTP **201**. Permission: `roles.crea
 
 ### roles.update
 
-`PATCH /v0.1/tenants/{tenant_id}/roles/{role_id}`
+`PATCH /v0.1/organizations/{org_id}/roles/{role_id}`
 
 Update Role. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -892,7 +892,7 @@ Request: **RolePatch**. Result: **Role**, HTTP **200**. Permission: `roles.updat
 
 ### roles.revoke
 
-`POST /v0.1/tenants/{tenant_id}/roles/{role_id}/revoke`
+`POST /v0.1/organizations/{org_id}/roles/{role_id}/revoke`
 
 Revoke Role. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -900,7 +900,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### role_grants.list
 
-`GET /v0.1/tenants/{tenant_id}/role-grants`
+`GET /v0.1/organizations/{org_id}/role-grants`
 
 List role-grants.
 
@@ -908,7 +908,7 @@ Request: **none**. Result: **RoleGrantPage**, HTTP **200**. Permission: `role_gr
 
 ### role_grants.get
 
-`GET /v0.1/tenants/{tenant_id}/role-grants/{role_grant_id}`
+`GET /v0.1/organizations/{org_id}/role-grants/{role_grant_id}`
 
 Get RoleGrant.
 
@@ -916,7 +916,7 @@ Request: **none**. Result: **RoleGrant**, HTTP **200**. Permission: `role_grants
 
 ### role_grants.create
 
-`POST /v0.1/tenants/{tenant_id}/role-grants`
+`POST /v0.1/organizations/{org_id}/role-grants`
 
 Create RoleGrant. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -924,7 +924,7 @@ Request: **RoleGrantCreate**. Result: **RoleGrant**, HTTP **201**. Permission: `
 
 ### role_grants.revoke
 
-`POST /v0.1/tenants/{tenant_id}/role-grants/{role_grant_id}/revoke`
+`POST /v0.1/organizations/{org_id}/role-grants/{role_grant_id}/revoke`
 
 Revoke RoleGrant. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -932,7 +932,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### record_grants.list
 
-`GET /v0.1/tenants/{tenant_id}/record-grants`
+`GET /v0.1/organizations/{org_id}/record-grants`
 
 List record-grants.
 
@@ -940,7 +940,7 @@ Request: **none**. Result: **RecordGrantPage**, HTTP **200**. Permission: `recor
 
 ### record_grants.get
 
-`GET /v0.1/tenants/{tenant_id}/record-grants/{record_grant_id}`
+`GET /v0.1/organizations/{org_id}/record-grants/{record_grant_id}`
 
 Get RecordGrant.
 
@@ -948,7 +948,7 @@ Request: **none**. Result: **RecordGrant**, HTTP **200**. Permission: `record_gr
 
 ### record_grants.create
 
-`POST /v0.1/tenants/{tenant_id}/record-grants`
+`POST /v0.1/organizations/{org_id}/record-grants`
 
 Create RecordGrant. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -956,7 +956,7 @@ Request: **RecordGrantCreate**. Result: **RecordGrant**, HTTP **201**. Permissio
 
 ### record_grants.revoke
 
-`POST /v0.1/tenants/{tenant_id}/record-grants/{record_grant_id}/revoke`
+`POST /v0.1/organizations/{org_id}/record-grants/{record_grant_id}/revoke`
 
 Revoke RecordGrant. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -964,7 +964,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### delegations.list
 
-`GET /v0.1/tenants/{tenant_id}/delegations`
+`GET /v0.1/organizations/{org_id}/delegations`
 
 List delegations.
 
@@ -972,7 +972,7 @@ Request: **none**. Result: **DelegationPage**, HTTP **200**. Permission: `delega
 
 ### delegations.get
 
-`GET /v0.1/tenants/{tenant_id}/delegations/{delegation_id}`
+`GET /v0.1/organizations/{org_id}/delegations/{delegation_id}`
 
 Get Delegation.
 
@@ -980,7 +980,7 @@ Request: **none**. Result: **Delegation**, HTTP **200**. Permission: `delegation
 
 ### delegations.create
 
-`POST /v0.1/tenants/{tenant_id}/delegations`
+`POST /v0.1/organizations/{org_id}/delegations`
 
 Create Delegation. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -988,7 +988,7 @@ Request: **DelegationCreate**. Result: **Delegation**, HTTP **201**. Permission:
 
 ### delegations.revoke
 
-`POST /v0.1/tenants/{tenant_id}/delegations/{delegation_id}/revoke`
+`POST /v0.1/organizations/{org_id}/delegations/{delegation_id}/revoke`
 
 Revoke Delegation. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -996,7 +996,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### data_plane_bindings.list
 
-`GET /v0.1/tenants/{tenant_id}/data-plane-bindings`
+`GET /v0.1/organizations/{org_id}/data-plane-bindings`
 
 List data-plane-bindings.
 
@@ -1004,7 +1004,7 @@ Request: **none**. Result: **DataPlaneBindingPage**, HTTP **200**. Permission: `
 
 ### data_plane_bindings.get
 
-`GET /v0.1/tenants/{tenant_id}/data-plane-bindings/{data_plane_binding_id}`
+`GET /v0.1/organizations/{org_id}/data-plane-bindings/{data_plane_binding_id}`
 
 Get DataPlaneBinding.
 
@@ -1012,7 +1012,7 @@ Request: **none**. Result: **DataPlaneBinding**, HTTP **200**. Permission: `data
 
 ### data_plane_bindings.create
 
-`POST /v0.1/tenants/{tenant_id}/data-plane-bindings`
+`POST /v0.1/organizations/{org_id}/data-plane-bindings`
 
 Create DataPlaneBinding. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1020,7 +1020,7 @@ Request: **DataPlaneBindingCreate**. Result: **DataPlaneBinding**, HTTP **201**.
 
 ### data_plane_bindings.revoke
 
-`POST /v0.1/tenants/{tenant_id}/data-plane-bindings/{data_plane_binding_id}/revoke`
+`POST /v0.1/organizations/{org_id}/data-plane-bindings/{data_plane_binding_id}/revoke`
 
 Revoke DataPlaneBinding. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1028,7 +1028,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### data_plane.revision.create
 
-`POST /v0.1/tenants/{tenant_id}/data-plane-revisions`
+`POST /v0.1/organizations/{org_id}/data-plane-revisions`
 
 Create a data-plane revision. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1036,7 +1036,7 @@ Request: **DataPlaneRevisionRequest**. Result: **Reference**, HTTP **201**. Perm
 
 ### data_plane.activate
 
-`POST /v0.1/tenants/{tenant_id}/data-plane-bindings/{binding_id}/activate`
+`POST /v0.1/organizations/{org_id}/data-plane-bindings/{binding_id}/activate`
 
 Commit a checked storage cutover. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1044,7 +1044,7 @@ Request: **DataPlaneCutover**. Result: **Accepted**, HTTP **202**. Permission: `
 
 ### device.challenge
 
-`POST /v0.1/tenants/{tenant_id}/device-enrollment/challenges`
+`POST /v0.1/organizations/{org_id}/device-enrollment/challenges`
 
 Authenticated bootstrap for fixed public-key and platform fields only. No prompt, files, arbitrary labels, credentials or other free-form content is accepted. The installed local service applies the bootstrap policy. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation.
 
@@ -1052,7 +1052,7 @@ Request: **EnrollmentChallengeRequest**. Result: **EnrollmentChallenge**, HTTP *
 
 ### device.enroll
 
-`POST /v0.1/tenants/{tenant_id}/device-enrollment/complete`
+`POST /v0.1/organizations/{org_id}/device-enrollment/complete`
 
 Verify a device enrollment proof. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation.
 
@@ -1060,7 +1060,7 @@ Request: **EnrollmentProof**. Result: **DeviceEnrollment**, HTTP **201**. Permis
 
 ### devices.list
 
-`GET /v0.1/tenants/{tenant_id}/devices`
+`GET /v0.1/organizations/{org_id}/devices`
 
 List devices.
 
@@ -1068,7 +1068,7 @@ Request: **none**. Result: **DevicePage**, HTTP **200**. Permission: `devices.li
 
 ### devices.get
 
-`GET /v0.1/tenants/{tenant_id}/devices/{device_id}`
+`GET /v0.1/organizations/{org_id}/devices/{device_id}`
 
 Get Device.
 
@@ -1076,7 +1076,7 @@ Request: **none**. Result: **Device**, HTTP **200**. Permission: `devices.get`. 
 
 ### devices.update
 
-`PATCH /v0.1/tenants/{tenant_id}/devices/{device_id}`
+`PATCH /v0.1/organizations/{org_id}/devices/{device_id}`
 
 Update Device. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1084,7 +1084,7 @@ Request: **DevicePatch**. Result: **Device**, HTTP **200**. Permission: `devices
 
 ### devices.revoke
 
-`POST /v0.1/tenants/{tenant_id}/devices/{device_id}/revoke`
+`POST /v0.1/organizations/{org_id}/devices/{device_id}/revoke`
 
 Revoke Device. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1092,7 +1092,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### gateway_enrollments.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/gateway-enrollments`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/gateway-enrollments`
 
 List gateway-enrollments.
 
@@ -1100,7 +1100,7 @@ Request: **none**. Result: **GatewayEnrollmentPage**, HTTP **200**. Permission: 
 
 ### gateway_enrollments.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/gateway-enrollments/{gateway_enrollment_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/gateway-enrollments/{gateway_enrollment_id}`
 
 Get GatewayEnrollment.
 
@@ -1108,7 +1108,7 @@ Request: **none**. Result: **GatewayEnrollment**, HTTP **200**. Permission: `gat
 
 ### gateway_enrollments.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/gateway-enrollments`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/gateway-enrollments`
 
 Create GatewayEnrollment. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1116,7 +1116,7 @@ Request: **GatewayEnrollmentCreate**. Result: **GatewayEnrollment**, HTTP **201*
 
 ### gateway_enrollments.revoke
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/gateway-enrollments/{gateway_enrollment_id}/revoke`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/gateway-enrollments/{gateway_enrollment_id}/revoke`
 
 Revoke GatewayEnrollment. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1124,7 +1124,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### harness_targets.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/harness-targets`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/harness-targets`
 
 List harness-targets.
 
@@ -1132,7 +1132,7 @@ Request: **none**. Result: **HarnessTargetPage**, HTTP **200**. Permission: `har
 
 ### harness_targets.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/harness-targets/{harness_target_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/harness-targets/{harness_target_id}`
 
 Get HarnessTarget.
 
@@ -1140,7 +1140,7 @@ Request: **none**. Result: **HarnessTarget**, HTTP **200**. Permission: `harness
 
 ### harness_targets.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/harness-targets`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/harness-targets`
 
 Create HarnessTarget. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1148,7 +1148,7 @@ Request: **HarnessTargetCreate**. Result: **HarnessTarget**, HTTP **201**. Permi
 
 ### harness_targets.update
 
-`PATCH /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/harness-targets/{harness_target_id}`
+`PATCH /v0.1/organizations/{org_id}/workspaces/{workspace_id}/harness-targets/{harness_target_id}`
 
 Update HarnessTarget. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1156,7 +1156,7 @@ Request: **HarnessTargetPatch**. Result: **HarnessTarget**, HTTP **200**. Permis
 
 ### harness_targets.revoke
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/harness-targets/{harness_target_id}/revoke`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/harness-targets/{harness_target_id}/revoke`
 
 Revoke HarnessTarget. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1164,7 +1164,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### target.heartbeat
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/harness-targets/{target_id}/heartbeat`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/harness-targets/{target_id}/heartbeat`
 
 Report target presence. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1172,7 +1172,7 @@ Request: **Heartbeat**. Result: **Reference**, HTTP **200**. Permission: `target
 
 ### repositories.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repositories`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/repositories`
 
 List repositories.
 
@@ -1180,7 +1180,7 @@ Request: **none**. Result: **RepositoryPage**, HTTP **200**. Permission: `reposi
 
 ### repositories.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repositories/{repository_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/repositories/{repository_id}`
 
 Get Repository.
 
@@ -1188,7 +1188,7 @@ Request: **none**. Result: **Repository**, HTTP **200**. Permission: `repositori
 
 ### repositories.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repositories`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/repositories`
 
 Create Repository. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1196,7 +1196,7 @@ Request: **RepositoryCreate**. Result: **Repository**, HTTP **201**. Permission:
 
 ### repositories.revoke
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repositories/{repository_id}/revoke`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/repositories/{repository_id}/revoke`
 
 Revoke Repository. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1204,7 +1204,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### workspace.repository.configure
 
-`PATCH /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repositories/{repository_id}/settings`
+`PATCH /v0.1/organizations/{org_id}/workspaces/{workspace_id}/repositories/{repository_id}/settings`
 
 Set the workspace target branch. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1212,7 +1212,7 @@ Request: **RepositorySettings**. Result: **Reference**, HTTP **200**. Permission
 
 ### checkout_bindings.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/checkout-bindings`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/checkout-bindings`
 
 List checkout-bindings.
 
@@ -1220,7 +1220,7 @@ Request: **none**. Result: **CheckoutBindingPage**, HTTP **200**. Permission: `c
 
 ### checkout_bindings.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/checkout-bindings/{checkout_binding_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/checkout-bindings/{checkout_binding_id}`
 
 Get CheckoutBinding.
 
@@ -1228,7 +1228,7 @@ Request: **none**. Result: **CheckoutBinding**, HTTP **200**. Permission: `check
 
 ### checkout_bindings.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/checkout-bindings`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/checkout-bindings`
 
 Create CheckoutBinding. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1236,7 +1236,7 @@ Request: **CheckoutBindingCreate**. Result: **CheckoutBinding**, HTTP **201**. P
 
 ### checkout_bindings.revoke
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/checkout-bindings/{checkout_binding_id}/revoke`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/checkout-bindings/{checkout_binding_id}/revoke`
 
 Revoke CheckoutBinding. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1244,7 +1244,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### target.configure
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/harness-targets/{target_id}/configure`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/harness-targets/{target_id}/configure`
 
 Apply checked harness settings. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1252,7 +1252,7 @@ Request: **TargetConfiguration**. Result: **Accepted**, HTTP **202**. Permission
 
 ### repo_config.export
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repo-config/exports`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/repo-config/exports`
 
 Export reference-only repo config. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1260,7 +1260,7 @@ Request: **RepoExportRequest**. Result: **RepoExport**, HTTP **200**. Permission
 
 ### repo_config.plan
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repo-config/plans`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/repo-config/plans`
 
 Plan repo sync without applying it. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1268,7 +1268,7 @@ Request: **RepoConfigPlanRequest**. Result: **RepoConfigPlan**, HTTP **201**. Pe
 
 ### repo_config.apply
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repo-config/plans/{plan_id}/apply`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/repo-config/plans/{plan_id}/apply`
 
 Apply a fresh authorized sync plan. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1276,7 +1276,7 @@ Request: **RepoConfigApply**. Result: **SyncReceipt**, HTTP **200**. Permission:
 
 ### repo_config.validate
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repo-config/validate`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/repo-config/validate`
 
 Validate current setup without launching. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1284,7 +1284,7 @@ Request: **RepoValidate**. Result: **ValidationResult**, HTTP **200**. Permissio
 
 ### repo_config.receipt.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/repo-config/sync-receipts/{receipt_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/repo-config/sync-receipts/{receipt_id}`
 
 Read the protected sync receipt.
 
@@ -1292,7 +1292,7 @@ Request: **none**. Result: **SyncReceipt**, HTTP **200**. Permission: `repo_conf
 
 ### personas.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/personas`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/personas`
 
 List personas.
 
@@ -1300,7 +1300,7 @@ Request: **none**. Result: **PersonaPage**, HTTP **200**. Permission: `personas.
 
 ### personas.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/personas/{persona_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/personas/{persona_id}`
 
 Get Persona.
 
@@ -1308,7 +1308,7 @@ Request: **none**. Result: **Persona**, HTTP **200**. Permission: `personas.get`
 
 ### personas.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/personas`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/personas`
 
 Create Persona. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1316,7 +1316,7 @@ Request: **PersonaCreate**. Result: **Persona**, HTTP **201**. Permission: `pers
 
 ### personas.update
 
-`PATCH /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/personas/{persona_id}`
+`PATCH /v0.1/organizations/{org_id}/workspaces/{workspace_id}/personas/{persona_id}`
 
 Update Persona. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1324,7 +1324,7 @@ Request: **PersonaPatch**. Result: **Persona**, HTTP **200**. Permission: `perso
 
 ### personas.revoke
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/personas/{persona_id}/revoke`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/personas/{persona_id}/revoke`
 
 Revoke Persona. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1332,7 +1332,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### persona_versions.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/persona-versions`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/persona-versions`
 
 List persona-versions.
 
@@ -1340,7 +1340,7 @@ Request: **none**. Result: **PersonaVersionPage**, HTTP **200**. Permission: `pe
 
 ### persona_versions.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/persona-versions/{persona_version_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/persona-versions/{persona_version_id}`
 
 Get PersonaVersion.
 
@@ -1348,7 +1348,7 @@ Request: **none**. Result: **PersonaVersion**, HTTP **200**. Permission: `person
 
 ### persona_versions.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/persona-versions`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/persona-versions`
 
 Create PersonaVersion. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1356,7 +1356,7 @@ Request: **PersonaVersionCreate**. Result: **PersonaVersion**, HTTP **201**. Per
 
 ### agents.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agents`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agents`
 
 List agents.
 
@@ -1364,7 +1364,7 @@ Request: **none**. Result: **AgentPage**, HTTP **200**. Permission: `agents.list
 
 ### agents.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agents/{agent_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agents/{agent_id}`
 
 Get Agent.
 
@@ -1372,7 +1372,7 @@ Request: **none**. Result: **Agent**, HTTP **200**. Permission: `agents.get`. Ex
 
 ### agents.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agents`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agents`
 
 Create Agent. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1380,7 +1380,7 @@ Request: **AgentCreate**. Result: **Agent**, HTTP **201**. Permission: `agents.c
 
 ### agents.update
 
-`PATCH /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agents/{agent_id}`
+`PATCH /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agents/{agent_id}`
 
 Update Agent. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1388,7 +1388,7 @@ Request: **AgentPatch**. Result: **Agent**, HTTP **200**. Permission: `agents.up
 
 ### agents.revoke
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agents/{agent_id}/revoke`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agents/{agent_id}/revoke`
 
 Revoke Agent. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1396,7 +1396,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### agent_releases.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-releases`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-releases`
 
 List agent-releases.
 
@@ -1404,7 +1404,7 @@ Request: **none**. Result: **AgentReleasePage**, HTTP **200**. Permission: `agen
 
 ### agent_releases.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-releases/{agent_release_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-releases/{agent_release_id}`
 
 Get AgentRelease.
 
@@ -1412,7 +1412,7 @@ Request: **none**. Result: **AgentRelease**, HTTP **200**. Permission: `agent_re
 
 ### agent_releases.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-releases`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-releases`
 
 Create AgentRelease. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1420,7 +1420,7 @@ Request: **AgentReleaseCreate**. Result: **AgentRelease**, HTTP **201**. Permiss
 
 ### agent_modes.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-modes`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-modes`
 
 List agent-modes.
 
@@ -1428,7 +1428,7 @@ Request: **none**. Result: **AgentModePage**, HTTP **200**. Permission: `agent_m
 
 ### agent_modes.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-modes/{agent_mode_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-modes/{agent_mode_id}`
 
 Get AgentMode.
 
@@ -1436,7 +1436,7 @@ Request: **none**. Result: **AgentMode**, HTTP **200**. Permission: `agent_modes
 
 ### agent_modes.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-modes`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-modes`
 
 Create AgentMode. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1444,7 +1444,7 @@ Request: **AgentModeCreate**. Result: **AgentMode**, HTTP **201**. Permission: `
 
 ### skills.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/skills`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/skills`
 
 List skills.
 
@@ -1452,7 +1452,7 @@ Request: **none**. Result: **SkillPage**, HTTP **200**. Permission: `skills.list
 
 ### skills.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/skills/{skill_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/skills/{skill_id}`
 
 Get Skill.
 
@@ -1460,7 +1460,7 @@ Request: **none**. Result: **Skill**, HTTP **200**. Permission: `skills.get`. Ex
 
 ### skills.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/skills`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/skills`
 
 Create Skill. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1468,7 +1468,7 @@ Request: **SkillCreate**. Result: **Skill**, HTTP **201**. Permission: `skills.c
 
 ### skills.update
 
-`PATCH /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/skills/{skill_id}`
+`PATCH /v0.1/organizations/{org_id}/workspaces/{workspace_id}/skills/{skill_id}`
 
 Update Skill. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1476,7 +1476,7 @@ Request: **SkillPatch**. Result: **Skill**, HTTP **200**. Permission: `skills.up
 
 ### skills.revoke
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/skills/{skill_id}/revoke`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/skills/{skill_id}/revoke`
 
 Revoke Skill. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1484,7 +1484,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### skill_versions.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/skill-versions`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/skill-versions`
 
 List skill-versions.
 
@@ -1492,7 +1492,7 @@ Request: **none**. Result: **SkillVersionPage**, HTTP **200**. Permission: `skil
 
 ### skill_versions.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/skill-versions/{skill_version_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/skill-versions/{skill_version_id}`
 
 Get SkillVersion.
 
@@ -1500,7 +1500,7 @@ Request: **none**. Result: **SkillVersion**, HTTP **200**. Permission: `skill_ve
 
 ### skill_versions.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/skill-versions`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/skill-versions`
 
 Create SkillVersion. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1508,7 +1508,7 @@ Request: **SkillVersionCreate**. Result: **SkillVersion**, HTTP **201**. Permiss
 
 ### tool_definitions.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-definitions`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-definitions`
 
 List tool-definitions.
 
@@ -1516,7 +1516,7 @@ Request: **none**. Result: **ToolDefinitionPage**, HTTP **200**. Permission: `to
 
 ### tool_definitions.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-definitions/{tool_definition_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-definitions/{tool_definition_id}`
 
 Get ToolDefinition.
 
@@ -1524,7 +1524,7 @@ Request: **none**. Result: **ToolDefinition**, HTTP **200**. Permission: `tool_d
 
 ### tool_definitions.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-definitions`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-definitions`
 
 Create ToolDefinition. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1532,7 +1532,7 @@ Request: **ToolDefinitionCreate**. Result: **ToolDefinition**, HTTP **201**. Per
 
 ### tool_definitions.update
 
-`PATCH /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-definitions/{tool_definition_id}`
+`PATCH /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-definitions/{tool_definition_id}`
 
 Update ToolDefinition. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1540,7 +1540,7 @@ Request: **ToolDefinitionPatch**. Result: **ToolDefinition**, HTTP **200**. Perm
 
 ### tool_definitions.revoke
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-definitions/{tool_definition_id}/revoke`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-definitions/{tool_definition_id}/revoke`
 
 Revoke ToolDefinition. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1548,7 +1548,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### tool_releases.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-releases`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-releases`
 
 List tool-releases.
 
@@ -1556,7 +1556,7 @@ Request: **none**. Result: **ToolReleasePage**, HTTP **200**. Permission: `tool_
 
 ### tool_releases.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-releases/{tool_release_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-releases/{tool_release_id}`
 
 Get ToolRelease.
 
@@ -1564,7 +1564,7 @@ Request: **none**. Result: **ToolRelease**, HTTP **200**. Permission: `tool_rele
 
 ### tool_releases.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-releases`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-releases`
 
 Create ToolRelease. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1572,7 +1572,7 @@ Request: **ToolReleaseCreate**. Result: **ToolRelease**, HTTP **201**. Permissio
 
 ### tool_bindings.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-bindings`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-bindings`
 
 List tool-bindings.
 
@@ -1580,7 +1580,7 @@ Request: **none**. Result: **ToolBindingPage**, HTTP **200**. Permission: `tool_
 
 ### tool_bindings.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-bindings/{tool_binding_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-bindings/{tool_binding_id}`
 
 Get ToolBinding.
 
@@ -1588,7 +1588,7 @@ Request: **none**. Result: **ToolBinding**, HTTP **200**. Permission: `tool_bind
 
 ### tool_bindings.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-bindings`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-bindings`
 
 Create ToolBinding. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1596,7 +1596,7 @@ Request: **ToolBindingCreate**. Result: **ToolBinding**, HTTP **201**. Permissio
 
 ### tool_bindings.revoke
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-bindings/{tool_binding_id}/revoke`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-bindings/{tool_binding_id}/revoke`
 
 Revoke ToolBinding. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1604,7 +1604,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### agent_tool_rules.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-tool-rules`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-tool-rules`
 
 List agent-tool-rules.
 
@@ -1612,7 +1612,7 @@ Request: **none**. Result: **AgentToolRulePage**, HTTP **200**. Permission: `age
 
 ### agent_tool_rules.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-tool-rules/{agent_tool_rule_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-tool-rules/{agent_tool_rule_id}`
 
 Get AgentToolRule.
 
@@ -1620,7 +1620,7 @@ Request: **none**. Result: **AgentToolRule**, HTTP **200**. Permission: `agent_t
 
 ### agent_tool_rules.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agent-tool-rules`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agent-tool-rules`
 
 Create AgentToolRule. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1628,7 +1628,7 @@ Request: **AgentToolRuleCreate**. Result: **AgentToolRule**, HTTP **201**. Permi
 
 ### toolbelt.resolve
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-belts/resolve`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-belts/resolve`
 
 Resolve the active allowed tool belt. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1636,7 +1636,7 @@ Request: **ToolBeltResolve**. Result: **ToolBelt**, HTTP **200**. Permission: `t
 
 ### toolbelt.status
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-belts/{snapshot_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-belts/{snapshot_id}`
 
 Read a tool-belt snapshot.
 
@@ -1644,7 +1644,7 @@ Request: **none**. Result: **ToolBelt**, HTTP **200**. Permission: `toolbelt.sta
 
 ### model_providers.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-providers`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-providers`
 
 List model-providers.
 
@@ -1652,7 +1652,7 @@ Request: **none**. Result: **ModelProviderPage**, HTTP **200**. Permission: `mod
 
 ### model_providers.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-providers/{model_provider_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-providers/{model_provider_id}`
 
 Get ModelProvider.
 
@@ -1660,7 +1660,7 @@ Request: **none**. Result: **ModelProvider**, HTTP **200**. Permission: `model_p
 
 ### model_providers.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-providers`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-providers`
 
 Create ModelProvider. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1668,7 +1668,7 @@ Request: **ModelProviderCreate**. Result: **ModelProvider**, HTTP **201**. Permi
 
 ### model_providers.revoke
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-providers/{model_provider_id}/revoke`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-providers/{model_provider_id}/revoke`
 
 Revoke ModelProvider. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1676,7 +1676,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### model_releases.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-releases`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-releases`
 
 List model-releases.
 
@@ -1684,7 +1684,7 @@ Request: **none**. Result: **ModelReleasePage**, HTTP **200**. Permission: `mode
 
 ### model_releases.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-releases/{model_release_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-releases/{model_release_id}`
 
 Get ModelRelease.
 
@@ -1692,7 +1692,7 @@ Request: **none**. Result: **ModelRelease**, HTTP **200**. Permission: `model_re
 
 ### model_releases.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-releases`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-releases`
 
 Create ModelRelease. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1700,7 +1700,7 @@ Request: **ModelReleaseCreate**. Result: **ModelRelease**, HTTP **201**. Permiss
 
 ### model_routes.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-routes`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-routes`
 
 List model-routes.
 
@@ -1708,7 +1708,7 @@ Request: **none**. Result: **ModelRoutePage**, HTTP **200**. Permission: `model_
 
 ### model_routes.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-routes/{model_route_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-routes/{model_route_id}`
 
 Get ModelRoute.
 
@@ -1716,7 +1716,7 @@ Request: **none**. Result: **ModelRoute**, HTTP **200**. Permission: `model_rout
 
 ### model_routes.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-routes`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-routes`
 
 Create ModelRoute. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1724,7 +1724,7 @@ Request: **ModelRouteCreate**. Result: **ModelRoute**, HTTP **201**. Permission:
 
 ### model_routes.revoke
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-routes/{model_route_id}/revoke`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-routes/{model_route_id}/revoke`
 
 Revoke ModelRoute. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1732,7 +1732,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### secret_backend_bindings.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/secret-backend-bindings`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/secret-backend-bindings`
 
 List secret-backend-bindings.
 
@@ -1740,7 +1740,7 @@ Request: **none**. Result: **SecretBackendBindingPage**, HTTP **200**. Permissio
 
 ### secret_backend_bindings.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/secret-backend-bindings/{secret_backend_binding_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/secret-backend-bindings/{secret_backend_binding_id}`
 
 Get SecretBackendBinding.
 
@@ -1748,7 +1748,7 @@ Request: **none**. Result: **SecretBackendBinding**, HTTP **200**. Permission: `
 
 ### secret_backend_bindings.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/secret-backend-bindings`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/secret-backend-bindings`
 
 Create SecretBackendBinding. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1756,7 +1756,7 @@ Request: **SecretBackendBindingCreate**. Result: **SecretBackendBinding**, HTTP 
 
 ### secret_backend_bindings.revoke
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/secret-backend-bindings/{secret_backend_binding_id}/revoke`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/secret-backend-bindings/{secret_backend_binding_id}/revoke`
 
 Revoke SecretBackendBinding. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1764,7 +1764,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### credential_references.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/credential-references`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/credential-references`
 
 List credential-references.
 
@@ -1772,7 +1772,7 @@ Request: **none**. Result: **CredentialReferencePage**, HTTP **200**. Permission
 
 ### credential_references.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/credential-references/{credential_reference_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/credential-references/{credential_reference_id}`
 
 Get CredentialReference.
 
@@ -1780,7 +1780,7 @@ Request: **none**. Result: **CredentialReference**, HTTP **200**. Permission: `c
 
 ### credential_references.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/credential-references`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/credential-references`
 
 Create CredentialReference. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1788,7 +1788,7 @@ Request: **CredentialReferenceCreate**. Result: **CredentialReference**, HTTP **
 
 ### credential_references.revoke
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/credential-references/{credential_reference_id}/revoke`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/credential-references/{credential_reference_id}/revoke`
 
 Revoke CredentialReference. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1796,7 +1796,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### connectors.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connectors`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/connectors`
 
 List connectors.
 
@@ -1804,7 +1804,7 @@ Request: **none**. Result: **ConnectorPage**, HTTP **200**. Permission: `connect
 
 ### connectors.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connectors/{connector_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/connectors/{connector_id}`
 
 Get Connector.
 
@@ -1812,7 +1812,7 @@ Request: **none**. Result: **Connector**, HTTP **200**. Permission: `connectors.
 
 ### connectors.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connectors`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/connectors`
 
 Create Connector. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1820,7 +1820,7 @@ Request: **ConnectorCreate**. Result: **Connector**, HTTP **201**. Permission: `
 
 ### connectors.update
 
-`PATCH /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connectors/{connector_id}`
+`PATCH /v0.1/organizations/{org_id}/workspaces/{workspace_id}/connectors/{connector_id}`
 
 Update Connector. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1828,7 +1828,7 @@ Request: **ConnectorPatch**. Result: **Connector**, HTTP **200**. Permission: `c
 
 ### connectors.revoke
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connectors/{connector_id}/revoke`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/connectors/{connector_id}/revoke`
 
 Revoke Connector. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1836,7 +1836,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### connector_releases.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connector-releases`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/connector-releases`
 
 List connector-releases.
 
@@ -1844,7 +1844,7 @@ Request: **none**. Result: **ConnectorReleasePage**, HTTP **200**. Permission: `
 
 ### connector_releases.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connector-releases/{connector_release_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/connector-releases/{connector_release_id}`
 
 Get ConnectorRelease.
 
@@ -1852,7 +1852,7 @@ Request: **none**. Result: **ConnectorRelease**, HTTP **200**. Permission: `conn
 
 ### connector_releases.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connector-releases`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/connector-releases`
 
 Create ConnectorRelease. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1860,7 +1860,7 @@ Request: **ConnectorReleaseCreate**. Result: **ConnectorRelease**, HTTP **201**.
 
 ### connector_deployments.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connector-deployments`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/connector-deployments`
 
 List connector-deployments.
 
@@ -1868,7 +1868,7 @@ Request: **none**. Result: **ConnectorDeploymentPage**, HTTP **200**. Permission
 
 ### connector_deployments.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connector-deployments/{connector_deployment_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/connector-deployments/{connector_deployment_id}`
 
 Get ConnectorDeployment.
 
@@ -1876,7 +1876,7 @@ Request: **none**. Result: **ConnectorDeployment**, HTTP **200**. Permission: `c
 
 ### connector_deployments.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connector-deployments`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/connector-deployments`
 
 Create ConnectorDeployment. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1884,7 +1884,7 @@ Request: **ConnectorDeploymentCreate**. Result: **ConnectorDeployment**, HTTP **
 
 ### connector_deployments.revoke
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connector-deployments/{connector_deployment_id}/revoke`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/connector-deployments/{connector_deployment_id}/revoke`
 
 Revoke ConnectorDeployment. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1892,7 +1892,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### policy_templates.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-templates`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-templates`
 
 List policy-templates.
 
@@ -1900,7 +1900,7 @@ Request: **none**. Result: **PolicyTemplatePage**, HTTP **200**. Permission: `po
 
 ### policy_templates.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-templates/{policy_template_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-templates/{policy_template_id}`
 
 Get PolicyTemplate.
 
@@ -1908,7 +1908,7 @@ Request: **none**. Result: **PolicyTemplate**, HTTP **200**. Permission: `policy
 
 ### policy_templates.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-templates`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-templates`
 
 Create PolicyTemplate. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1916,7 +1916,7 @@ Request: **PolicyTemplateCreate**. Result: **PolicyTemplate**, HTTP **201**. Per
 
 ### policies.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policies`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policies`
 
 List policies.
 
@@ -1924,7 +1924,7 @@ Request: **none**. Result: **PolicyPage**, HTTP **200**. Permission: `policies.l
 
 ### policies.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policies/{policy_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policies/{policy_id}`
 
 Get Policy.
 
@@ -1932,7 +1932,7 @@ Request: **none**. Result: **Policy**, HTTP **200**. Permission: `policies.get`.
 
 ### policies.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policies`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policies`
 
 Create Policy. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1940,7 +1940,7 @@ Request: **PolicyCreate**. Result: **Policy**, HTTP **201**. Permission: `polici
 
 ### policies.update
 
-`PATCH /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policies/{policy_id}`
+`PATCH /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policies/{policy_id}`
 
 Update Policy. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1948,7 +1948,7 @@ Request: **PolicyPatch**. Result: **Policy**, HTTP **200**. Permission: `policie
 
 ### policies.revoke
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policies/{policy_id}/revoke`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policies/{policy_id}/revoke`
 
 Revoke Policy. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1956,7 +1956,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### policy_revisions.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-revisions`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-revisions`
 
 List policy-revisions.
 
@@ -1964,7 +1964,7 @@ Request: **none**. Result: **PolicyRevisionPage**, HTTP **200**. Permission: `po
 
 ### policy_revisions.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-revisions/{policy_revision_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-revisions/{policy_revision_id}`
 
 Get PolicyRevision.
 
@@ -1972,7 +1972,7 @@ Request: **none**. Result: **PolicyRevision**, HTTP **200**. Permission: `policy
 
 ### policy_revisions.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-revisions`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-revisions`
 
 Create PolicyRevision. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1980,7 +1980,7 @@ Request: **PolicyRevisionCreate**. Result: **PolicyRevision**, HTTP **201**. Per
 
 ### policy.validate
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policies/validate`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policies/validate`
 
 Validate a proposed policy revision. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -1988,7 +1988,7 @@ Request: **PolicyValidation**. Result: **ValidationResult**, HTTP **200**. Permi
 
 ### policy_activations.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-activations`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-activations`
 
 List policy-activations.
 
@@ -1996,7 +1996,7 @@ Request: **none**. Result: **PolicyActivationPage**, HTTP **200**. Permission: `
 
 ### policy_activations.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-activations/{policy_activation_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-activations/{policy_activation_id}`
 
 Get PolicyActivation.
 
@@ -2004,7 +2004,7 @@ Request: **none**. Result: **PolicyActivation**, HTTP **200**. Permission: `poli
 
 ### policy_activations.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-activations`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-activations`
 
 Create PolicyActivation. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2012,7 +2012,7 @@ Request: **PolicyActivationCreate**. Result: **PolicyActivation**, HTTP **201**.
 
 ### policy_activations.revoke
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-activations/{policy_activation_id}/revoke`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-activations/{policy_activation_id}/revoke`
 
 Revoke PolicyActivation. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2020,7 +2020,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### policy.explain
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policies/explain`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policies/explain`
 
 Explain effective rules without executing. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2028,7 +2028,7 @@ Request: **PolicyExplainRequest**. Result: **PolicyExplanation**, HTTP **200**. 
 
 ### policy.target_receipt
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/policy-target-receipts`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/policy-target-receipts`
 
 Record whether a target applied a policy. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2036,7 +2036,7 @@ Request: **PolicyReceiptRequest**. Result: **Reference**, HTTP **201**. Permissi
 
 ### data_protection_profiles.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/data-protection-profiles`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/data-protection-profiles`
 
 List data-protection-profiles.
 
@@ -2044,7 +2044,7 @@ Request: **none**. Result: **DataProtectionProfilePage**, HTTP **200**. Permissi
 
 ### data_protection_profiles.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/data-protection-profiles/{data_protection_profile_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/data-protection-profiles/{data_protection_profile_id}`
 
 Get DataProtectionProfile.
 
@@ -2052,7 +2052,7 @@ Request: **none**. Result: **DataProtectionProfile**, HTTP **200**. Permission: 
 
 ### data_protection_profiles.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/data-protection-profiles`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/data-protection-profiles`
 
 Create DataProtectionProfile. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2060,7 +2060,7 @@ Request: **DataProtectionProfileCreate**. Result: **DataProtectionProfile**, HTT
 
 ### scan_receipt.register
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/scan-receipts`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/scan-receipts`
 
 Bootstrap the receipt before artifact upload. Verify enrolled signer, signature, current policy and exact canonical request/artifact digests. Accept no raw text. A content upload is not authorized by a client assertion alone. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation.
 
@@ -2068,7 +2068,7 @@ Request: **ScanReceipt**. Result: **Reference**, HTTP **201**. Permission: `scan
 
 ### scan_receipt.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/scan-receipts/{receipt_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/scan-receipts/{receipt_id}`
 
 Read allowed scan receipt metadata.
 
@@ -2076,7 +2076,7 @@ Request: **none**. Result: **ScanReceipt**, HTTP **200**. Permission: `scan_rece
 
 ### work_orders.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-orders`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-orders`
 
 List work-orders.
 
@@ -2084,7 +2084,7 @@ Request: **none**. Result: **WorkOrderPage**, HTTP **200**. Permission: `work_or
 
 ### work_orders.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-orders/{work_order_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-orders/{work_order_id}`
 
 Get WorkOrder.
 
@@ -2092,7 +2092,7 @@ Request: **none**. Result: **WorkOrder**, HTTP **200**. Permission: `work_orders
 
 ### work_orders.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-orders`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-orders`
 
 Create WorkOrder. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2100,7 +2100,7 @@ Request: **WorkOrderCreate**. Result: **WorkOrder**, HTTP **201**. Permission: `
 
 ### work_orders.update
 
-`PATCH /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-orders/{work_order_id}`
+`PATCH /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-orders/{work_order_id}`
 
 Update WorkOrder. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2108,7 +2108,7 @@ Request: **WorkOrderPatch**. Result: **WorkOrder**, HTTP **200**. Permission: `w
 
 ### work_orders.revoke
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-orders/{work_order_id}/revoke`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-orders/{work_order_id}/revoke`
 
 Revoke WorkOrder. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2116,7 +2116,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### work_order_revisions.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-order-revisions`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-order-revisions`
 
 List work-order-revisions.
 
@@ -2124,7 +2124,7 @@ Request: **none**. Result: **WorkOrderRevisionPage**, HTTP **200**. Permission: 
 
 ### work_order_revisions.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-order-revisions/{work_order_revision_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-order-revisions/{work_order_revision_id}`
 
 Get WorkOrderRevision.
 
@@ -2132,7 +2132,7 @@ Request: **none**. Result: **WorkOrderRevision**, HTTP **200**. Permission: `wor
 
 ### work_order_revisions.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-order-revisions`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-order-revisions`
 
 Create WorkOrderRevision. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2140,7 +2140,7 @@ Request: **WorkOrderRevisionCreate**. Result: **WorkOrderRevision**, HTTP **201*
 
 ### work.submit
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-requests`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-requests`
 
 Submit new work to a fixed target set. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2148,7 +2148,7 @@ Request: **WorkSubmit**. Result: **Accepted**, HTTP **202**. Permission: `work.s
 
 ### work.status
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-requests/{work_request_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-requests/{work_request_id}`
 
 Read each target launch outcome.
 
@@ -2156,7 +2156,7 @@ Request: **none**. Result: **WorkStatus**, HTTP **200**. Permission: `work.statu
 
 ### work.cancel
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-requests/{work_request_id}/cancel`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-requests/{work_request_id}/cancel`
 
 Request cancellation of queued or started work. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2164,7 +2164,7 @@ Request: **ReasonRequest**. Result: **Accepted**, HTTP **202**. Permission: `wor
 
 ### run.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs`
 
 List visible runs.
 
@@ -2172,7 +2172,7 @@ Request: **none**. Result: **RunPage**, HTTP **200**. Permission: `run.list`. Ex
 
 ### run.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}`
 
 Read current run state.
 
@@ -2180,7 +2180,7 @@ Request: **none**. Result: **Run**, HTTP **200**. Permission: `run.get`. Expecte
 
 ### steering.submit
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/steering`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/steering`
 
 Without interruption, admit steering after the next execution boundary and before new eligible work. With interruption, request a confirmed pause. Target versions are checked individually; broadcast is not an atomic all-device transaction. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2188,7 +2188,7 @@ Request: **SteeringRequest**. Result: **Accepted**, HTTP **202**. Permission: `s
 
 ### steering.status
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/steering/{steering_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/steering/{steering_id}`
 
 Read per-run steering application.
 
@@ -2196,7 +2196,7 @@ Request: **none**. Result: **SteeringStatus**, HTTP **200**. Permission: `steeri
 
 ### run.pause
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}/pause`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}/pause`
 
 Core controls commit state. Pause and stop remain pending until effects and workers are proven quiet or safely fenced. Force continue admits more checked work; it cannot bypass policy, budget or a confirmed pause requirement, force completion, or revive a stopped run. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2204,7 +2204,7 @@ Request: **RunControlRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### run.stop
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}/stop`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}/stop`
 
 Core controls commit state. Pause and stop remain pending until effects and workers are proven quiet or safely fenced. Force continue admits more checked work; it cannot bypass policy, budget or a confirmed pause requirement, force completion, or revive a stopped run. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2212,7 +2212,7 @@ Request: **RunControlRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### run.force_continue
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}/force-continue`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}/force-continue`
 
 Core controls commit state. Pause and stop remain pending until effects and workers are proven quiet or safely fenced. Force continue admits more checked work; it cannot bypass policy, budget or a confirmed pause requirement, force completion, or revive a stopped run. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2220,7 +2220,7 @@ Request: **RunControlRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### run.pause_status
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}/pause`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}/pause`
 
 Read confirmed pause proof.
 
@@ -2228,7 +2228,7 @@ Request: **none**. Result: **PauseStatus**, HTTP **200**. Permission: `run.pause
 
 ### run.resume
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}/resume`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}/resume`
 
 Resume from a confirmed boundary. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2236,7 +2236,7 @@ Request: **ResumeRequest**. Result: **Accepted**, HTTP **202**. Permission: `run
 
 ### run.mode.change
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}/mode`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}/mode`
 
 Change mode behind closed old gates. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2244,7 +2244,7 @@ Request: **ModeChangeRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### run.start_receipt
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}/start-receipt`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}/start-receipt`
 
 Actual run and first model dispatch must exist. Preflight success or a local sync-lock file cannot produce this receipt. The separately packaged arp.repo/0.2 export format includes its format discriminator and source manifest.
 
@@ -2252,7 +2252,7 @@ Request: **none**. Result: **LaunchReceipt**, HTTP **200**. Permission: `run.sta
 
 ### action.propose
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/actions`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/actions`
 
 Propose a governed workspace action. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2260,15 +2260,15 @@ Request: **ActionProposal**. Result: **GovernedAction**, HTTP **201**. Permissio
 
 ### admin_action.propose
 
-`POST /v0.1/tenants/{tenant_id}/admin-actions`
+`POST /v0.1/organizations/{org_id}/admin-actions`
 
-Requires tenant_admin context and null run. Scope comes from the authenticated tenant. Tenant-wide rights do not follow from the null run. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
+Requires org_admin context and null run. Scope comes from the authenticated tenant. Tenant-wide rights do not follow from the null run. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
 Request: **ActionProposal**. Result: **GovernedAction**, HTTP **201**. Permission: `admin_action.propose`. Expected version: **not a changing existing aggregate**. Local scan: **required**. Caller: **authorized principal**.
 
 ### action.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/actions/{action_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/actions/{action_id}`
 
 Read action and attempts.
 
@@ -2276,7 +2276,7 @@ Request: **none**. Result: **GovernedAction**, HTTP **200**. Permission: `action
 
 ### action.attempt.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/actions/{action_id}/attempts`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/actions/{action_id}/attempts`
 
 Create a checked new attempt. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2284,7 +2284,7 @@ Request: **AttemptCreate**. Result: **ActionAttempt**, HTTP **201**. Permission:
 
 ### action.authorize
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/actions/{action_id}/authorize`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/actions/{action_id}/authorize`
 
 Only the trusted authorization authority may call this route. Resolve all rule versions, record grants, scope epochs, owner fence, current control epoch, authoritative business facts and atomic budget holds. Client-supplied scope sets cannot replace server resolution. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2292,7 +2292,7 @@ Request: **AuthorizeRequest**. Result: **AuthorizationDecision**, HTTP **200**. 
 
 ### action.dispatch
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/actions/{action_id}/dispatch`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/actions/{action_id}/dispatch`
 
 Consume authorization before tool dispatch. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2300,7 +2300,7 @@ Request: **DispatchRequest**. Result: **Accepted**, HTTP **202**. Permission: `a
 
 ### gateway.model_dispatch
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/gateway/model-dispatches`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/gateway/model-dispatches`
 
 Artifact contains the exact locally scanned final provider request. Resolve its pinned provider-wire profile and route, consume one authorization, record dispatch, and send using gateway-held credentials. No model-visible field may be added afterward. Provider responses must reach the local scanner before remote persistence. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2308,7 +2308,7 @@ Request: **DispatchRequest**. Result: **Accepted**, HTTP **202**. Permission: `g
 
 ### connector.receipt.ingest
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/connector-receipts`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/connector-receipts`
 
 Service webhook ingress for an authenticated registered adapter after local inspection. Match issuer, deployment, attempt and stable external IDs; reject conflicting duplicate bytes. Raw provider webhook parsers and signature adapters have separate versioned contracts, not arbitrary JSON payload support. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2316,7 +2316,7 @@ Request: **OutcomeReceipt**. Result: **Reference**, HTTP **201**. Permission: `c
 
 ### model.response.ingest
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/model-response-receipts`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/model-response-receipts`
 
 A raw provider stream is transiently relayed to the enrolled scanner; only cleaned response evidence may be referenced. Old epochs are evidence-only. A response receipt alone never authorizes a proposed tool call. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2324,7 +2324,7 @@ Request: **OutcomeReceipt**. Result: **Reference**, HTTP **201**. Permission: `m
 
 ### action.reconcile
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/actions/{action_id}/reconcile`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/actions/{action_id}/reconcile`
 
 Reconcile an uncertain external effect. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2332,7 +2332,7 @@ Request: **ReconcileRequest**. Result: **GovernedAction**, HTTP **200**. Permiss
 
 ### response.adopt
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/responses/{response_id}/adopt`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/responses/{response_id}/adopt`
 
 Explicitly admit selected late evidence. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2340,7 +2340,7 @@ Request: **AdoptResponse**. Result: **Accepted**, HTTP **202**. Permission: `res
 
 ### access_requests.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/access-requests`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/access-requests`
 
 List access-requests.
 
@@ -2348,7 +2348,7 @@ Request: **none**. Result: **AccessRequestPage**, HTTP **200**. Permission: `acc
 
 ### access_requests.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/access-requests/{access_request_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/access-requests/{access_request_id}`
 
 Get AccessRequest.
 
@@ -2356,7 +2356,7 @@ Request: **none**. Result: **AccessRequest**, HTTP **200**. Permission: `access_
 
 ### access_requests.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/access-requests`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/access-requests`
 
 Create AccessRequest. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2364,7 +2364,7 @@ Request: **AccessRequestCreate**. Result: **AccessRequest**, HTTP **201**. Permi
 
 ### access.approve
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/access-requests/{request_id}/approve`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/access-requests/{request_id}/approve`
 
 Grant the allowed portion of an access request. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2372,7 +2372,7 @@ Request: **AccessApproval**. Result: **Accepted**, HTTP **202**. Permission: `ac
 
 ### approval_requests.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/approval-requests`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/approval-requests`
 
 List approval-requests.
 
@@ -2380,7 +2380,7 @@ Request: **none**. Result: **ApprovalRequestPage**, HTTP **200**. Permission: `a
 
 ### approval_requests.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/approval-requests/{approval_request_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/approval-requests/{approval_request_id}`
 
 Get ApprovalRequest.
 
@@ -2388,7 +2388,7 @@ Request: **none**. Result: **ApprovalRequest**, HTTP **200**. Permission: `appro
 
 ### approval_requests.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/approval-requests`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/approval-requests`
 
 Create ApprovalRequest. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2396,7 +2396,7 @@ Request: **ApprovalRequestCreate**. Result: **ApprovalRequest**, HTTP **201**. P
 
 ### approval.decide
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/approval-requests/{request_id}/decide`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/approval-requests/{request_id}/decide`
 
 Approver must hold the named right. An exception cannot waive an absolute prohibition or higher hard cap. Recheck facts, policy, identity, currency, time period and all available reservations before execution. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2404,7 +2404,7 @@ Request: **ExceptionDecision**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### limit_accounts.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/limit-accounts`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/limit-accounts`
 
 List limit-accounts.
 
@@ -2412,7 +2412,7 @@ Request: **none**. Result: **LimitAccountPage**, HTTP **200**. Permission: `limi
 
 ### limit_accounts.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/limit-accounts/{limit_account_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/limit-accounts/{limit_account_id}`
 
 Get LimitAccount.
 
@@ -2420,7 +2420,7 @@ Request: **none**. Result: **LimitAccount**, HTTP **200**. Permission: `limit_ac
 
 ### limit_accounts.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/limit-accounts`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/limit-accounts`
 
 Create LimitAccount. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release.
 
@@ -2428,7 +2428,7 @@ Request: **LimitAccountCreate**. Result: **LimitAccount**, HTTP **201**. Permiss
 
 ### limit_accounts.revoke
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/limit-accounts/{limit_account_id}/revoke`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/limit-accounts/{limit_account_id}/revoke`
 
 Revoke LimitAccount. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release.
 
@@ -2436,7 +2436,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### budget.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/limit-accounts/{account_id}/balance`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/limit-accounts/{account_id}/balance`
 
 Read used held and remaining amounts.
 
@@ -2444,7 +2444,7 @@ Request: **none**. Result: **BudgetBalance**, HTTP **200**. Permission: `budget.
 
 ### budget.configure
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/limit-accounts/{account_id}/configure`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/limit-accounts/{account_id}/configure`
 
 Change a cap through current policy. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release.
 
@@ -2452,7 +2452,7 @@ Request: **BudgetChange**. Result: **Accepted**, HTTP **202**. Permission: `budg
 
 ### budget.reserve
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/budget-reservations`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/budget-reservations`
 
 Trusted authority resolves every applicable bucket; callers do not choose a subset. Serialize shared caps in one authority transaction or consume disjoint prepaid allocations. Unknown external exposure remains held. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release.
 
@@ -2460,7 +2460,7 @@ Request: **ReservationRequest**. Result: **Reservation**, HTTP **201**. Permissi
 
 ### budget.settle
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/budget-settlements`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/budget-settlements`
 
 Settle a hold from authoritative evidence. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release.
 
@@ -2468,7 +2468,7 @@ Request: **SettlementRequest**. Result: **Reference**, HTTP **201**. Permission:
 
 ### budget.release
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/budget-reservations/{hold_id}/release`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/budget-reservations/{hold_id}/release`
 
 Release only a proven unused reservation. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release.
 
@@ -2476,7 +2476,7 @@ Request: **ReasonRequest**. Result: **Reservation**, HTTP **200**. Permission: `
 
 ### price_schedules.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/price-schedules`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/price-schedules`
 
 List price-schedules.
 
@@ -2484,7 +2484,7 @@ Request: **none**. Result: **PriceSchedulePage**, HTTP **200**. Permission: `pri
 
 ### price_schedules.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/price-schedules/{price_schedule_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/price-schedules/{price_schedule_id}`
 
 Get PriceSchedule.
 
@@ -2492,7 +2492,7 @@ Request: **none**. Result: **PriceSchedule**, HTTP **200**. Permission: `price_s
 
 ### price_schedules.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/price-schedules`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/price-schedules`
 
 Create PriceSchedule. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release.
 
@@ -2500,7 +2500,7 @@ Request: **PriceScheduleCreate**. Result: **PriceSchedule**, HTTP **201**. Permi
 
 ### credential.lease
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/credential-leases`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/credential-leases`
 
 Return a scoped broker handle, never a provider key or refresh token. The trusted connector supplies transport credentials outside model-visible content and evidence. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2508,7 +2508,7 @@ Request: **CredentialLeaseRequest**. Result: **CredentialLease**, HTTP **201**. 
 
 ### source_bindings.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/source-bindings`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/source-bindings`
 
 List source-bindings.
 
@@ -2516,7 +2516,7 @@ Request: **none**. Result: **SourceBindingPage**, HTTP **200**. Permission: `sou
 
 ### source_bindings.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/source-bindings/{source_binding_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/source-bindings/{source_binding_id}`
 
 Get SourceBinding.
 
@@ -2524,7 +2524,7 @@ Request: **none**. Result: **SourceBinding**, HTTP **200**. Permission: `source_
 
 ### source_bindings.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/source-bindings`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/source-bindings`
 
 Create SourceBinding. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2532,7 +2532,7 @@ Request: **SourceBindingCreate**. Result: **SourceBinding**, HTTP **201**. Permi
 
 ### source_bindings.revoke
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/source-bindings/{source_binding_id}/revoke`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/source-bindings/{source_binding_id}/revoke`
 
 Revoke SourceBinding. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2540,7 +2540,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### ontology_versions.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/ontology-versions`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/ontology-versions`
 
 List ontology-versions.
 
@@ -2548,7 +2548,7 @@ Request: **none**. Result: **OntologyVersionPage**, HTTP **200**. Permission: `o
 
 ### ontology_versions.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/ontology-versions/{ontology_version_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/ontology-versions/{ontology_version_id}`
 
 Get OntologyVersion.
 
@@ -2556,7 +2556,7 @@ Request: **none**. Result: **OntologyVersion**, HTTP **200**. Permission: `ontol
 
 ### ontology_versions.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/ontology-versions`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/ontology-versions`
 
 Create OntologyVersion. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2564,7 +2564,7 @@ Request: **OntologyVersionCreate**. Result: **OntologyVersion**, HTTP **201**. P
 
 ### graph_entities.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-entities`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-entities`
 
 List graph-entities.
 
@@ -2572,7 +2572,7 @@ Request: **none**. Result: **GraphEntityPage**, HTTP **200**. Permission: `graph
 
 ### graph_entities.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-entities/{graph_entity_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-entities/{graph_entity_id}`
 
 Get GraphEntity.
 
@@ -2580,7 +2580,7 @@ Request: **none**. Result: **GraphEntity**, HTTP **200**. Permission: `graph_ent
 
 ### graph_entities.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-entities`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-entities`
 
 Create GraphEntity. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2588,7 +2588,7 @@ Request: **GraphEntityCreate**. Result: **GraphEntity**, HTTP **201**. Permissio
 
 ### graph_entity_revisions.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-entity-revisions`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-entity-revisions`
 
 List graph-entity-revisions.
 
@@ -2596,7 +2596,7 @@ Request: **none**. Result: **GraphEntityRevisionPage**, HTTP **200**. Permission
 
 ### graph_entity_revisions.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-entity-revisions/{graph_entity_revision_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-entity-revisions/{graph_entity_revision_id}`
 
 Get GraphEntityRevision.
 
@@ -2604,7 +2604,7 @@ Request: **none**. Result: **GraphEntityRevision**, HTTP **200**. Permission: `g
 
 ### graph_entity_revisions.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-entity-revisions`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-entity-revisions`
 
 Create GraphEntityRevision. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2612,7 +2612,7 @@ Request: **GraphEntityRevisionCreate**. Result: **GraphEntityRevision**, HTTP **
 
 ### graph_relations.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-relations`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-relations`
 
 List graph-relations.
 
@@ -2620,7 +2620,7 @@ Request: **none**. Result: **GraphRelationPage**, HTTP **200**. Permission: `gra
 
 ### graph_relations.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-relations/{graph_relation_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-relations/{graph_relation_id}`
 
 Get GraphRelation.
 
@@ -2628,7 +2628,7 @@ Request: **none**. Result: **GraphRelation**, HTTP **200**. Permission: `graph_r
 
 ### graph_relations.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-relations`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-relations`
 
 Create GraphRelation. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2636,7 +2636,7 @@ Request: **GraphRelationCreate**. Result: **GraphRelation**, HTTP **201**. Permi
 
 ### graph.relation.revise
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph-relation-revisions`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph-relation-revisions`
 
 Append a relation assertion or retraction. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2644,7 +2644,7 @@ Request: **GraphRelationRevisionRequest**. Result: **Reference**, HTTP **201**. 
 
 ### graph.query
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/graph/query`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/graph/query`
 
 Authorize nodes, edges, provenance and visible counts before returning them. The graph is a projection; it cannot grant access or supply fresh refund balances. No arbitrary database query language is accepted. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2652,7 +2652,7 @@ Request: **GraphQuery**. Result: **GraphResult**, HTTP **200**. Permission: `gra
 
 ### source.sync
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/source-bindings/{binding_id}/sync`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/source-bindings/{binding_id}/sync`
 
 Request a checked source refresh. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2660,7 +2660,7 @@ Request: **ReasonRequest**. Result: **Accepted**, HTTP **202**. Permission: `sou
 
 ### context_records.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/context-records`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/context-records`
 
 List context-records.
 
@@ -2668,7 +2668,7 @@ Request: **none**. Result: **ContextRecordPage**, HTTP **200**. Permission: `con
 
 ### context_records.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/context-records/{context_record_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/context-records/{context_record_id}`
 
 Get ContextRecord.
 
@@ -2676,7 +2676,7 @@ Request: **none**. Result: **ContextRecord**, HTTP **200**. Permission: `context
 
 ### context_records.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/context-records`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/context-records`
 
 Create ContextRecord. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2684,7 +2684,7 @@ Request: **ContextRecordCreate**. Result: **ContextRecord**, HTTP **201**. Permi
 
 ### context_records.revoke
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/context-records/{context_record_id}/revoke`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/context-records/{context_record_id}/revoke`
 
 Revoke ContextRecord. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2692,7 +2692,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### context_revisions.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/context-revisions`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/context-revisions`
 
 List context-revisions.
 
@@ -2700,7 +2700,7 @@ Request: **none**. Result: **ContextRevisionPage**, HTTP **200**. Permission: `c
 
 ### context_revisions.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/context-revisions/{context_revision_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/context-revisions/{context_revision_id}`
 
 Get ContextRevision.
 
@@ -2708,7 +2708,7 @@ Request: **none**. Result: **ContextRevision**, HTTP **200**. Permission: `conte
 
 ### context_revisions.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/context-revisions`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/context-revisions`
 
 Create ContextRevision. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2716,7 +2716,7 @@ Request: **ContextRevisionCreate**. Result: **ContextRevision**, HTTP **201**. P
 
 ### memory_views.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/memory-views`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/memory-views`
 
 List memory-views.
 
@@ -2724,7 +2724,7 @@ Request: **none**. Result: **MemoryViewPage**, HTTP **200**. Permission: `memory
 
 ### memory_views.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/memory-views/{memory_view_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/memory-views/{memory_view_id}`
 
 Get MemoryView.
 
@@ -2732,7 +2732,7 @@ Request: **none**. Result: **MemoryView**, HTTP **200**. Permission: `memory_vie
 
 ### memory_views.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/memory-views`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/memory-views`
 
 Create MemoryView. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2740,7 +2740,7 @@ Request: **MemoryViewCreate**. Result: **MemoryView**, HTTP **201**. Permission:
 
 ### cgp_providers.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/cgp-providers`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/cgp-providers`
 
 List cgp-providers.
 
@@ -2748,7 +2748,7 @@ Request: **none**. Result: **CGPProviderPage**, HTTP **200**. Permission: `cgp_p
 
 ### cgp_providers.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/cgp-providers/{c_g_p_provider_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/cgp-providers/{c_g_p_provider_id}`
 
 Get CGPProvider.
 
@@ -2756,7 +2756,7 @@ Request: **none**. Result: **CGPProvider**, HTTP **200**. Permission: `cgp_provi
 
 ### cgp_providers.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/cgp-providers`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/cgp-providers`
 
 Create CGPProvider. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2764,7 +2764,7 @@ Request: **CGPProviderCreate**. Result: **CGPProvider**, HTTP **201**. Permissio
 
 ### cgp_providers.revoke
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/cgp-providers/{c_g_p_provider_id}/revoke`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/cgp-providers/{c_g_p_provider_id}/revoke`
 
 Revoke CGPProvider. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2772,7 +2772,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### context.resolve
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/context/resolve`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/context/resolve`
 
 Apply source rights, consent, purpose and intended model export checks. Verify signed source data locally; persist only allowed derivatives and safe verification receipts. CGP wire messages are a separate pinned adapter contract. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2780,7 +2780,7 @@ Request: **ContextResolveRequest**. Result: **ContextResult**, HTTP **200**. Per
 
 ### memory.query
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/memory/query`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/memory/query`
 
 Query permitted memories. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2788,7 +2788,7 @@ Request: **ContextResolveRequest**. Result: **ContextResult**, HTTP **200**. Per
 
 ### memory.propose
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/memory/proposals`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/memory/proposals`
 
 Propose a memory change without granting rights. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2796,7 +2796,7 @@ Request: **MemoryProposal**. Result: **Reference**, HTTP **201**. Permission: `m
 
 ### memory.promote
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/memory/proposals/{proposal_id}/promote`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/memory/proposals/{proposal_id}/promote`
 
 Publish a reviewed memory version. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2804,7 +2804,7 @@ Request: **MemoryPromotion**. Result: **Reference**, HTTP **201**. Permission: `
 
 ### artifact.upload.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/artifact-uploads`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/artifact-uploads`
 
 Create an upload for sealed cleaned bytes. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2812,7 +2812,7 @@ Request: **ArtifactUploadRequest**. Result: **ArtifactUpload**, HTTP **201**. Pe
 
 ### artifact.upload.content
 
-`PUT /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/artifact-uploads/{upload_id}/content`
+`PUT /v0.1/organizations/{org_id}/workspaces/{workspace_id}/artifact-uploads/{upload_id}/content`
 
 Stream only pre-inspected immutable bytes through the authenticated gateway. Verify the declared full digest, size, scope and data-plane binding before marking durable. Reject changed bytes and never silently route a private upload to public storage. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2820,7 +2820,7 @@ Request: **binary cleaned bytes**. Result: **Reference**, HTTP **200**. Permissi
 
 ### artifact.upload.commit
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/artifact-uploads/{upload_id}/commit`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/artifact-uploads/{upload_id}/commit`
 
 Confirm durable artifact storage. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2828,7 +2828,7 @@ Request: **ArtifactUploadRequest**. Result: **ArtifactRef**, HTTP **200**. Permi
 
 ### artifact.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/artifacts/{artifact_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/artifacts/{artifact_id}`
 
 Read permitted artifact metadata.
 
@@ -2836,7 +2836,7 @@ Request: **none**. Result: **ArtifactRef**, HTTP **200**. Permission: `artifact.
 
 ### artifact.content.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/artifacts/{artifact_id}/content`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/artifacts/{artifact_id}/content`
 
 Read permitted cleaned artifact bytes.
 
@@ -2844,7 +2844,7 @@ Request: **none**. Result: **binary cleaned bytes**, HTTP **200**. Permission: `
 
 ### events.append
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/events`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/events`
 
 Caller cannot forge server commit sequence or trusted producer identity. Validate every event against its producer and run; duplicate IDs require matching cleaned bytes. Persist referenced artifacts before admitting dependent work. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2852,7 +2852,7 @@ Request: **EventBatch**. Result: **Reference**, HTTP **201**. Permission: `event
 
 ### events.subscribe
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/events`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/events`
 
 Subscribe to permitted workspace events.
 
@@ -2860,7 +2860,7 @@ Request: **none**. Result: **Event**, HTTP **200**. Permission: `events.subscrib
 
 ### run.events.subscribe
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/runs/{run_id}/events`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/runs/{run_id}/events`
 
 Subscribe to permitted run events.
 
@@ -2868,7 +2868,7 @@ Request: **none**. Result: **Event**, HTTP **200**. Permission: `run.events.subs
 
 ### operation.get
 
-`GET /v0.1/tenants/{tenant_id}/operations/{operation_id}`
+`GET /v0.1/organizations/{org_id}/operations/{operation_id}`
 
 Read an accepted operation until it resolves.
 
@@ -2876,7 +2876,7 @@ Request: **none**. Result: **Operation**, HTTP **200**. Permission: `operation.g
 
 ### checkpoint.prepare
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/checkpoints/prepare`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/checkpoints/prepare`
 
 Reach a safe checkpoint boundary. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2884,7 +2884,7 @@ Request: **CheckpointRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### checkpoint.commit
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/checkpoints`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/checkpoints`
 
 Commit an inspected checkpoint manifest. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2892,7 +2892,7 @@ Request: **CheckpointCommit**. Result: **Checkpoint**, HTTP **201**. Permission:
 
 ### checkpoint.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/checkpoints/{checkpoint_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/checkpoints/{checkpoint_id}`
 
 Read checkpoint coverage and manifest.
 
@@ -2900,7 +2900,7 @@ Request: **none**. Result: **Checkpoint**, HTTP **200**. Permission: `checkpoint
 
 ### fork.plan
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/fork-plans`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/fork-plans`
 
 Plan a supported continuation. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2908,7 +2908,7 @@ Request: **ForkPlanRequest**. Result: **ForkPlan**, HTTP **201**. Permission: `f
 
 ### fork.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/fork-plans/{plan_id}/create`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/fork-plans/{plan_id}/create`
 
 Start a fork with fresh grants and budgets. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2916,7 +2916,7 @@ Request: **ForkCreate**. Result: **Accepted**, HTTP **202**. Permission: `fork.c
 
 ### migration.commit
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/migrations`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/migrations`
 
 Transfer ownership after source fencing. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2924,7 +2924,7 @@ Request: **MigrationCommit**. Result: **Accepted**, HTTP **202**. Permission: `m
 
 ### retention_policies.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/retention-policies`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/retention-policies`
 
 List retention-policies.
 
@@ -2932,7 +2932,7 @@ Request: **none**. Result: **RetentionPolicyPage**, HTTP **200**. Permission: `r
 
 ### retention_policies.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/retention-policies/{retention_policy_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/retention-policies/{retention_policy_id}`
 
 Get RetentionPolicy.
 
@@ -2940,7 +2940,7 @@ Request: **none**. Result: **RetentionPolicy**, HTTP **200**. Permission: `reten
 
 ### retention_policies.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/retention-policies`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/retention-policies`
 
 Create RetentionPolicy. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2948,7 +2948,7 @@ Request: **RetentionPolicyCreate**. Result: **RetentionPolicy**, HTTP **201**. P
 
 ### legal_holds.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/legal-holds`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/legal-holds`
 
 List legal-holds.
 
@@ -2956,7 +2956,7 @@ Request: **none**. Result: **LegalHoldPage**, HTTP **200**. Permission: `legal_h
 
 ### legal_holds.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/legal-holds/{legal_hold_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/legal-holds/{legal_hold_id}`
 
 Get LegalHold.
 
@@ -2964,7 +2964,7 @@ Request: **none**. Result: **LegalHold**, HTTP **200**. Permission: `legal_holds
 
 ### legal_holds.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/legal-holds`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/legal-holds`
 
 Create LegalHold. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2972,7 +2972,7 @@ Request: **LegalHoldCreate**. Result: **LegalHold**, HTTP **201**. Permission: `
 
 ### legal_holds.revoke
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/legal-holds/{legal_hold_id}/revoke`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/legal-holds/{legal_hold_id}/revoke`
 
 Revoke LegalHold. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2980,7 +2980,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### retention.delete
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/deletion-requests`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/deletion-requests`
 
 Request a governed deletion with a tombstone. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2988,7 +2988,7 @@ Request: **DeleteRequest**. Result: **Accepted**, HTTP **202**. Permission: `ret
 
 ### audit.query
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/audit/query`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/audit/query`
 
 Read authorized audit facts. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -2996,7 +2996,7 @@ Request: **AuditQuery**. Result: **AuditPage**, HTTP **200**. Permission: `audit
 
 ### audit.export
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/audit/exports`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/audit/exports`
 
 Create an approved cleaned audit export. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -3004,7 +3004,7 @@ Request: **AuditQuery**. Result: **Accepted**, HTTP **202**. Permission: `audit.
 
 ### work_report.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-reports`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-reports`
 
 List authorized saved work reports.
 
@@ -3012,7 +3012,7 @@ Request: **none**. Result: **WorkReportPage**, HTTP **200**. Permission: `work_r
 
 ### work_report.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-reports/{report_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-reports/{report_id}`
 
 Read required repo work and CI evidence.
 
@@ -3020,7 +3020,7 @@ Request: **none**. Result: **WorkReport**, HTTP **200**. Permission: `work_repor
 
 ### work_report.refresh
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-reports/refresh`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-reports/refresh`
 
 Refresh a report from trusted sources. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -3028,7 +3028,7 @@ Request: **ReportRefresh**. Result: **Accepted**, HTTP **202**. Permission: `wor
 
 ### work_report.ingest
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-reports`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-reports`
 
 Target is always the workspace-configured default branch at the stated settings revision. Save metadata and referenced artifacts in the configured tenant store before acknowledging durable success. CI coverage is independent of job conclusions; exact source versions and attempts are preserved. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -3036,7 +3036,7 @@ Request: **WorkReport**. Result: **Reference**, HTTP **201**. Permission: `work_
 
 ### work_report.subscribe
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-reports/{report_id}/events`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-reports/{report_id}/events`
 
 Follow authorized report updates.
 
@@ -3044,7 +3044,7 @@ Request: **none**. Result: **Event**, HTTP **200**. Permission: `work_report.sub
 
 ### ci.ingest
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/ci-observations`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/ci-observations`
 
 Connector verifies source installation and repository binding. Never queue raw webhook bodies remotely when the scanner is unavailable; retain only safe typed wakeup references, refetch later, and mark report pending or stale. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -3052,7 +3052,7 @@ Request: **CIObservationBatch**. Result: **Reference**, HTTP **201**. Permission
 
 ### plugin_packages.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugin-packages`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugin-packages`
 
 List plugin-packages. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine.
 
@@ -3060,7 +3060,7 @@ Request: **none**. Result: **PluginPackagePage**, HTTP **501**. Permission: `plu
 
 ### plugin_packages.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugin-packages/{plugin_package_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugin-packages/{plugin_package_id}`
 
 Get PluginPackage. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine.
 
@@ -3068,7 +3068,7 @@ Request: **none**. Result: **PluginPackage**, HTTP **501**. Permission: `plugin_
 
 ### plugin_packages.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugin-packages`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugin-packages`
 
 Create PluginPackage. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine.
 
@@ -3076,7 +3076,7 @@ Request: **PluginPackageCreate**. Result: **PluginPackage**, HTTP **501**. Permi
 
 ### plugin_installs.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugin-installs`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugin-installs`
 
 List plugin-installs. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine.
 
@@ -3084,7 +3084,7 @@ Request: **none**. Result: **PluginInstallPage**, HTTP **501**. Permission: `plu
 
 ### plugin_installs.get
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugin-installs/{plugin_install_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugin-installs/{plugin_install_id}`
 
 Get PluginInstall. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine.
 
@@ -3092,7 +3092,7 @@ Request: **none**. Result: **PluginInstall**, HTTP **501**. Permission: `plugin_
 
 ### plugin_installs.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugin-installs`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugin-installs`
 
 Create PluginInstall. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine.
 
@@ -3100,7 +3100,7 @@ Request: **PluginInstallCreate**. Result: **PluginInstall**, HTTP **501**. Permi
 
 ### plugin_installs.revoke
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugin-installs/{plugin_install_id}/revoke`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugin-installs/{plugin_install_id}/revoke`
 
 Revoke PluginInstall. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine.
 
@@ -3108,7 +3108,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **501**. Permission: 
 
 ### plugin.control
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugins/control`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugins/control`
 
 Reserved scoped plugin run control. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine.
 
@@ -3116,7 +3116,7 @@ Request: **PluginControl**. Result: **Accepted**, HTTP **501**. Permission: `plu
 
 ### plugin.context.offer
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugins/context-offers`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugins/context-offers`
 
 Reserved plugin context offer. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine.
 
@@ -3124,7 +3124,7 @@ Request: **PluginContextOffer**. Result: **Reference**, HTTP **501**. Permission
 
 ### plugin.job.request
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugins/jobs`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugins/jobs`
 
 Reserved external plugin job. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine.
 
@@ -3132,7 +3132,7 @@ Request: **PluginJobRequest**. Result: **Accepted**, HTTP **501**. Permission: `
 
 ### plugin.events.subscribe
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugins/events`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugins/events`
 
 Reserved authorized plugin event stream. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine.
 
@@ -3140,7 +3140,7 @@ Request: **none**. Result: **Event**, HTTP **501**. Permission: `plugin.events.s
 
 ### plugin.events.ack
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugins/event-acks`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugins/event-acks`
 
 Reserved delivery acknowledgment. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine.
 
@@ -3148,7 +3148,7 @@ Request: **PluginEventAck**. Result: **Reference**, HTTP **501**. Permission: `p
 
 ### completion.propose
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/completion-proposals`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/completion-proposals`
 
 Propose completion to core controls. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -3156,7 +3156,7 @@ Request: **CompletionProposalRequest**. Result: **CompletionProposal**, HTTP **2
 
 ### completion.status
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/completion-proposals/{proposal_id}`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/completion-proposals/{proposal_id}`
 
 Read completion state and holds.
 
@@ -3164,7 +3164,7 @@ Request: **none**. Result: **CompletionProposal**, HTTP **200**. Permission: `co
 
 ### plugin.decision.submit
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/plugins/completion-decisions`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/plugins/completion-decisions`
 
 Reserved immutable completion-seat reply. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine.
 
@@ -3172,7 +3172,7 @@ Request: **PluginDecision**. Result: **Reference**, HTTP **501**. Permission: `p
 
 ### hold.release
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/holds/{hold_id}/release`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/holds/{hold_id}/release`
 
 Resolve only the named authorized hold. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -3180,7 +3180,7 @@ Request: **HoldDecision**. Result: **Accepted**, HTTP **202**. Permission: `hold
 
 ### hold.override
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/holds/{hold_id}/override`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/holds/{hold_id}/override`
 
 Resolve only the named authorized hold. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -3188,31 +3188,31 @@ Request: **HoldDecision**. Result: **Accepted**, HTTP **202**. Permission: `hold
 
 ### business.correlation.create
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/business-correlations`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/business-correlations`
 
 Requires trusted connector action/source identity, exact IDs and matching receipt. A model assertion, fuzzy search, matching amount or nearby timestamp cannot prove causation. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine.
 
 Request: **BusinessCorrelationRequest**. Result: **Reference**, HTTP **501**. Permission: `business.correlation.create`. Expected version: **not a changing existing aggregate**. Local scan: **required**. Caller: **authorized principal**.
 
-### tenant.context.resolve
+### organization.context.resolve
 
-`POST /v0.1/tenants/{tenant_id}/context/resolve`
+`POST /v0.1/organizations/{org_id}/context/resolve`
 
-Requires tenant_admin context with no run; same source/record/export checks apply. Workspace-scoped records still require the caller's exact rights. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
+Requires org_admin context with no run; same source/record/export checks apply. Workspace-scoped records still require the caller's exact rights. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
-Request: **ContextResolveRequest**. Result: **ContextResult**, HTTP **200**. Permission: `tenant.context.resolve`. Expected version: **not a changing existing aggregate**. Local scan: **required**. Caller: **authorized principal**.
+Request: **ContextResolveRequest**. Result: **ContextResult**, HTTP **200**. Permission: `organization.context.resolve`. Expected version: **not a changing existing aggregate**. Local scan: **required**. Caller: **authorized principal**.
 
-### tenant.scan_receipt.register
+### organization.scan_receipt.register
 
-`POST /v0.1/tenants/{tenant_id}/scan-receipts`
+`POST /v0.1/organizations/{org_id}/scan-receipts`
 
 Register an approved tenant-scope scan receipt. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation.
 
-Request: **ScanReceipt**. Result: **Reference**, HTTP **201**. Permission: `tenant.scan_receipt.register`. Expected version: **not a changing existing aggregate**. Local scan: **no content body or narrow bootstrap/receipt registration**. Caller: **trusted service only**.
+Request: **ScanReceipt**. Result: **Reference**, HTTP **201**. Permission: `organization.scan_receipt.register`. Expected version: **not a changing existing aggregate**. Local scan: **no content body or narrow bootstrap/receipt registration**. Caller: **trusted service only**.
 
 ### principal_auth_bindings.list
 
-`GET /v0.1/tenants/{tenant_id}/principal-auth-bindings`
+`GET /v0.1/organizations/{org_id}/principal-auth-bindings`
 
 List principal-auth-bindings.
 
@@ -3220,7 +3220,7 @@ Request: **none**. Result: **PrincipalAuthBindingPage**, HTTP **200**. Permissio
 
 ### principal_auth_bindings.get
 
-`GET /v0.1/tenants/{tenant_id}/principal-auth-bindings/{principal_auth_binding_id}`
+`GET /v0.1/organizations/{org_id}/principal-auth-bindings/{principal_auth_binding_id}`
 
 Get PrincipalAuthBinding.
 
@@ -3228,7 +3228,7 @@ Request: **none**. Result: **PrincipalAuthBinding**, HTTP **200**. Permission: `
 
 ### principal_auth_bindings.create
 
-`POST /v0.1/tenants/{tenant_id}/principal-auth-bindings`
+`POST /v0.1/organizations/{org_id}/principal-auth-bindings`
 
 Create PrincipalAuthBinding. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -3236,7 +3236,7 @@ Request: **PrincipalAuthBindingCreate**. Result: **PrincipalAuthBinding**, HTTP 
 
 ### principal_auth_bindings.revoke
 
-`POST /v0.1/tenants/{tenant_id}/principal-auth-bindings/{principal_auth_binding_id}/revoke`
+`POST /v0.1/organizations/{org_id}/principal-auth-bindings/{principal_auth_binding_id}/revoke`
 
 Revoke PrincipalAuthBinding. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -3244,7 +3244,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### adapter.attest
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/adapter-attestations`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/adapter-attestations`
 
 Attest tested adapter controls. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -3252,7 +3252,7 @@ Request: **AdapterAttestation**. Result: **Reference**, HTTP **201**. Permission
 
 ### agent.resolve
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/agents/resolve`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/agents/resolve`
 
 Resolve the approved agent release for a target. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -3260,7 +3260,7 @@ Request: **AgentResolveRequest**. Result: **AgentResolution**, HTTP **200**. Per
 
 ### projection.compile
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/projections/compile`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/projections/compile`
 
 Compile a release for the tested adapter. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -3268,7 +3268,7 @@ Request: **ProjectionCompileRequest**. Result: **Projection**, HTTP **200**. Per
 
 ### projection.verify
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/projections/verify`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/projections/verify`
 
 Compare actual setup to approved projection. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -3276,7 +3276,7 @@ Request: **ProjectionVerifyRequest**. Result: **ValidationResult**, HTTP **200**
 
 ### toolbelt.prepare
 
-`POST /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/tool-belts/prepare`
+`POST /v0.1/organizations/{org_id}/workspaces/{workspace_id}/tool-belts/prepare`
 
 Prepare a pre-run tool menu without granting execution. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -3284,7 +3284,7 @@ Request: **PreparedToolBeltRequest**. Result: **PreparedToolBelt**, HTTP **200**
 
 ### work_report.files.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-reports/{report_id}/files`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-reports/{report_id}/files`
 
 Page the report's full permitted file set.
 
@@ -3292,7 +3292,7 @@ Request: **none**. Result: **ChangedFilePage**, HTTP **200**. Permission: `work_
 
 ### work_report.ci.list
 
-`GET /v0.1/tenants/{tenant_id}/workspaces/{workspace_id}/work-reports/{report_id}/ci-jobs`
+`GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}/work-reports/{report_id}/ci-jobs`
 
 Page the report's full permitted CI job set.
 
@@ -3300,7 +3300,7 @@ Request: **none**. Result: **CIJobPage**, HTTP **200**. Permission: `work_report
 
 ### admin_action.get
 
-`GET /v0.1/tenants/{tenant_id}/admin-actions/{action_id}`
+`GET /v0.1/organizations/{org_id}/admin-actions/{action_id}`
 
 Read a governed tenant admin action.
 
@@ -3308,7 +3308,7 @@ Request: **none**. Result: **GovernedAction**, HTTP **200**. Permission: `admin_
 
 ### admin_action.attempt.create
 
-`POST /v0.1/tenants/{tenant_id}/admin-actions/{action_id}/attempts`
+`POST /v0.1/organizations/{org_id}/admin-actions/{action_id}/attempts`
 
 Create a checked tenant admin attempt. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -3316,7 +3316,7 @@ Request: **AttemptCreate**. Result: **ActionAttempt**, HTTP **201**. Permission:
 
 ### admin_action.authorize
 
-`POST /v0.1/tenants/{tenant_id}/admin-actions/{action_id}/authorize`
+`POST /v0.1/organizations/{org_id}/admin-actions/{action_id}/authorize`
 
 Authorize tenant admin input under all current grants. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -3324,7 +3324,7 @@ Request: **AuthorizeRequest**. Result: **AuthorizationDecision**, HTTP **200**. 
 
 ### admin_action.dispatch
 
-`POST /v0.1/tenants/{tenant_id}/admin-actions/{action_id}/dispatch`
+`POST /v0.1/organizations/{org_id}/admin-actions/{action_id}/dispatch`
 
 Dispatch a governed tenant admin action. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -3332,7 +3332,7 @@ Request: **DispatchRequest**. Result: **Accepted**, HTTP **202**. Permission: `a
 
 ### admin_action.reconcile
 
-`POST /v0.1/tenants/{tenant_id}/admin-actions/{action_id}/reconcile`
+`POST /v0.1/organizations/{org_id}/admin-actions/{action_id}/reconcile`
 
 Reconcile a tenant admin effect. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -3346,33 +3346,33 @@ Platform-audience workload identity and explicit platform permission are require
 
 Request: **none**. Result: **DeploymentProfilePage**, HTTP **200**. Permission: `platform.deployment_profiles.list`. Expected version: **not a changing existing aggregate**. Local scan: **no content body or narrow bootstrap/receipt registration**. Caller: **trusted service only**.
 
-### platform.tenant.provision
+### platform.organization.provision
 
 `POST /v0.1/platform/tenant-provisions`
 
 Platform-audience workload identity and explicit platform permission are required. An authenticated human requests this through the protected provisioning service; platform authority does not confer tenant content access. Accept only fixed typed IDs of verified bootstrap proofs, never customer text, credentials or file content. The installed scanner applies the published bootstrap profile even though no tenant ScanReceipt can yet exist. Atomically create the initial tenant owner grant and checked data-plane binding, and admit no tenant work until activation. Existing identity login, owner acceptance and deployment attestation use the separately pinned bootstrap protocol. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation.
 
-Request: **TenantProvisionRequest**. Result: **TenantProvisionOperation**, HTTP **202**. Permission: `platform.tenant.provision`. Expected version: **not a changing existing aggregate**. Local scan: **no content body or narrow bootstrap/receipt registration**. Caller: **trusted service only**.
+Request: **OrganizationProvisionRequest**. Result: **OrganizationProvisionOperation**, HTTP **202**. Permission: `platform.organization.provision`. Expected version: **not a changing existing aggregate**. Local scan: **no content body or narrow bootstrap/receipt registration**. Caller: **trusted service only**.
 
-### platform.tenant.provision.get
+### platform.organization.provision.get
 
 `GET /v0.1/platform/tenant-provisions/{provision_id}`
 
 Platform-audience workload identity and explicit platform permission are required. An authenticated human requests this through the protected provisioning service; platform authority does not confer tenant content access. Accept only fixed typed IDs of verified bootstrap proofs, never customer text, credentials or file content. The installed scanner applies the published bootstrap profile even though no tenant ScanReceipt can yet exist. Atomically create the initial tenant owner grant and checked data-plane binding, and admit no tenant work until activation. Existing identity login, owner acceptance and deployment attestation use the separately pinned bootstrap protocol.
 
-Request: **none**. Result: **TenantProvisionOperation**, HTTP **200**. Permission: `platform.tenant.provision.get`. Expected version: **not a changing existing aggregate**. Local scan: **no content body or narrow bootstrap/receipt registration**. Caller: **trusted service only**.
+Request: **none**. Result: **OrganizationProvisionOperation**, HTTP **200**. Permission: `platform.organization.provision.get`. Expected version: **not a changing existing aggregate**. Local scan: **no content body or narrow bootstrap/receipt registration**. Caller: **trusted service only**.
 
-### platform.tenant.activate
+### platform.organization.activate
 
 `POST /v0.1/platform/tenant-provisions/{provision_id}/activate`
 
 Platform-audience workload identity and explicit platform permission are required. An authenticated human requests this through the protected provisioning service; platform authority does not confer tenant content access. Accept only fixed typed IDs of verified bootstrap proofs, never customer text, credentials or file content. The installed scanner applies the published bootstrap profile even though no tenant ScanReceipt can yet exist. Atomically create the initial tenant owner grant and checked data-plane binding, and admit no tenant work until activation. Existing identity login, owner acceptance and deployment attestation use the separately pinned bootstrap protocol. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation.
 
-Request: **TenantActivationRequest**. Result: **TenantProvisionOperation**, HTTP **202**. Permission: `platform.tenant.activate`. Expected version: **required**. Local scan: **no content body or narrow bootstrap/receipt registration**. Caller: **trusted service only**.
+Request: **OrganizationActivationRequest**. Result: **OrganizationProvisionOperation**, HTTP **202**. Permission: `platform.organization.activate`. Expected version: **required**. Local scan: **no content body or narrow bootstrap/receipt registration**. Caller: **trusted service only**.
 
 ### limit_definitions.list
 
-`GET /v0.1/tenants/{tenant_id}/limit-definitions`
+`GET /v0.1/organizations/{org_id}/limit-definitions`
 
 List limit-definitions.
 
@@ -3380,7 +3380,7 @@ Request: **none**. Result: **LimitDefinitionPage**, HTTP **200**. Permission: `l
 
 ### limit_definitions.get
 
-`GET /v0.1/tenants/{tenant_id}/limit-definitions/{limit_definition_id}`
+`GET /v0.1/organizations/{org_id}/limit-definitions/{limit_definition_id}`
 
 Get LimitDefinition.
 
@@ -3388,7 +3388,7 @@ Request: **none**. Result: **LimitDefinition**, HTTP **200**. Permission: `limit
 
 ### limit_definitions.create
 
-`POST /v0.1/tenants/{tenant_id}/limit-definitions`
+`POST /v0.1/organizations/{org_id}/limit-definitions`
 
 Create LimitDefinition. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release.
 
@@ -3396,7 +3396,7 @@ Request: **LimitDefinitionCreate**. Result: **LimitDefinition**, HTTP **201**. P
 
 ### limit_definitions.revoke
 
-`POST /v0.1/tenants/{tenant_id}/limit-definitions/{limit_definition_id}/revoke`
+`POST /v0.1/organizations/{org_id}/limit-definitions/{limit_definition_id}/revoke`
 
 Revoke LimitDefinition. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release.
 
@@ -3404,7 +3404,7 @@ Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: 
 
 ### limit_definition_terms.list
 
-`GET /v0.1/tenants/{tenant_id}/limit-definition-terms`
+`GET /v0.1/organizations/{org_id}/limit-definition-terms`
 
 List limit-definition-terms.
 
@@ -3412,7 +3412,7 @@ Request: **none**. Result: **LimitDefinitionTermsPage**, HTTP **200**. Permissio
 
 ### limit_definition_terms.get
 
-`GET /v0.1/tenants/{tenant_id}/limit-definition-terms/{limit_definition_terms_id}`
+`GET /v0.1/organizations/{org_id}/limit-definition-terms/{limit_definition_terms_id}`
 
 Get LimitDefinitionTerms.
 
@@ -3420,63 +3420,63 @@ Request: **none**. Result: **LimitDefinitionTerms**, HTTP **200**. Permission: `
 
 ### limit_definition_terms.create
 
-`POST /v0.1/tenants/{tenant_id}/limit-definition-terms`
+`POST /v0.1/organizations/{org_id}/limit-definition-terms`
 
 Create LimitDefinitionTerms. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release.
 
 Request: **LimitDefinitionTermsCreate**. Result: **LimitDefinitionTerms**, HTTP **201**. Permission: `limit_definition_terms.create`. Expected version: **not a changing existing aggregate**. Local scan: **required**. Caller: **authorized principal**.
 
-### tenant.limit_accounts.list
+### organization.limit_accounts.list
 
-`GET /v0.1/tenants/{tenant_id}/limit-accounts`
-
-Requires the named tenant-level right. This route manages only accounts whose workspace scope is null; workspace routes manage only their named workspace accounts. Operator/agent subject rights are checked separately. Account identity and all historical exposure survive terms changes. The reservation authority automatically includes applicable tenant and workspace parent accounts; callers cannot select only a cheaper scope.
-
-Request: **none**. Result: **LimitAccountPage**, HTTP **200**. Permission: `tenant.limit_accounts.list`. Expected version: **not a changing existing aggregate**. Local scan: **no content body or narrow bootstrap/receipt registration**. Caller: **authorized principal**.
-
-### tenant.limit_accounts.get
-
-`GET /v0.1/tenants/{tenant_id}/limit-accounts/{account_id}`
+`GET /v0.1/organizations/{org_id}/limit-accounts`
 
 Requires the named tenant-level right. This route manages only accounts whose workspace scope is null; workspace routes manage only their named workspace accounts. Operator/agent subject rights are checked separately. Account identity and all historical exposure survive terms changes. The reservation authority automatically includes applicable tenant and workspace parent accounts; callers cannot select only a cheaper scope.
 
-Request: **none**. Result: **LimitAccount**, HTTP **200**. Permission: `tenant.limit_accounts.get`. Expected version: **not a changing existing aggregate**. Local scan: **no content body or narrow bootstrap/receipt registration**. Caller: **authorized principal**.
+Request: **none**. Result: **LimitAccountPage**, HTTP **200**. Permission: `organization.limit_accounts.list`. Expected version: **not a changing existing aggregate**. Local scan: **no content body or narrow bootstrap/receipt registration**. Caller: **authorized principal**.
 
-### tenant.limit_accounts.create
+### organization.limit_accounts.get
 
-`POST /v0.1/tenants/{tenant_id}/limit-accounts`
-
-Requires the named tenant-level right. This route manages only accounts whose workspace scope is null; workspace routes manage only their named workspace accounts. Operator/agent subject rights are checked separately. Account identity and all historical exposure survive terms changes. The reservation authority automatically includes applicable tenant and workspace parent accounts; callers cannot select only a cheaper scope. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release.
-
-Request: **LimitAccountCreate**. Result: **LimitAccount**, HTTP **201**. Permission: `tenant.limit_accounts.create`. Expected version: **not a changing existing aggregate**. Local scan: **required**. Caller: **authorized principal**.
-
-### tenant.budget.get
-
-`GET /v0.1/tenants/{tenant_id}/limit-accounts/{account_id}/balance`
+`GET /v0.1/organizations/{org_id}/limit-accounts/{account_id}`
 
 Requires the named tenant-level right. This route manages only accounts whose workspace scope is null; workspace routes manage only their named workspace accounts. Operator/agent subject rights are checked separately. Account identity and all historical exposure survive terms changes. The reservation authority automatically includes applicable tenant and workspace parent accounts; callers cannot select only a cheaper scope.
 
-Request: **none**. Result: **BudgetBalance**, HTTP **200**. Permission: `tenant.budget.get`. Expected version: **not a changing existing aggregate**. Local scan: **no content body or narrow bootstrap/receipt registration**. Caller: **authorized principal**.
+Request: **none**. Result: **LimitAccount**, HTTP **200**. Permission: `organization.limit_accounts.get`. Expected version: **not a changing existing aggregate**. Local scan: **no content body or narrow bootstrap/receipt registration**. Caller: **authorized principal**.
 
-### tenant.budget.configure
+### organization.limit_accounts.create
 
-`POST /v0.1/tenants/{tenant_id}/limit-accounts/{account_id}/configure`
-
-Requires the named tenant-level right. This route manages only accounts whose workspace scope is null; workspace routes manage only their named workspace accounts. Operator/agent subject rights are checked separately. Account identity and all historical exposure survive terms changes. The reservation authority automatically includes applicable tenant and workspace parent accounts; callers cannot select only a cheaper scope. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release.
-
-Request: **BudgetChange**. Result: **Accepted**, HTTP **202**. Permission: `tenant.budget.configure`. Expected version: **required**. Local scan: **required**. Caller: **authorized principal**.
-
-### tenant.limit_accounts.revoke
-
-`POST /v0.1/tenants/{tenant_id}/limit-accounts/{account_id}/revoke`
+`POST /v0.1/organizations/{org_id}/limit-accounts`
 
 Requires the named tenant-level right. This route manages only accounts whose workspace scope is null; workspace routes manage only their named workspace accounts. Operator/agent subject rights are checked separately. Account identity and all historical exposure survive terms changes. The reservation authority automatically includes applicable tenant and workspace parent accounts; callers cannot select only a cheaper scope. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release.
 
-Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: `tenant.limit_accounts.revoke`. Expected version: **required**. Local scan: **required**. Caller: **authorized principal**.
+Request: **LimitAccountCreate**. Result: **LimitAccount**, HTTP **201**. Permission: `organization.limit_accounts.create`. Expected version: **not a changing existing aggregate**. Local scan: **required**. Caller: **authorized principal**.
+
+### organization.budget.get
+
+`GET /v0.1/organizations/{org_id}/limit-accounts/{account_id}/balance`
+
+Requires the named tenant-level right. This route manages only accounts whose workspace scope is null; workspace routes manage only their named workspace accounts. Operator/agent subject rights are checked separately. Account identity and all historical exposure survive terms changes. The reservation authority automatically includes applicable tenant and workspace parent accounts; callers cannot select only a cheaper scope.
+
+Request: **none**. Result: **BudgetBalance**, HTTP **200**. Permission: `organization.budget.get`. Expected version: **not a changing existing aggregate**. Local scan: **no content body or narrow bootstrap/receipt registration**. Caller: **authorized principal**.
+
+### organization.budget.configure
+
+`POST /v0.1/organizations/{org_id}/limit-accounts/{account_id}/configure`
+
+Requires the named tenant-level right. This route manages only accounts whose workspace scope is null; workspace routes manage only their named workspace accounts. Operator/agent subject rights are checked separately. Account identity and all historical exposure survive terms changes. The reservation authority automatically includes applicable tenant and workspace parent accounts; callers cannot select only a cheaper scope. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release.
+
+Request: **BudgetChange**. Result: **Accepted**, HTTP **202**. Permission: `organization.budget.configure`. Expected version: **required**. Local scan: **required**. Caller: **authorized principal**.
+
+### organization.limit_accounts.revoke
+
+`POST /v0.1/organizations/{org_id}/limit-accounts/{account_id}/revoke`
+
+Requires the named tenant-level right. This route manages only accounts whose workspace scope is null; workspace routes manage only their named workspace accounts. Operator/agent subject rights are checked separately. Account identity and all historical exposure survive terms changes. The reservation authority automatically includes applicable tenant and workspace parent accounts; callers cannot select only a cheaper scope. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release.
+
+Request: **RevocationRequest**. Result: **Accepted**, HTTP **202**. Permission: `organization.limit_accounts.revoke`. Expected version: **required**. Local scan: **required**. Caller: **authorized principal**.
 
 ### financial_sources.list
 
-`GET /v0.1/tenants/{tenant_id}/financial-sources`
+`GET /v0.1/organizations/{org_id}/financial-sources`
 
 List financial-sources.
 
@@ -3484,7 +3484,7 @@ Request: **none**. Result: **FinancialSourcePage**, HTTP **200**. Permission: `f
 
 ### financial_sources.get
 
-`GET /v0.1/tenants/{tenant_id}/financial-sources/{financial_source_id}`
+`GET /v0.1/organizations/{org_id}/financial-sources/{financial_source_id}`
 
 Get FinancialSource.
 
@@ -3492,7 +3492,7 @@ Request: **none**. Result: **FinancialSource**, HTTP **200**. Permission: `finan
 
 ### financial_sources.create
 
-`POST /v0.1/tenants/{tenant_id}/financial-sources`
+`POST /v0.1/organizations/{org_id}/financial-sources`
 
 Create FinancialSource. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -3500,7 +3500,7 @@ Request: **FinancialSourceCreate**. Result: **FinancialSource**, HTTP **201**. P
 
 ### financial_effects.list
 
-`GET /v0.1/tenants/{tenant_id}/financial-effects`
+`GET /v0.1/organizations/{org_id}/financial-effects`
 
 List financial-effects.
 
@@ -3508,7 +3508,7 @@ Request: **none**. Result: **FinancialEffectPage**, HTTP **200**. Permission: `f
 
 ### financial_effects.get
 
-`GET /v0.1/tenants/{tenant_id}/financial-effects/{financial_effect_id}`
+`GET /v0.1/organizations/{org_id}/financial-effects/{financial_effect_id}`
 
 Get FinancialEffect.
 
@@ -3516,7 +3516,7 @@ Request: **none**. Result: **FinancialEffect**, HTTP **200**. Permission: `finan
 
 ### financial_effects.create
 
-`POST /v0.1/tenants/{tenant_id}/financial-effects`
+`POST /v0.1/organizations/{org_id}/financial-effects`
 
 Create FinancialEffect. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -3524,7 +3524,7 @@ Request: **FinancialEffectCreate**. Result: **FinancialEffect**, HTTP **201**. P
 
 ### financial_effect_revisions.list
 
-`GET /v0.1/tenants/{tenant_id}/financial-effect-revisions`
+`GET /v0.1/organizations/{org_id}/financial-effect-revisions`
 
 List financial-effect-revisions.
 
@@ -3532,7 +3532,7 @@ Request: **none**. Result: **FinancialEffectRevisionPage**, HTTP **200**. Permis
 
 ### financial_effect_revisions.get
 
-`GET /v0.1/tenants/{tenant_id}/financial-effect-revisions/{financial_effect_revision_id}`
+`GET /v0.1/organizations/{org_id}/financial-effect-revisions/{financial_effect_revision_id}`
 
 Get FinancialEffectRevision.
 
@@ -3540,7 +3540,7 @@ Request: **none**. Result: **FinancialEffectRevision**, HTTP **200**. Permission
 
 ### financial_effect_revisions.create
 
-`POST /v0.1/tenants/{tenant_id}/financial-effect-revisions`
+`POST /v0.1/organizations/{org_id}/financial-effect-revisions`
 
 Create FinancialEffectRevision. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
@@ -3548,35 +3548,35 @@ Request: **FinancialEffectRevisionCreate**. Result: **FinancialEffectRevision**,
 
 ### financial_effect.observation.record
 
-`POST /v0.1/tenants/{tenant_id}/financial-effect-observations`
+`POST /v0.1/organizations/{org_id}/financial-effect-observations`
 
 Different receipt IDs can prove one effect revision. Verify source-native identity and reject conflicting totals before any posting; do not infer a new financial effect from each callback. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
 Request: **FinancialEffectObservation**. Result: **Reference**, HTTP **201**. Permission: `financial_effect.observation.record`. Expected version: **not a changing existing aggregate**. Local scan: **required**. Caller: **trusted service only**.
 
-### tenant.budget.reserve
+### organization.budget.reserve
 
-`POST /v0.1/tenants/{tenant_id}/budget-reservations`
-
-Tenant-admin action context only. Reuse the same account, hold, effect and ledger authority as workspace work; never create a second tenant ledger. Resolve every applicable account and preserve unknown exposure. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release.
-
-Request: **ReservationRequest**. Result: **Reservation**, HTTP **201**. Permission: `tenant.budget.reserve`. Expected version: **not a changing existing aggregate**. Local scan: **required**. Caller: **trusted service only**.
-
-### tenant.budget.settle
-
-`POST /v0.1/tenants/{tenant_id}/budget-settlements`
+`POST /v0.1/organizations/{org_id}/budget-reservations`
 
 Tenant-admin action context only. Reuse the same account, hold, effect and ledger authority as workspace work; never create a second tenant ledger. Resolve every applicable account and preserve unknown exposure. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release.
 
-Request: **SettlementRequest**. Result: **Reference**, HTTP **201**. Permission: `tenant.budget.settle`. Expected version: **not a changing existing aggregate**. Local scan: **required**. Caller: **trusted service only**.
+Request: **ReservationRequest**. Result: **Reservation**, HTTP **201**. Permission: `organization.budget.reserve`. Expected version: **not a changing existing aggregate**. Local scan: **required**. Caller: **trusted service only**.
 
-### tenant.budget.release
+### organization.budget.settle
 
-`POST /v0.1/tenants/{tenant_id}/budget-reservations/{hold_id}/release`
+`POST /v0.1/organizations/{org_id}/budget-settlements`
 
 Tenant-admin action context only. Reuse the same account, hold, effect and ledger authority as workspace work; never create a second tenant ledger. Resolve every applicable account and preserve unknown exposure. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release.
 
-Request: **ReasonRequest**. Result: **Reservation**, HTTP **200**. Permission: `tenant.budget.release`. Expected version: **required**. Local scan: **required**. Caller: **trusted service only**.
+Request: **SettlementRequest**. Result: **Reference**, HTTP **201**. Permission: `organization.budget.settle`. Expected version: **not a changing existing aggregate**. Local scan: **required**. Caller: **trusted service only**.
+
+### organization.budget.release
+
+`POST /v0.1/organizations/{org_id}/budget-reservations/{hold_id}/release`
+
+Tenant-admin action context only. Reuse the same account, hold, effect and ledger authority as workspace work; never create a second tenant ledger. Resolve every applicable account and preserve unknown exposure. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release.
+
+Request: **ReasonRequest**. Result: **Reservation**, HTTP **200**. Permission: `organization.budget.release`. Expected version: **required**. Local scan: **required**. Caller: **trusted service only**.
 
 ### Payload models
 
@@ -3650,7 +3650,7 @@ IDs are UUID strings, timestamps are RFC 3339 date-times, and money/large counte
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `kind` | string | yes |
 | `state` | `accepted`, `queued`, `running`, `pending_approval`, `completed`, `failed`, `cancelled`, `unknown` | yes |
@@ -3698,7 +3698,7 @@ Signed by the enrolled protected gateway, not the client. Digest binds canonical
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `principal_id` | uuid | yes |
 | `enrollment_id` | uuid or null | yes |
@@ -3743,7 +3743,7 @@ Signed by the enrolled protected gateway, not the client. Digest binds canonical
 | Field | Type | Required |
 |---|---|---|
 | `principal_id` | uuid | yes |
-| `tenant_ids` | array of uuid | yes |
+| `org_ids` | array of uuid | yes |
 | `principal_kind` | `human`, `agent`, `service`, `plugin` | yes |
 | `session_expires_at` | date-time | yes |
 
@@ -3757,7 +3757,7 @@ Signed by the enrolled protected gateway, not the client. Digest binds canonical
 | `data_plane_binding_id` | uuid or null | yes |
 | `revision` | string | yes |
 
-### TenantPatch
+### OrganizationPatch
 
 | Field | Type | Required |
 |---|---|---|
@@ -3781,7 +3781,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -3823,7 +3823,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -3863,7 +3863,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -3896,7 +3896,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -3934,7 +3934,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -3965,7 +3965,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -3995,7 +3995,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -4035,7 +4035,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -4070,7 +4070,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -4104,7 +4104,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -4141,7 +4141,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -4231,7 +4231,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -4274,7 +4274,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -4314,7 +4314,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -4369,7 +4369,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -4411,7 +4411,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -4489,7 +4489,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid | yes |
 | `repository_id` | uuid | yes |
 | `checkout_binding_id` | uuid | yes |
@@ -4529,7 +4529,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -4566,7 +4566,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -4598,7 +4598,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -4641,7 +4641,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -4678,7 +4678,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -4710,7 +4710,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -4749,7 +4749,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -4784,7 +4784,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -4825,7 +4825,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -4861,7 +4861,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -4897,7 +4897,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -4959,7 +4959,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -4992,7 +4992,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -5027,7 +5027,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -5062,7 +5062,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -5097,7 +5097,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -5131,7 +5131,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -5169,7 +5169,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -5203,7 +5203,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -5257,7 +5257,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -5289,7 +5289,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -5328,7 +5328,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -5370,7 +5370,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -5450,7 +5450,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -5487,7 +5487,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -5527,7 +5527,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -5592,7 +5592,7 @@ Exact frozen targets; each must independently pass IAM, placement, local scan an
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -5604,7 +5604,7 @@ Exact frozen targets; each must independently pass IAM, placement, local scan an
 | `target_id` | uuid | yes |
 | `work_order_revision_id` | uuid | yes |
 | `parent_run_id` | uuid or null | yes |
-| `state` | `queued`, `running`, `pausing`, `paused`, `stopping`, `stopped`, `blocked`, `completed`, `uncertain` | yes |
+| `state` | `queued`, `waiting_for_device`, `waiting_for_capacity`, `starting`, `running`, `pause_requested`, `pausing`, `paused`, `resuming`, `stopping`, `stopped`, `blocked`, `expired`, `cancelled`, `completed`, `outcome_unknown` | yes |
 | `current_epoch` | string | yes |
 | `owner_epoch` | string | yes |
 | `last_event_sequence` | string | yes |
@@ -5718,7 +5718,7 @@ Caller supplies a proposal, never a decision or authority. Admin actions can pre
 
 | Field | Type | Required |
 |---|---|---|
-| `context_kind` | `run`, `workspace_admin`, `tenant_admin` | yes |
+| `context_kind` | `run`, `workspace_admin`, `org_admin` | yes |
 | `run_id` | uuid or null | yes |
 | `capability` | string | yes |
 | `target_object_ids` | array of uuid | yes |
@@ -5733,12 +5733,12 @@ Caller supplies a proposal, never a decision or authority. Admin actions can pre
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
 | `created_at` | date-time | yes |
-| `context_kind` | `run`, `workspace_admin`, `tenant_admin` | yes |
+| `context_kind` | `run`, `workspace_admin`, `org_admin` | yes |
 | `run_id` | uuid or null | yes |
 | `principal_id` | uuid | yes |
 | `capability` | string | yes |
@@ -5804,11 +5804,13 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 
 ### OutcomeReceipt
 
+The acting identity of a receipt is never a body field. `source_principal_id` and `connector_deployment_id` are derived by trusted ingress from the mutual-TLS workload identity of the peer that delivers the receipt, and the ingress checks that the named deployment's service principal equals that peer. A body that supplies either value is rejected with 422. Receipts settle holds and financial effects, so a caller-asserted identity would let one connector settle another's actions.
+
 | Field | Type | Required |
 |---|---|---|
 | `attempt_id` | uuid | yes |
-| `source_principal_id` | uuid | yes |
-| `connector_deployment_id` | uuid or null | yes |
+| `source_principal_id` | uuid, server-derived | read only |
+| `connector_deployment_id` | uuid or null, server-derived | read only |
 | `model_exchange_id` | uuid or null | yes |
 | `external_request_id` | string | yes |
 | `external_receipt_id` | string or null | yes |
@@ -5857,7 +5859,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -5901,7 +5903,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -5961,7 +5963,7 @@ Exact shared limit account. A percentage cap pins an authoritative denominator f
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -6075,7 +6077,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -6104,7 +6106,9 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | `action_id` | uuid | yes |
 | `attempt_id` | uuid | yes |
 | `audience` | string | yes |
-| `expires_at` | date-time | yes |
+| `requested_seconds` | integer | no |
+
+The server issues `expires_at`; the caller may only ask for a shorter life. The lease is clamped to the least of the request, the credential reference's `max_lease_seconds`, and the reference's own expiry. A caller-chosen expiry was a defect: it let the caller mint a long-lived credential handle. Default ceilings, published with the API: scan receipts 15 minutes, MCP grants 15 minutes, action authorizations 5 minutes, credential leases 15 minutes, gateway certificates 24 hours.
 
 ### CredentialLease
 
@@ -6132,7 +6136,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -6165,7 +6169,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -6197,7 +6201,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -6235,7 +6239,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -6274,7 +6278,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -6341,7 +6345,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -6375,7 +6379,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -6409,7 +6413,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -6443,7 +6447,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -6474,7 +6478,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | `destination_model_route_id` | uuid or null | yes |
 | `max_bytes` | string | yes |
 | `max_results` | integer | yes |
-| `context_kind` | `run`, `workspace_admin`, `tenant_admin` | yes |
+| `context_kind` | `run`, `workspace_admin`, `org_admin` | yes |
 
 ### ContextResult
 
@@ -6534,7 +6538,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `run_id` | uuid or null | yes |
 | `type` | string | yes |
@@ -6640,7 +6644,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -6671,7 +6675,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -6868,7 +6872,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -6901,7 +6905,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -7030,7 +7034,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -7179,7 +7183,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | `next_cursor` | string or null | yes |
 | `snapshot_id` | uuid | yes |
 
-### TenantProvisionRequest
+### OrganizationProvisionRequest
 
 | Field | Type | Required |
 |---|---|---|
@@ -7188,21 +7192,21 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | `owner_acceptance_receipt_id` | uuid | yes |
 | `bootstrap_approval_receipt_id` | uuid | yes |
 
-### TenantProvisionOperation
+### OrganizationProvisionOperation
 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
 | `revision` | string | yes |
 | `state` | `accepted`, `checking`, `awaiting_attestation`, `awaiting_owner`, `active`, `failed`, `cancelled` | yes |
-| `tenant_id` | uuid or null | yes |
+| `org_id` | uuid or null | yes |
 | `owner_tenant_principal_id` | uuid or null | yes |
 | `data_plane_binding_id` | uuid or null | yes |
 | `failure_code` | `OWNER_PROOF_INVALID`, `PROFILE_UNAVAILABLE`, `ATTESTATION_REQUIRED`, `APPROVAL_REQUIRED`, `PROVISION_FAILED` or null | yes |
 | `created_at` | date-time | yes |
 | `updated_at` | date-time | yes |
 
-### TenantActivationRequest
+### OrganizationActivationRequest
 
 | Field | Type | Required |
 |---|---|---|
@@ -7226,7 +7230,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -7259,7 +7263,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -7294,7 +7298,7 @@ Typed proposed record input. IDs and revisions come from the server. Referenced 
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -7333,7 +7337,7 @@ Trusted source-native effect identity is unique per source installation, kind an
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |
@@ -7371,7 +7375,7 @@ Immutable trusted cumulative total for one source effect. A correction supersede
 | Field | Type | Required |
 |---|---|---|
 | `id` | uuid | yes |
-| `tenant_id` | uuid | yes |
+| `org_id` | uuid | yes |
 | `workspace_id` | uuid or null | yes |
 | `object_id` | uuid | yes |
 | `revision` | string | yes |

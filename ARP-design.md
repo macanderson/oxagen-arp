@@ -26,7 +26,9 @@ Read the surface requirements in [Desktop app spec](ARP-Desktop-app-spec.md), [W
 
 ## 2. The workspace is mission control
 
-The Oxagen web app is the main place to run an agent team. An **operator** is a person who gives agents work and follows it. A **team supervisor** is a person who leads the operators. The **Oxagen Supervisor** is a different role. It is the protected program that guards a run.
+The Oxagen web app is the main place to run an agent team. An **operator** is a person who gives agents work and follows it. A **team supervisor** is a person who leads the operators. The **desktop guard** is the protected program that guards a run on a device. Earlier drafts called it the Oxagen Supervisor, the local guard, the protected service, or the desktop gateway. Those names mean the desktop guard. The word supervisor now refers only to the person. The [brand glossary](ARP-Brand-spec.md#names-and-words) is the one list of names every surface uses.
+
+An **organization** is the customer account. Identifiers call it `org_id`. Earlier text says tenant, company, or customer; all three mean organization.
 
 An operator can send work to any supported harness registered in the workspace that they may use. They can pick one target, a saved group, or all matching targets. Work may run on their laptop, another approved device, or a private worker. Each target still needs its own access check.
 
@@ -176,9 +178,23 @@ Each device has a time-limited presence record. The app shows online, stale, or 
 
 This walkthrough specifies the setup flow to build. The commands are proposed, not a released CLI. Names such as `support` and `local-codex` are example aliases. Oxagen resolves them to stable IDs after checking the signed-in tenant. The sample files contain invented IDs, not live access.
 
+#### The quick start must reach a first run in one command
+
+The six-step walkthrough below is the reference path. It has about twenty decisions across the web app and the CLI before the first model call. A person trying Oxagen for the first time must not need all of them. The product must also ship a one-command path:
+
+```bash
+oxagen quickstart
+```
+
+Quick start runs the same gates as the reference path. It asks nothing it can decide safely. It signs the person in, enrolls the device, and creates a personal workspace when the person has none. It makes that person the workspace owner and operator. It detects an installed supported harness in the current checkout, registers it, links the checkout, and writes the `.oxagen` files. It applies the tenant's default data-protection template, a read-only work order, and a small spend cap of a few dollars. It then submits one read-only task and prints the run start receipt.
+
+Quick start may not weaken any control. It cannot skip the local scanner, create a write-capable work order, raise a cap above the tenant default, or register a harness the adapter does not support. When a required piece is missing, it stops at that step, names the step, and prints the exact command to continue. A solo developer with no admin reaches a governed first run alone. A person in a managed tenant gets the same flow inside the limits their admin published. The full walkthrough stays as the reference for teams that want each step explicit.
+
 #### 1. Create the workspace in the web app
 
-Sign in, select the organization, and create a workspace called **Support**. The owner needs the right to create workspaces and use the chosen data plane. Being an owner of a different organization grants nothing here.
+Sign in, select the organization, and create a workspace called **Support**. Whoever creates an organization is its first owner. That person holds the owner, operator, policy admin, and approver roles in every workspace they create until they delegate them, so a solo developer needs nobody else to finish this walkthrough. Sign-in supports email with a second factor; single sign-on is optional, not required. The data plane defaults to Oxagen-hosted and can be changed later. Being an owner of a different organization grants nothing here.
+
+Add a model route under **Policies → Model routes** before anything else. Paste a provider key or choose an Oxagen-managed model. The model proxy stores the key; the device never sees it. **Send work** stays disabled until one route exists and says so: “No model route yet. Add a provider key to send work.”
 
 Connect the example repo `acme/support-app`. Choose **main** as this workspace's default branch. This is an explicit setting, not an assumption that every repo uses main. Reports compare the work branch with the exact commit on this configured target. Save the repository and settings revision.
 
@@ -326,6 +342,18 @@ Split queues and workers by company and workspace. Set fair limits on queued wor
 
 The live dashboard shows saved records the viewer has rights to see. Show when it was last updated and whether data is missing. A stale chart cannot grant access, confirm a pause, or let a run exceed its budget. The trusted gates and budget records make those choices.
 
+### The device pulls work through three named operations
+
+The desktop guard's outbound link is the load-bearing connection of the product, so its contract is explicit. Three trusted worker operations drive the `queue_deliveries` lease state in the schema:
+
+| Operation | What it does |
+|---|---|
+| `work.claim` | The guard asks for deliveries addressed to its targets. Each claim returns a lease with an owner epoch and an expiry. A lease that expires unrenewed returns the delivery to the queue. |
+| `work.extend` | The guard renews a lease it still holds, naming the lease epoch. A renewal with a stale epoch is refused. |
+| `work.start_ack` | The guard reports the recorded run start for one delivery. The request is marked started only after this record exists. |
+
+Each target has its own event stream, so a device receives only events for runs it owns, not every event in the workspace. A guard that reconnects after a gap does not replay the stream or poll each run. It calls one `target.control_snapshot` operation that returns, for every run the target owns, the current authority epoch, any pending pause, stop, or revoke command, and the steering inbox high-water mark. The guard applies that snapshot before it admits any further step.
+
 ### Steer runs that are already active
 
 When an owner clicks **Steer**, Oxagen saves the message and a fixed list of matching runs. That list includes their delegated work. It also records who sent the message, its expiry, and whether it should interrupt.
@@ -343,6 +371,8 @@ After Oxagen orders the steering message into a run's control inbox, the current
 Each next-step gate must check the authoritative inbox. Sending a push message is not enough. Oxagen records which came first: the new steering or permission to start the next step. If steering came first, the next step must use it. If the step was approved first, it may finish, then steering applies.
 
 In strict mode, work waits when the gate cannot sync with the inbox. A mode that allows old cached instructions while offline must state its weaker timing promise.
+
+The gate does not make a control-plane round trip before every step. Oxagen pushes inbox changes over the target's control connection with a monotonic high-water mark and a short lease. While the lease is valid, the gate admits the next step locally against the mark it holds. When the lease lapses or the connection drops, the gate waits for a fresh mark. The bounded staleness is the lease length, and the design states it as a number in the capability profile so a fifty-tool-call turn does not pay fifty round trips.
 
 Tool calls proposed under the old context wait too. They must not run ahead of the model seeing the new direction. Oxagen records whether they were dropped or chosen again with fresh permission. If the current step never ends, steering stays queued until an owner interrupts it.
 
@@ -390,6 +420,10 @@ The pause record lists its scope, workers, and access versions. It records the c
 Delivery to the harness, model context, and active UI streams must check the access version too. A response not released for delivery before the old gate closed stays evidence-only. This holds even if its acceptance was saved earlier. It cannot drain into the resumed run on its own. If delivery had started, the pause record must show what was actually applied.
 
 The harness may have hidden buffered state. If that state is uncertain, isolate it or rebuild from a known state. Do that before calling the pause complete.
+
+### A stuck pause has a defined exit
+
+A pause that cannot be confirmed must not hold a concurrency slot forever. One hung connector would otherwise occupy an operator's or workspace's capacity until someone edits the database. An operator with the right access may **abandon** the run. Abandon records every unresolved effect as unknown, keeps every hold, revokes the run's credentials and treats that revocation as proof of isolation, moves the run to **outcome unknown**, and releases the counted slot. The run cannot resume. Its evidence stays. This is the only transition into outcome unknown from pausing, and the state machine in this chapter includes it.
 
 ![A pause request holds new actions and late results. All workers must acknowledge the hold or be proved isolated. Local files and active context must stop changing. Unknown outside writes keep the run pausing. A confirmed saved boundary allows the paused state. Late replies go to evidence only and can enter a future run only through a separate checked adoption.](diagrams/pause.svg)
 
@@ -635,7 +669,7 @@ An access request names the task, system, resource, time needed, reason, and run
 
 Older systems may need fixed keys. Put them only in a dedicated connector and rotate them. If agent-owned code must get a secret, show the weaker protection. Limit that secret's scope and life. Code can read its own environment variables.
 
-With MCP, check each link's access on its own. Check the client to Oxagen first. Then check Oxagen to the provider. A token for one service must not simply pass to another. [MCP authorization](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization)
+With MCP, check each link's access on its own. Check the client to Oxagen first. Then check Oxagen to the provider. A token for one service must not simply pass to another. [MCP authorization](https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization)
 
 ## 11. Protect every record and its history
 
@@ -712,6 +746,8 @@ Use IDs and receipts from the trusted connector. An agent's claim, or a match on
 This would let a user ask why a refund happened, which agent caused it, and which code or tests support its rule.
 
 Build the graph records, access checks, version links, sync rules, and stable IDs now. Business connectors, real business-record ingestion, and screens for these future questions come later. This document specifies that foundation; it does not claim these features exist today.
+
+The graph is required in the architecture, not on the critical path of a first run. A new workspace has an empty graph. The first-run path resolves context from the explicit source references in the `.oxagen` files and the Context Gateway's direct source fetch. Graph ingestion fills in behind that first run. No gate may wait on graph freshness to admit a model call, and an empty or stale graph must never turn into a denial by itself.
 
 ![Version-control, CRM, and other source systems remain authoritative for their own records. Oxagen keeps stable source and record IDs, versions, permission references, sanitized data, and provenance links in its shared context graph. Foundational IDs and provenance synchronization belong to the initial design. The Context Gateway is the shared route for context access. A common MCP catalog discovers allowed tools and context routes but grants no extra rights. Identity, per-record rights, policy, and local data scanning still apply. Code, tools, context, tests, and reusable policy versions can be linked through the graph. The future business-record section is explicitly not an implemented connector or ingestion feature in this phase. It shows a possible provenance chain from Run and ToolAction to PolicyVersion and Decision, to an optional approval if required, to ConnectorReceipt, to the external Refund record, then its Order and Customer records. Receipts point to exact external source versions when available. Unknown source versions remain marked unknown. An approval is optional only when the policy does not require it; missing required proof never counts as success. Source permissions and freshness remain attached to all links. The graph stores authorized links and sanitized fields, not a copy that overrides the source system or bypasses record access.](diagrams/knowledge_graph.svg)
 
@@ -816,7 +852,7 @@ Use trusted IDs to link each record to its company, workspace, repo, device, per
 
 Do not store keys or sign-in headers in run history. Mark gaps, missing data, hidden text, and cut-off text. If content was removed, say the record is less complete. A provider's hidden prompts and private reasoning are outside the visible capture promise. Local source files stay in place. Cleaned remote snapshots cannot promise an exact copy of removed local data.
 
-In strict mode, save a request before sending it. Save results before any work that depends on them. Stream chunks may be saved in groups only after the local scan proves a safe boundary. Otherwise buffer the whole reply before release. State the extra delay. If safe storage fails, stop new work. A faster mode that allows gaps must show its weaker capture level.
+In strict mode, save a request before sending it. Save results before any work that depends on them. Stream chunks may be saved in groups only after the local scan proves a safe boundary. Otherwise buffer the whole reply before release. State the extra delay. Chunks append to one evidence object per attempt, never one object per chunk. A group is at least 16 KB or two seconds of stream, whichever comes first, so a long reply costs tens of durable writes rather than thousands. If safe storage fails, stop new work. A faster mode that allows gaps must show its weaker capture level.
 
 Each adapter must prove coverage of model calls, tools, children, and background work. Samples alone cannot prove full capture.
 
@@ -909,6 +945,8 @@ Trusted records link each bill to the operator and any parent that gave access. 
 
 A central Budget Authority holds money before calls and settles bills after them. OPA may check spending rules. The budget ledger keeps the balance. It must put requests from many devices in one safe order.
 
+One organization-wide budget is one ledger row. Every model call, child agent, title call, summary, and embedding in the organization would otherwise lock that row twice, once to hold and once to settle, and the row would become the ceiling on throughput. To keep the invariant without the bottleneck, a model proxy may **lease** a bounded block from a parent period and sub-allocate from that block locally. The lease is itself a hold on the parent, so the parent's arithmetic never changes. The proxy settles the block back when it drains or expires. Unused lease is released only after the proxy proves it is closed. The device escrow in this chapter is the same mechanism at the device level.
+
 Before every paid call, hold its defensible maximum cost in every budget that applies. Either all those holds succeed or none do. Use exact money units and round maximum holds up.
 
 ```text
@@ -924,6 +962,8 @@ A large agent budget cannot override a smaller operator budget. Each hold names 
 ### A hard cap needs a true maximum cost
 
 The hold must cover every allowed charge. Count input, output, and paid hidden tokens. Assume the worst allowed cache cost. Add server tools, fixed fees, and all enabled extras. Put supported usage limits in the actual provider request.
+
+The gateway sets the provider's output limit itself, so the maximum is a number it controls, not a guess. When the remaining budget cannot cover the full default limit, the gateway may lower that output limit to what the budget can cover and record the lower limit in the hold. A nearly spent budget then degrades to shorter replies before it blocks. The gateway must not lower the limit below the floor the work order names, and it must never raise a cap to fit a call.
 
 An estimate plus a margin is not a hard ceiling. Strict mode must block routes with no defensible upper cost. Or Oxagen may quote a binding maximum customer charge and pay any supplier overage itself. That caps the customer's Oxagen bill. It does not cap the supplier's bill. [Claude token counts](https://platform.claude.com/docs/en/build-with-claude/token-counting), [Claude tool pricing](https://platform.claude.com/docs/en/about-claude/pricing), [OpenAI cost controls](https://developers.openai.com/api/docs/guides/reasoning)
 
@@ -1217,6 +1257,8 @@ Witness verification with an oracle is one possible future use of this interface
 
 Link each record to a content fingerprint and sign saved points. This helps show that records have not changed. Give customers proof that an event is in the log and that new history extends the old log. Send log roots to a customer-owned or outside log observer. This helps detect two conflicting versions of history. A blockchain is not required. [Merkle log foundations](https://www.rfc-editor.org/rfc/rfc9162.html)
 
+That promise needs a mechanism, and the first draft had none. The schema now carries it: every run event is a leaf with a leaf hash and index in `audit_log_leaves`, and `audit_log_checkpoints` holds a signed tree size and root hash, with the observer's acknowledgement when one exists. Two operations serve the proofs: `audit.inclusion_proof` shows that one event is under a checkpoint, and `audit.consistency_proof` shows that a newer checkpoint extends an older one. Without those tables and operations, the claim is only "signed records", and the documentation must say so.
+
 Keep three claims separate: the record is unchanged, a trusted part saw it, and all relevant events were saved. A signature helps the first claim. Trusted gates and coverage tests support the other two.
 
 Encrypt stored data and use separate customer keys. Protect the keys with a managed key service. Cover databases, files, backups, queues, local buffers, and snapshots. Protect data while it moves too. Bind each encrypted item to its company, object, and version. Do not put secrets in the labels sent to the key service. Some services log those labels as plain text. [AWS KMS context](https://docs.aws.amazon.com/kms/latest/developerguide/encrypt_context.html)
@@ -1248,6 +1290,10 @@ Keep large model streams outside the workflow engine's own history. Link to save
 RLS enforces the scope from the same IAM system. It is not a second place for customers to manage rights. Roles, record grants, and policy still govern each action. A tenant check alone does not grant access to every record in that tenant.
 
 Trusted services set the scope for each database task. Normal app services must use accounts that cannot bypass RLS. Keep stronger maintenance accounts separate and audit their use. Background tasks, such as CI updates, need scoped service identities too. [PostgreSQL row security](https://www.postgresql.org/docs/current/ddl-rowsecurity.html)
+
+Scope has two verified shapes. A run or workspace task names one workspace and sees only that workspace. A tenant-level task, such as the workspace picker, a cross-workspace spend view, or a tenant policy template, names the tenant and no workspace. The service sets that tenant shape only after checking a tenant-level grant. A session with neither shape sees no rows. Set the scope per transaction, never per connection, and pool connections in transaction mode. A scope that survives on a pooled connection is a cross-organization leak. Background relays, such as the outbox publisher, run once per organization under the same scope. There is no global poller that reads every organization's rows.
+
+State the threat model honestly. Row rules keyed on a transaction setting stop application code that forgets a filter. They do not stop SQL injection run with the runtime role, because an injected statement can set the scope itself. The defense against injection is parameterized statements only, no SQL built from input, and a lint gate that rejects dynamic SQL. The design does not claim that row rules defend against injection.
 
 RLS only protects database rows. Files, search results, queues, caches, downloads, and exports need the same IAM checks. A private row must not point to a public file. Test both human and agent requests that try to cross company or workspace lines.
 

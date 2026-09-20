@@ -1,0 +1,19 @@
+schema = "context-record/v0.1"
+set_id = "macanderson.oxagen-arp"
+
+[[record]]
+lineage_id = "ctx.arp.leased-inbox-no-round-trip"
+record_id = "rec_arp_leased_inbox_no_round_trip_0166de51bc23"
+record_hash = "sha256:95f6fadf401b199f3a0f1627e5b42ab6a923056b6a7a3b178ec0a3bb83f61361"
+kind = "rule"
+statement = "The next-step gate admits locally against a pushed steering high-water mark while its short lease is valid and waits for a fresh mark when the lease lapses; it does not make a control-plane round trip before every step."
+origin = "user"
+sharing_scope = "repository"
+status = "active"
+
+[record.provenance]
+source_kind = "document"
+source_uri = "ARP-design.md"
+
+[record.steering]
+force = "must"

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {assert,canonical,digest,hashFile,within,validatePlan,Journal,processJSON,certificationSnapshot,invokeRollbackStage,requestRetry,reconcileNoEffect,adoptLocalReceipt,installationDigest,executionProfileDigest} from './lib/core.mjs';
@@ -23,9 +24,13 @@ try{
  for(const key of ['phaseZeroCertificate','certifierPublicKey'])assert(within(root,path.resolve(config[key])),'Certification files must stay under protected control root');
  assert(config.hook?.command&&path.isAbsolute(config.hook.command),'Configure absolute trusted hook executable');assert(within(root,fs.realpathSync(config.hook.command)),'Trusted hook executable must be installed in control root');
  const lock=path.join(root,'controller.lock');
- if(fs.existsSync(lock)){const owner=Number(fs.readFileSync(lock,'utf8'));let live=true;try{process.kill(owner,0)}catch(e){if(e.code==='ESRCH')live=false}assert(command==='reconcile'&&!live,'Controller is locked; reconcile only after prior process is confirmed dead');fs.unlinkSync(lock)}
- const fd=fs.openSync(lock,'wx',0o600);fs.writeSync(fd,String(process.pid));fs.closeSync(fd);
- const hook=request=>processJSON(config.hook.command,config.hook.args||[],request,{timeoutSeconds:Math.min(request.timeoutSeconds||60,config.hook.maxSeconds||14400),cancelFile:['reconcile','rollback'].includes(command)?null:path.join(root,'CANCEL'),env:config.hook.env||{},cwd:root});
+ if(fs.existsSync(lock)){let owner=null;try{owner=JSON.parse(fs.readFileSync(lock,'utf8'))}catch{owner=null}
+  // An empty or unparsable lock is a crash between create and write, not a live owner. A lock from another
+  // host cannot be probed here, so it is treated as live until an operator removes it.
+  let live;if(!owner||!Number.isSafeInteger(owner.pid)||owner.pid<=0)live=false;else if(owner.hostname!==os.hostname())live=true;else{live=true;try{process.kill(owner.pid,0)}catch(e){if(e.code==='ESRCH')live=false}}
+  assert(command==='reconcile'&&!live,'Controller is locked; reconcile only after prior process is confirmed dead');fs.unlinkSync(lock)}
+ const fd=fs.openSync(lock,'wx',0o600);fs.writeSync(fd,JSON.stringify({pid:process.pid,hostname:os.hostname(),startedAt:new Date().toISOString()}));fs.fsyncSync(fd);fs.closeSync(fd);
+ const hook=request=>processJSON(config.hook.command,config.hook.args||[],request,{timeoutSeconds:Math.min(request.timeoutSeconds||60,config.hook.maxSeconds||14400),killGraceMs:config.hook.killGraceMs||30000,cancelFile:['reconcile','rollback'].includes(command)?null:path.join(root,'CANCEL'),env:config.hook.env||{},cwd:root});
  try{
   // Mutating commands must read durable state only after taking the exclusive lock.
   journal=new Journal(path.join(root,'state'),digest(plan));

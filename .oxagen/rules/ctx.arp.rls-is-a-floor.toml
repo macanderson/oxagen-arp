@@ -1,0 +1,19 @@
+schema = "context-record/v0.1"
+set_id = "macanderson.oxagen-arp"
+
+[[record]]
+lineage_id = "ctx.arp.rls-is-a-floor"
+record_id = "rec_arp_rls_is_a_floor_24878e1335f4"
+record_hash = "sha256:9b6c4a5f9a0edb39e6ff09a1cc92d4c839591d6ce2f1f31bef0e214027e45d43"
+kind = "rule"
+statement = "Row-level security is a tenant floor, not authorization; every read and write still passes the per-record IAM check, and files, search, graph, queues, caches, and exports need the same check because RLS does not cover them."
+origin = "user"
+sharing_scope = "repository"
+status = "active"
+
+[record.provenance]
+source_kind = "document"
+source_uri = "ARP-design.md"
+
+[record.steering]
+force = "must"

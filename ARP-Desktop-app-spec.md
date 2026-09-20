@@ -16,12 +16,15 @@ A remote worker needs the same protected service on the host where its raw data 
 
 ## Enroll and connect a harness
 
-1. Sign in through the customer's identity system.
+1. Sign in. Email with a second factor is supported; the organization's identity provider is optional.
 2. Enroll the device and choose an allowed workspace.
-3. Bind the local repo to that workspace's approved repo record.
-4. Select a supported harness, agent identity, and mode.
-5. Check the platform, adapter, current rules, and data route.
-6. Open the gates only after those checks pass.
+3. Register a supported harness. It stays unbound and cannot launch.
+4. Bind the local repo to that workspace's approved repo record.
+5. Select the agent identity and mode.
+6. Check the platform, adapter, current rules, and data route.
+7. Open the gates only after those checks pass.
+
+This order is the same in the design walkthrough, the CLI, and the sample files: enroll the device, register the harness, link the checkout, then choose the agent and mode.
 
 Use the same IAM rights as the web app. A repo path or edited remote URL cannot pick a weaker workspace. Show the device, operator, agent, workspace, and control level together. An old session may attach only if the adapter can prove control; otherwise start a new guarded session.
 
@@ -56,10 +59,26 @@ Raw copies stay in short-lived local memory by default. Source files stay where 
 | Screen | Required behavior |
 | --- | --- |
 | Workspaces | Show repo links, effective rules, scan coverage, and storage destination. |
-| Runs | Show queued, active, pausing, confirmed paused, blocked, and uncertain states. |
+| Runs | Show the same run states as the web app and CLI: queued, running, pause requested, pausing, paused, resuming, blocked, and outcome unknown. Use no local synonyms such as "active" or "confirmed paused". |
 | Data protection | Preview cleaned content locally; show safe reasons without quoting secrets. |
 | Access | Request scoped rights without placing keys in chat. |
 | Health | Show stale policy, failed scans, lost links, pending records, and updates. |
+
+## Devices over their lifetime
+
+| Situation | Required behavior |
+| --- | --- |
+| Second computer | Enroll it as its own device. Register the harness and link the checkout again; the ignored `state/` folder never moves between machines. The web app lists both devices. |
+| Reinstall or lost laptop | The old device row stays visible under **Devices** as stale, then offline. An owner revokes it from the web app or with `oxagen device revoke`. Revocation advances the authority epoch, so any run it still held stops at its next gate. Enrolling again creates a new device; nothing is copied from the old one. |
+| Session expiry mid-run | The guard keeps its device credential and finishes the admitted step. The next step waits with the copy “Waiting for connection. The next step needs Oxagen to confirm your rules.” Signing in again resumes it. No work is lost. |
+| Lost network | Same as session expiry. Strict mode waits; it does not run on cached rules. The run shows **waiting for a device** in the web app. |
+| Leaving a workspace | Grants for that workspace are revoked, cached context and steering for it are deleted, and runs bound to it stop at their next gate. |
+
+`oxagen device list`, `oxagen device rename`, and `oxagen device revoke` manage these rows from the CLI with the same rights as the web app.
+
+## Authenticate the local caller
+
+A local address alone proves nothing, and the CLI, the browser, and the guarded agent run as the same OS user. The guard authenticates every local peer with the operating system's peer credentials: `SO_PEERCRED` on Linux, `LOCAL_PEERCRED` on macOS, and the named-pipe client process id on Windows. It then checks the peer binary's code signature or entitlement and refuses any peer that runs inside the agent's sandbox. The browser pairing endpoint validates the `Host` and `Origin` headers against an allowlist to defeat DNS rebinding and uses a per-pairing token that lives outside the agent's file scope. A shared secret in a file or an environment variable the agent can read is not an accepted mechanism.
 
 ## Fail closed and recover
 

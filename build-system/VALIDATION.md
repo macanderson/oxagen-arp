@@ -4,7 +4,7 @@ Checked on 20 September 2026 using Node v24.21.0, local Git, real local Unix soc
 
 ## Results
 
-The complete `node --test test/*.test.mjs` suite passes **79 tests, 0 failures** in the final independent run. The 22-batch plan passes dry-run validation. Bootstrap was also checked in a temporary directory: it installs the local adapter, leaves money disabled, sets correct paths and installation hashes, and starts no repository or agent work.
+The complete `node --test test/*.test.mjs` suite passes **81 tests, 0 failures** after the 2026-09-20 review (79 before it, plus a split invocation test and a ledger-liability test). The 22-batch plan passes dry-run validation. `bootstrap.mjs`, the `local-host.mjs` entry point, the mTLS client call, and the runner commands other than `retry` have no automated test; they were exercised by hand only. Treat them as unverified until a smoke test lands.
 
 | Area | Tests | Evidence |
 |---|---:|---|

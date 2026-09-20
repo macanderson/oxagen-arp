@@ -42,7 +42,8 @@ Place this configuration under `config.local.github` (`config.github` is also ac
   "policyTokenFile": "/srv/oxagen-control/github-policy-reader-token",
   "apiVersion": "2022-11-28",
   "commandTimeoutSeconds": 30,
-  "ciWaitSeconds": 30,
+  "gitTimeoutSeconds": 600,
+  "ciWaitSeconds": 1800,
   "requiredChecks": [
     {"kind": "check_run", "name": "test", "appId": 15368}
   ],
@@ -72,6 +73,6 @@ Operation files under `github-operations/` bind each ID to the request and pinne
 
 Git and gh children inherit the trusted wrapper's process group. The outer controller must terminate and verify the entire wrapper group on normal exit, failure, timeout, or cancellation before adopting results or reconciling a write. The command helper itself can kill its direct child on timeout, but does not claim that all descendant helpers stopped; such failures return an unknown outcome with `allChildrenStopped: false`. No separate detached command group may survive wrapper teardown.
 
-CI polling is bounded and checks the controller's `CANCEL` file between reads. Terminal failed checks return `failed` with proof that this read-only gate caused no external effect; missing or pending checks return `unknown`. A pending gate can be rechecked through read-only reconciliation, including while `CANCEL` remains present. Reconciliation may recover a local stale lock only after proving its recorded same-host PID is dead. A live, reused, foreign-host, incomplete or otherwise ambiguous lock remains blocked. Operator repair of such a lock requires holding the controller lock and proving all prior controller processes have stopped. Never delete operation evidence to turn an uncertain write into a new attempt.
+CI polling waits up to `ciWaitSeconds`, capped at the operation deadline the engine passes minus a return margin, and backs off from one second to one minute with jitter between reads. `commandTimeoutSeconds` (at most 120) bounds `gh api` calls; `gitTimeoutSeconds` (at most 3600) bounds fetch and push separately, because a real repository over a slow link exceeds an API-sized timeout. Polling checks the controller's `CANCEL` file between reads. The last 4 KB of a failed command's stderr is kept in a private `github-operations/<id>.stderr.log` (mode 0600) and never enters a receipt. Terminal failed checks return `failed` with proof that this read-only gate caused no external effect; missing or pending checks return `unknown`. A pending gate can be rechecked through read-only reconciliation, including while `CANCEL` remains present. Reconciliation may recover a local stale lock only after proving its recorded same-host PID is dead. A live, reused, foreign-host, incomplete or otherwise ambiguous lock remains blocked. Operator repair of such a lock requires holding the controller lock and proving all prior controller processes have stopped. Never delete operation evidence to turn an uncertain write into a new attempt.
 
 Sources: [GitHub pull request merge API](https://docs.github.com/en/rest/pulls/pulls#merge-a-pull-request), [check-run API](https://docs.github.com/en/rest/checks/runs#list-check-runs-for-a-git-reference), [commit-status API](https://docs.github.com/en/rest/commits/statuses#list-commit-statuses-for-a-reference), [branch protection](https://docs.github.com/en/rest/branches/branch-protection#get-branch-protection), [repository permissions](https://docs.github.com/en/rest/collaborators/collaborators#get-repository-permissions-for-a-user), and [gh api](https://cli.github.com/manual/gh_api).

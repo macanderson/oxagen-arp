@@ -179,7 +179,9 @@ SOC 2 is an outside review of how a company protects customer data. The team mus
 
 ## Set up your first workspace
 
-This is the proposed setup, not a released product. Start in the web app: create a workspace, link a repo, and choose its default branch. Set the data rules, agent, tools, and budget. Then enroll the desktop service and connect a supported harness.
+This is the proposed setup, not a released product. The fastest path is one command, `oxagen quickstart`. It signs you in, enrolls the device, creates a personal workspace if you have none, links the checkout, applies safe read-only defaults, and runs one small task. It uses the same checks as the full path and cannot weaken them.
+
+The full path starts in the web app: create a workspace, link a repo, and choose its default branch. Set the data rules, agent, tools, and budget. Then enroll the desktop service and connect a supported harness.
 
 The CLI links the checkout and creates `.oxagen` files. These files ask for a workspace, context, and guidance. They hold no keys and grant no rights. Sync and validate them through the local service. Run one small read-only task, then inspect its report.
 
@@ -196,7 +198,6 @@ The **Design** tab holds the shared rules. Open **Specs** for the separate produ
 | [API](ARP-API-spec.md) | Requests from code and other systems. |
 | [MCP](ARP-MCP-spec.md) | Tools and context shown to each agent. |
 | [CLI](ARP-CLI-spec.md) | Commands for people and scripts. |
-
 | [Brand](ARP-Brand-spec.md) | Product words, fonts, colors, and states. |
 | [Schema](ARP-Schema-spec.md) | Records, keys, shared limits, and data protection. |
 | [Build plan](ARP-Build-plan.md) | Design certification, build batches, and independent checks. |

@@ -33,17 +33,15 @@ export async function dispatchLocal(request,config,modules={}){
   const op=request.operation;assert(op?.id,'Missing interrupted operation');
   const file=operationFile(config,op.id);
   assert(fs.existsSync(file),'Adapter startup is unconfirmed; do not replay the operation. Confirm the old process stopped before a reviewed recovery.');
-  if(fs.existsSync(file)){
-   const saved=JSON.parse(fs.readFileSync(file));
-   assert(saved.requestDigest===operationDigest(op)&&saved.profileDigest===executionProfileDigest(config),'Interrupted operation or execution profile changed');
-   if(saved.result)return {status:'succeeded',operationId:op.id,completedReceipt:saved.result};
-   assert(saved.owner?.hostname===os.hostname()&&Number.isSafeInteger(saved.owner.pid),'Original local adapter process identity is missing');
-   let dead=false;try{process.kill(saved.owner.pid,0);}catch(error){dead=error.code==='ESRCH';}
-   assert(dead,'Original local adapter is still running or its stop cannot be confirmed; reconciliation cannot clear it yet');
-  }
+  const saved=JSON.parse(fs.readFileSync(file));
+  assert(saved.requestDigest===operationDigest(op)&&saved.profileDigest===executionProfileDigest(config),'Interrupted operation or execution profile changed');
+  if(saved.result)return {status:'succeeded',operationId:op.id,completedReceipt:saved.result};
+  assert(saved.owner?.hostname===os.hostname()&&Number.isSafeInteger(saved.owner.pid),'Original local adapter process identity is missing');
+  let dead=false;try{process.kill(saved.owner.pid,0);}catch(error){dead=error.code==='ESRCH';}
+  assert(dead,'Original local adapter is still running or its stop cannot be confirmed; reconciliation cannot clear it yet');
   // Cleanup and liability checks are performed by the executor, not inferred
   // from a dead wrapper PID. A charged/completed effect is never rerun here.
-  if(op.kind==='agent'&&execution.reconcile)return execution.reconcile(op,config);
+  if(op.kind==='agent'&&execution.reconcile){const result=await execution.reconcile(op,config);if(result.status==='failed'&&result.noExternalEffect===true&&result.costCents===0)return {status:'succeeded',operationId:op.id,completedReceipt:result};return result}
   if(op.kind==='quality'&&quality.reconcileQuality)return quality.reconcileQuality(op,config);
   if(['pull_request','ci','merge','post_merge_ci'].includes(op.kind)){
    const result=await github.execute({kind:'reconcile',operation:op},config);

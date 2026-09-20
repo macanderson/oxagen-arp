@@ -24,7 +24,7 @@ The reader's four navigation items and all eight spec choices were exercised. Th
 
 Every web and desktop screen was opened. Desktop data protection was inspected at 390px without page overflow. The mockups have no network actions or real input upload. Runtime states such as paused are separate fixtures; clicking a design link does not create proof of a real pause.
 
-The [API validation report](../api/validation-report.json) records structural checks, including local references, the official OpenAPI structural schema, component schemas and sample payloads. It does not prove that the APIs are implemented or secure. The runner README records its actual local tests separately from live integration. PostgreSQL was not available here, so the SQL was reviewed rather than database-executed.
+The [API validation report](../api/validation-report.json) records structural checks, including local references, the official OpenAPI structural schema, component schemas and sample payloads. It does not prove that the APIs are implemented or secure. The runner README records its actual local tests separately from live integration. The representative SQL was executed on PostgreSQL 16 during the 2026-09-20 review with tenant, workspace and concurrent-hold tests; the full schema and production settlement procedures remain untested.
 
 ## What still blocks product certification
 

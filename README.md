@@ -24,12 +24,15 @@ Search with the Search button, `/`, or Cmd/Ctrl+K. Open a drawing for full-scree
 - [Schema](ARP-Schema-spec.md): concrete table catalog, constraints, isolation and operations.
 - [Core SQL](ARP-core-schema.sql): representative subset, not the full production migration.
 - [Build plan](ARP-Build-plan.md): prebuild certification, batches, independent review and release gates.
+- [Audit](AUDIT.md): the 2026-09-20 adversarial review, what was executed, what changed, and what is still open.
+
+`.oxagen/` holds the workspace binding and 50 context records in the product's `context-record/v0.1` format, the steering a builder needs when turning these plans into code. The customer account is an organization (`org_id`) throughout the schema and API; prose that says tenant means organization.
 
 `diagrams/` contains the 16 portable SVGs with embedded fonts. `diagram-source/` contains the original SVG source and captions. `reference/` holds the detailed ARP reference. `licenses/` contains font and code-highlighter licenses. Supporting API contracts, workspace examples and build-system files are included when referenced by the current specs. `SHA256SUMS.txt` covers every packaged file.
 
 ## Status
 
-The product architecture is a greenfield proposal. It does not claim these Oxagen features are shipped. The build system documents its own tested scope separately. Product mockups and contracts require explicit certification before product implementation. No live product build or production deployment was performed for this document. The representative PostgreSQL SQL was reviewed, not database-executed here.
+The product architecture is a greenfield proposal. It does not claim these Oxagen features are shipped. The build system documents its own tested scope separately. Product mockups and contracts require explicit certification before product implementation. No live product build or production deployment was performed for this document. The representative PostgreSQL SQL was executed on PostgreSQL 16 during the 2026-09-20 adversarial review; see [AUDIT.md](AUDIT.md) for what was tested and what changed. The HTML readers embed the document text as it stood before that review and have not been regenerated; the Markdown files are current.
 
 ## Brand source
 

@@ -1,0 +1,19 @@
+schema = "context-record/v0.1"
+set_id = "macanderson.oxagen-arp"
+
+[[record]]
+lineage_id = "ctx.arp.org-not-tenant"
+record_id = "rec_arp_org_not_tenant_24fe950ed2b1"
+record_hash = "sha256:eff3b7f60c4928e3af3c117356281daed73c605bc2b92dec9c04ff25b3483c25"
+kind = "rule"
+statement = "The customer account is an organization: use org_id in every identifier, org.organizations and org.org_users in the org schema, auth.users for sign-in users, and workspace.workspaces for workspaces; never introduce tenant_id or a tenants table."
+origin = "user"
+sharing_scope = "repository"
+status = "active"
+
+[record.provenance]
+source_kind = "document"
+source_uri = "ARP-core-schema.sql"
+
+[record.steering]
+force = "must"

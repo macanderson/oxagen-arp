@@ -1,0 +1,19 @@
+schema = "context-record/v0.1"
+set_id = "macanderson.oxagen-arp"
+
+[[record]]
+lineage_id = "ctx.arp.rls-scope-per-transaction"
+record_id = "rec_arp_rls_scope_per_transaction_daf3d03b520a"
+record_hash = "sha256:0d1f6fe240305892ad0feac691e9b5b5dce6b408338c2257525fd5235c23676f"
+kind = "rule"
+statement = "Set oxagen.tenant_id and either oxagen.workspace_id or oxagen.scope_kind='tenant' with set_config(..., true) at the start of every database transaction, pool connections in transaction mode only, and never issue a plain SET for scope."
+origin = "user"
+sharing_scope = "repository"
+status = "active"
+
+[record.provenance]
+source_kind = "document"
+source_uri = "ARP-core-schema.sql"
+
+[record.steering]
+force = "must"

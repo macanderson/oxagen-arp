@@ -1,0 +1,19 @@
+schema = "context-record/v0.1"
+set_id = "macanderson.oxagen-arp"
+
+[[record]]
+lineage_id = "ctx.arp.sql-executed-on-pg16"
+record_id = "rec_arp_sql_executed_on_pg16_d8ca894b2604"
+record_hash = "sha256:1829ad84be5c0cdaa36d8aec1a044fc96bf4d44587ec3a0094c7ee818bf66669"
+kind = "fact"
+statement = "ARP-core-schema.sql loads cleanly on PostgreSQL 16 and passes tenant, workspace, cross-tenant, and concurrent-hold tests as of 2026-09-20; it is still a representative subset and not the production migration."
+origin = "user"
+sharing_scope = "repository"
+status = "active"
+
+[record.provenance]
+source_kind = "document"
+source_uri = "AUDIT.md"
+
+[record.steering]
+force = "info"

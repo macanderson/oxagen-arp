@@ -16,16 +16,25 @@ Use **Oxagen** in prose. Keep the supplied **oxagen** wordmark lowercase. Do not
 
 | Name | Meaning |
 |---|---|
-| Policies | Reusable rules set by the customer. |
+| Organization | The customer account. In identifiers this is `org_id`. Older prose says tenant, company, or customer; all three mean organization. |
+| Workspace | A named scope for people, agents, repos, rules, and records inside an organization. |
+| Policies | Reusable rules set by the organization. |
 | Permissions & limits | What an agent may do, and the bounds on those actions. |
-| Work order | A saved assignment, with scope and any tighter limits. |
+| Work order | A saved, reusable assignment record with scope and any tighter limits. |
+| Work request | One submission of a work order to one or more targets. It is not a run. |
+| Run | One execution of a work request on one target. |
 | Governed action | One action checked and controlled by Oxagen. |
 | Operator | A person who runs agents. |
-| Team supervisor | A person who oversees operators. |
-| Local Supervisor | Protected software that guards a run. |
-| Workspace | A named scope for people, agents, repos, rules, and records. |
-| Tool belt | The tools available to an agent in its current context. |
+| Team supervisor | A person who oversees operators. This is the only use of the word supervisor. |
+| Desktop guard | The protected local service that guards a run on a device. Older prose says local Supervisor, local guard, protected service, or desktop gateway; use desktop guard. |
+| Browser pairing | The authenticated link between a browser and the desktop guard on the same computer. Older prose says local bridge. |
+| Model proxy | The organization-side gateway that checks model calls and holds provider keys. Older prose says tenant gateway or model gateway. |
+| Persona | The named agent definition and version an agent runs as, such as Support builder v12. A mode narrows it, such as code or review. |
+| Role | A set of rights in access control. Never use role for a persona or a job. |
+| Tool belt | The tools available to an agent in its current context. Two words in prose, `tool_belt` in identifiers. |
 | Knowledge graph | A map of related records, with sources, versions, and access rules. |
+
+Do not use assignment, job, or task as user-facing nouns for work; use work order, work request, or run. Run and target states share one vocabulary on every surface: queued, waiting for a device, waiting for capacity, starting, started, running, pause requested, pausing, paused, resuming, blocked, expired, cancelled, stopped, and outcome unknown. Governed action states are proposed, approval needed, allowed, sent, running, completed, failed, denied, expired, cancelled, and outcome unknown. The API and schema enums map to these labels one to one; no surface adds a synonym.
 
 Keep internal approval tokens out of normal product choices. Show a policy reason or an approval request instead. Technical references may use exact protocol and database names.
 
@@ -101,16 +110,16 @@ Every state needs a word and an icon or shape. Color is a second cue. This propo
 |---|---|---|---|
 | Allowed | `#57A97C` | `#2F7D52` | Check icon and “Allowed” |
 | Needs approval | `#5B93D6` | `#2E6BA8` | Person icon and “Approval needed” |
-| Denied | `#C66A4A` | `#9B4526` | Stop icon and “Denied” |
-| Failed | `#D5584D` | `#992F28` | Cross icon and a named failed check |
-| Urgent attention | `#D6455E` | `#AE2540` | Alert icon and a plain reason |
+| Denied | `#D98A6C` | `#9B4526` | Stop icon and “Denied” |
+| Failed | `#E8776D` | `#992F28` | Cross icon and a named failed check |
+| Urgent attention | `#E86A80` | `#AE2540` | Alert icon and a plain reason |
 | Verified receipt | `#3FA2A2` | `#1F7676` | Receipt icon and the exact claim checked |
 | Queued, pending, unknown | `#A1A1AA` | `#62626B` | Distinct label; dashed border for pending |
 | Paused or held | Main text | Main text | Double border and the exact held state |
 
 A verified receipt is not proof that all work is correct. Completion needs the shared completion rules. Keep “pausing” and “paused” distinct. Unknown is not failure, and stale is not current.
 
-These status text pairs were calculated above 4.5:1 on the named canvas colors. Recheck each real use. WCAG’s normal-text minimum is 4.5:1; large text has a separate 3:1 threshold. [W3C contrast guidance](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)
+These status text pairs were calculated above 4.5:1 on every named surface in their theme: canvas, panel, and raised row. The 2026-09-20 review found the earlier dark Denied, Failed, and Urgent values below 4.5:1 on raised rows, where status text most often sits, and replaced them. The light gold text accent is 4.23:1 on a light raised row, so gold text may not sit on a raised row in light mode. Recheck each real use. WCAG’s normal-text minimum is 4.5:1; large text has a separate 3:1 threshold. [W3C contrast guidance](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)
 
 ## Layout and components
 

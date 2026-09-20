@@ -3,7 +3,7 @@
   "format_version": "arp.repo/0.2",
   "authority": "informational_only",
   "protected_sync_receipt_id": "a4704304-2cfe-5eb8-b994-aeba3e8afa09",
-  "tenant_id": "799ea40b-e94e-5280-b8f8-b2cc69866950",
+  "org_id": "799ea40b-e94e-5280-b8f8-b2cc69866950",
   "workspace_id": "bb09fca7-c26f-56d3-9b74-37a0a7c0912b",
   "repository_id": "84488469-4d99-5bbe-89f9-31904bfeaaa7",
   "checkout_binding_id": "f8fa0766-2c89-5126-a15d-60b2e952e441",
