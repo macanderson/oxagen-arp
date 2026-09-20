@@ -266,7 +266,7 @@ Removed raw values, raw hashes and replacement maps are absent. Receipt verifica
 
 ### Work report
 
-**Work recorded in the tenant store.** Private data plane · durable receipt store_391 · updated 10:42:08
+**Work recorded in the org store.** Private data plane · durable receipt store_391 · updated 10:42:08
 
 Entry: [Work report](Oxagen-web-mockups.html#report). Primary action: Inspect related records; opens graph.
 
@@ -315,7 +315,7 @@ Entry: [People & identities](Oxagen-web-mockups.html#iam). Primary action: View 
 | Local gateway | Service | Device-bound dispatch + scan |
 | Partner plugin | Plugin | Not installed · no grant |
 
-RBAC groups rights. Record grants narrow them. RLS protects tenant rows; object storage, search and graph enforce equivalent rules. Agents do not inherit every operator right.
+RBAC groups rights. Record grants narrow them. RLS protects org rows; object storage, search and graph enforce equivalent rules. Agents do not inherit every operator right.
 
 ### Data plane
 
@@ -361,7 +361,7 @@ Entry: [Enrollment](Oxagen-desktop-mockups.html#enroll). Primary action: Review 
 
 | Field | Example |
 |---|---|
-| Signed-in organization | Acme · allowed tenant |
+| Signed-in organization | Acme · allowed org |
 | Human identity | Maya Chen · Operator |
 | Device | Maya’s Mac · macOS |
 | Enrollment scope | Support workspace only |

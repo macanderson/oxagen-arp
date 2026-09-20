@@ -100,14 +100,32 @@ These two templates apply to every batch. The table below supplies the exact goa
 
 - **Every batch:** trace each delivered behavior to the approved source pack; report and resolve missing or conflicting requirements before claiming completion. Run and retain the batch-specific positive, denial, concurrency, timeout, and recovery checks. No required check may be missing or silently skipped.
 - **Design batches:** render and inspect every screen and state on narrow and wide layouts, or validate every API/schema example and reference, as applicable. Publish a coverage map naming all required workflows, operations, data fields, security decisions, and open gaps. Gaps block certification.
-- **Product batches:** honor the certified OpenAPI and schema contract. Prove current identity, tenant/workspace isolation, record access, and clean-data constraints for every new request path.
+- **Product batches:** honor the certified OpenAPI and schema contract. Prove current identity, org/workspace isolation, record access, and clean-data constraints for every new request path.
 - **Release batch:** pin one exact artifact digest and source head through staging, migration rehearsal, backup restore, health, authorization, production, and rollback proof.
 
-Each current example allows at most $20 across that batch's agent work, with at most $10 reserved for an individual implementation or review invocation. A stage has a two-hour ceiling, also bounded by the run deadline. Up to three implementation attempts are allowed only while money and time remain. These are editable planning ceilings, not permission to spend. The shipped run budget is zero.
+The plan carries no practical spending cap. Each batch's `maxCostCents` is set to the arithmetic ceiling the broker's nano-cent ledger can represent as a safe integer, about $9,000,000 per batch and $4,500,000 per invocation, so no batch is denied for money. Every stage has the four-hour maximum the controller allows, and five attempts. The owner chose this on 2026-09-20; the controller still records every settled cost and keeps every unknown liability, so spend is visible even though it is not bounded. Set `runBudgetCents` in the run configuration to the same ceiling before a live run.
 
 ## The actual 22 batches
 
-The current plan is deliberately sequential. Each row depends on the preceding named batch, so a partial or unreviewed result cannot become the next batch's base. This avoids shared-file races while the product contracts are being established. Two pairs have no real dependency on each other: the desktop and web mockup batches write disjoint files, and the web and desktop product batches both depend only on the adapters batch. The controller runs batches in list order today, so those pairs stay serial until it can run independent batches concurrently; when it can, they are the first to parallelize and remove two implement-and-review cycles from the critical path. Product batches may no longer edit `.github/`, so an implementer cannot rewrite the CI check that gates its own merge; workflow changes need a separate reviewed control run.
+The plan is a dependency graph, not a chain. Each batch names only the batches whose output it needs, which yields thirteen waves for twenty-two batches:
+
+| Wave | Batches that can run together |
+|---|---|
+| 1 | desktop-mockups, web-mockups |
+| 2 | api-contracts |
+| 3 | design-certification-pack |
+| 4 | storage-iam |
+| 5 | control-records, private-deployment |
+| 6 | desktop-enrollment, tools-business-policies, context-graph, required-reporting |
+| 7 | local-data-gateway |
+| 8 | model-gateway |
+| 9 | steering-pause |
+| 10 | fork-portability, plugin-capability-stub, agent-adapters-sdks |
+| 11 | web-product, desktop-product, cli-administration |
+| 12 | system-qualification |
+| 13 | staging-release |
+
+A partial or unreviewed result still cannot become another batch's base, because a dependency must be `done` before a dependent starts. The controller today walks the list in order and runs one operation at a time, so the graph is not yet executed concurrently. Making it so is the next controller change: the journal must hold several active operations, implement and review and local quality stages of one wave run concurrently in their own worktrees, and the pull-request, CI, and merge stages serialize through one lane that rebases each later candidate onto the moved base and takes a fresh opposite-harness review before it merges. That lane exists because the plan's own rule forbids merging a candidate whose base moved. Product batches may not edit `.github/`, so an implementer cannot rewrite the CI check that gates its own merge; workflow changes need a separate reviewed control run.
 
 ### 1. desktop-mockups
 
@@ -191,7 +209,7 @@ Build safe checkpoints, capability manifests, allowed cleaned continuation snaps
 
 Phase: **product**. Depends on `fork-portability`. Implementer: **Claude Code**. Fresh reviewer: **Codex**.
 
-Build required trusted reports for branches/diffs, personas, tool counts, PRs, per-job CI commit binding, freshness, and record statuses in the selected tenant data service.
+Build required trusted reports for branches/diffs, personas, tool counts, PRs, per-job CI commit binding, freshness, and record statuses in the selected org data service.
 
 ### 15. agent-adapters-sdks
 
@@ -227,13 +245,13 @@ Build only the checked plugin capability interface seam, reserved schemas, mock 
 
 Phase: **product**. Depends on `plugin-capability-stub`. Implementer: **Claude Code**. Fresh reviewer: **Codex**.
 
-Build reproducible SaaS and customer-private placement, tenant keys, rotation, data retention/export, restore, regional controls, network policy, and auditable operational configuration.
+Build reproducible SaaS and customer-private placement, org keys, rotation, data retention/export, restore, regional controls, network policy, and auditable operational configuration.
 
 ### 21. system-qualification
 
 Phase: **product**. Depends on `private-deployment`. Implementer: **Codex**. Fresh reviewer: **Claude Code**.
 
-Run all four hard requirement scenarios and multi-tenant load, recovery, bypass, budget, auth, accessibility, portability, privacy, and storage consistency checks. Close all findings with fresh independent reviews.
+Run all four hard requirement scenarios and multi-org load, recovery, bypass, budget, auth, accessibility, portability, privacy, and storage consistency checks. Close all findings with fresh independent reviews.
 
 ### 22. staging-release
 
@@ -290,4 +308,4 @@ The [validation report](build-system/VALIDATION.md) records the current test cou
 
 The quality tests check exact-head snapshots, actual launcher result shapes, failed checks, cleanups and configured commands. The Linux preflight is implemented but was not run on this macOS host. No paid model, live GitHub write, cloud deployment or production restore was tested.
 
-Certification, live host/provider qualification, real migrations, tenant-isolation tests, budget races and staging/production drills remain release gates. The target-independent code is concrete. The release adapter remains open pending the hosting decision.
+Certification, live host/provider qualification, real migrations, org-isolation tests, budget races and staging/production drills remain release gates. The target-independent code is concrete. The release adapter remains open pending the hosting decision.

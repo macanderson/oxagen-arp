@@ -16,7 +16,7 @@ Use **Oxagen** in prose. Keep the supplied **oxagen** wordmark lowercase. Do not
 
 | Name | Meaning |
 |---|---|
-| Organization | The customer account. In identifiers this is `org_id`. Older prose says tenant, company, or customer; all three mean organization. |
+| Org | The customer account. The noun is org, the schema is `org`, the table is `org.organizations`, and identifiers use `org_id`. Where older prose says company or customer, it means the org. |
 | Workspace | A named scope for people, agents, repos, rules, and records inside an organization. |
 | Policies | Reusable rules set by the organization. |
 | Permissions & limits | What an agent may do, and the bounds on those actions. |
@@ -28,7 +28,7 @@ Use **Oxagen** in prose. Keep the supplied **oxagen** wordmark lowercase. Do not
 | Team supervisor | A person who oversees operators. This is the only use of the word supervisor. |
 | Desktop guard | The protected local service that guards a run on a device. Older prose says local Supervisor, local guard, protected service, or desktop gateway; use desktop guard. |
 | Browser pairing | The authenticated link between a browser and the desktop guard on the same computer. Older prose says local bridge. |
-| Model proxy | The organization-side gateway that checks model calls and holds provider keys. Older prose says tenant gateway or model gateway. |
+| Model proxy | The org-side gateway that checks model calls and holds provider keys. Older prose says model gateway. |
 | Persona | The named agent definition and version an agent runs as, such as Support builder v12. A mode narrows it, such as code or review. |
 | Role | A set of rights in access control. Never use role for a persona or a job. |
 | Tool belt | The tools available to an agent in its current context. Two words in prose, `tool_belt` in identifiers. |

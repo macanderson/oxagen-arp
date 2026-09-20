@@ -14,7 +14,7 @@ The endpoint serves only approved Oxagen-managed bindings. That means Oxagen con
 
 ## 2. Bind every request to its caller
 
-Each request must carry a short-lived grant meant for this endpoint. Oxagen verifies the tenant, workspace, human or agent identity, agent release, mode, run, and current authority version. The model cannot select these rights by changing tool arguments.
+Each request must carry a short-lived grant meant for this endpoint. Oxagen verifies the org, workspace, human or agent identity, agent release, mode, run, and current authority version. The model cannot select these rights by changing tool arguments.
 
 Humans and agents use the same IAM and RBAC system: identity checks, roles, and rights to each record. Agents keep their own identities and accountable operators. A permitted tool still cannot read a forbidden customer record.
 

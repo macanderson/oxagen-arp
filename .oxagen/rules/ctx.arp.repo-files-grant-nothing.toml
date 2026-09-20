@@ -3,10 +3,10 @@ set_id = "macanderson.oxagen-arp"
 
 [[record]]
 lineage_id = "ctx.arp.repo-files-grant-nothing"
-record_id = "rec_arp_repo_files_grant_nothing_430449de9ecb"
-record_hash = "sha256:98a668e275e5297cd40768ef8791c1c1d71141ec8d90b7543223f339da849e17"
+record_id = "rec_arp_repo_files_grant_nothing_1648e034cdd6"
+record_hash = "sha256:f2fc9c5db6c26d9cbd6209ba3945a15026ac551bea4afc89e5124ae909c46905"
 kind = "rule"
-statement = "Files under .oxagen request a workspace, context, and steering; they cannot raise a budget, weaken a deny, pick an endpoint, install a tool, or switch tenants, and an edited Git remote never changes the workspace binding."
+statement = "Files under .oxagen request a workspace, context, and steering; they cannot raise a budget, weaken a deny, pick an endpoint, install a tool, or switch orgs, and an edited Git remote never changes the workspace binding."
 origin = "user"
 sharing_scope = "repository"
 status = "active"

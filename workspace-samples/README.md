@@ -27,7 +27,7 @@ The six schema files cover common types, workspace references, context, steering
 
 Schema validation is one check. The service must also enforce:
 
-- Same-tenant and same-workspace membership for every referenced record.
+- Same-org and same-workspace membership for every referenced record.
 - Current rights, policy versions, expiry, and revocation.
 - Unique entry keys and one instance of each required config path.
 - Repo-relative paths resolved through trusted handles; no symlink escape, alternate encoding, or scan-to-use race.

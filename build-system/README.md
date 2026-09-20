@@ -41,7 +41,7 @@ Bootstrap installs the runner, copies the reviewed source files, and writes a ha
 | Recovery | The local adapter saves bound receipts before returning. Reconciliation can adopt those receipts, inspect GitHub, and clean up stopped or orphan containers without blindly repeating a write. |
 | Release | Blocked pending the hosting choice. No generic success flag is accepted as a deployment implementation. |
 
-The model broker is a narrow build-runner profile, not the full Oxagen enterprise gateway. It supports only the documented text request formats and price profiles. Its local data rules are literal block/redact/replace rules; they are not a general secret or personal-data detector. Unsupported media, remote files, and API paths stop the call. The broader product scanner, SDKs, IAM, tenant controls, and platform support remain work in the certified product plan.
+The model broker is a narrow build-runner profile, not the full Oxagen enterprise gateway. It supports only the documented text request formats and price profiles. Its local data rules are literal block/redact/replace rules; they are not a general secret or personal-data detector. Unsupported media, remote files, and API paths stop the call. The broader product scanner, SDKs, IAM, org controls, and platform support remain work in the certified product plan.
 
 ## Certification before product work
 

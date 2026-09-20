@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" id="arp-iam" class="arp-diagram" viewBox="0 0 1200 1170" role="img" aria-labelledby="arp-iam-title arp-iam-desc">
-<title id="arp-iam-title">People and agents use the same access checks</title><desc id="arp-iam-desc">Human and agent identities are first-class principals in the same canonical IAM and RBAC system. They have distinct identities, roles, and record grants; an agent also has an accountable operator. One authorization service composes identity, role and record rights, workspace scope, and current policy into an allow, deny, or approval-required decision. A person is asked only when the rule requires it. Only allowed requests may proceed through tool, context, model, and web or API gates. Data queries also enforce tenant and workspace boundaries through SQL row-level security where SQL is used. Application-level record checks still apply. Object and file stores, search indexes, and their gateways separately enforce tenant and per-record rights. SQL row-level security does not cover non-SQL stores by itself.</desc>
+<title id="arp-iam-title">People and agents use the same access checks</title><desc id="arp-iam-desc">Human and agent identities are first-class principals in the same canonical IAM and RBAC system. They have distinct identities, roles, and record grants; an agent also has an accountable operator. One authorization service composes identity, role and record rights, workspace scope, and current policy into an allow, deny, or approval-required decision. A person is asked only when the rule requires it. Only allowed requests may proceed through tool, context, model, and web or API gates. Data queries also enforce org and workspace boundaries through SQL row-level security where SQL is used. Application-level record checks still apply. Object and file stores, search indexes, and their gateways separately enforce org and per-record rights. SQL row-level security does not cover non-SQL stores by itself.</desc>
 <defs><marker id="arp-iam-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="var(--diagram-line,var(--arp-line,#A1A1AA))" stroke-width="1.5" stroke-linejoin="round"/></marker></defs>
 <style>
 #arp-iam{--arp-bg:#09090B;--arp-panel:#18181B;--arp-text:#FFFFFF;--arp-muted:#A1A1AA;--arp-line:#A1A1AA}
@@ -28,7 +28,7 @@
 <text x="344" y="359" class="label" text-anchor="start">Shared identity and access service</text>
 <text x="344" y="396" class="body" text-anchor="start">Who asks? Which record and action?</text>
 <text x="344" y="426" class="body" text-anchor="start">Check roles, record grants, and policy.</text>
-<text x="344" y="456" class="body" text-anchor="start">Use the right tenant and workspace.</text>
+<text x="344" y="456" class="body" text-anchor="start">Use the right org and workspace.</text>
 <path d="M 290 240 V 280 H 600 V 320" class="edge"/>
 <path d="M 910 240 V 280 H 600" class="edge"/>
 <rect x="350" y="545" width="500" height="120" rx="12" class="box"/>
@@ -54,11 +54,11 @@
 <text x="625" y="916" class="note" text-anchor="start">Data reads and writes</text>
 <rect x="40" y="975" width="520" height="135" rx="12" class="box"/>
 <text x="64" y="1014" class="label" text-anchor="start">SQL row rules (RLS)</text>
-<text x="64" y="1051" class="body" text-anchor="start">Scope rows to tenant + workspace.</text>
+<text x="64" y="1051" class="body" text-anchor="start">Scope rows to org + workspace.</text>
 <text x="64" y="1081" class="body" text-anchor="start">The app still checks record access.</text>
 <rect x="640" y="975" width="520" height="135" rx="12" class="box"/>
 <text x="664" y="1014" class="label" text-anchor="start">Files, objects, and search</text>
-<text x="664" y="1051" class="body" text-anchor="start">Check tenant and record rights.</text>
+<text x="664" y="1051" class="body" text-anchor="start">Check org and record rights.</text>
 <text x="664" y="1081" class="body" text-anchor="start">SQL row rules do not cover these stores.</text>
 <text x="40" y="1150" class="note" text-anchor="start">Shared checks do not mean shared rights. Each person and agent keeps its own allowed scope.</text>
 </svg>

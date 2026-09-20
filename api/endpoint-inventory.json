@@ -13,7 +13,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Negotiate required capabilities. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Negotiate required capabilities. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -35,7 +35,7 @@
     "method": "GET",
     "path": "/v0.1/organizations/{org_id}",
     "operation": "organization.get",
-    "summary": "Read tenant settings",
+    "summary": "Read org settings",
     "tag": "Foundation",
     "request": null,
     "result": "Organization",
@@ -45,13 +45,13 @@
     "scan": false,
     "service": false,
     "future": false,
-    "description": "Read tenant settings."
+    "description": "Read org settings."
   },
   {
     "method": "PATCH",
     "path": "/v0.1/organizations/{org_id}",
     "operation": "organization.configure",
-    "summary": "Configure tenant settings",
+    "summary": "Configure org settings",
     "tag": "Foundation",
     "request": "OrganizationPatch",
     "result": "Organization",
@@ -61,7 +61,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Configure tenant settings. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Configure org settings. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -109,7 +109,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create Workspace. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create Workspace. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "PATCH",
@@ -125,7 +125,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Update Workspace. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Update Workspace. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -141,7 +141,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke Workspace. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke Workspace. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -189,7 +189,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create Principal. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create Principal. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "PATCH",
@@ -205,7 +205,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Update Principal. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Update Principal. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -221,7 +221,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke Principal. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke Principal. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -269,7 +269,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create IdentityProvider. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create IdentityProvider. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -285,7 +285,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke IdentityProvider. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke IdentityProvider. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -333,7 +333,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create Group. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create Group. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "PATCH",
@@ -349,7 +349,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Update Group. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Update Group. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -365,7 +365,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke Group. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke Group. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -413,7 +413,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Create GroupMembership. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create GroupMembership. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -429,7 +429,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke GroupMembership. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke GroupMembership. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -509,7 +509,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create Role. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create Role. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "PATCH",
@@ -525,7 +525,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Update Role. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Update Role. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -541,7 +541,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke Role. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke Role. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -589,7 +589,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create RoleGrant. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create RoleGrant. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -605,7 +605,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke RoleGrant. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke RoleGrant. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -653,7 +653,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create RecordGrant. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create RecordGrant. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -669,7 +669,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke RecordGrant. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke RecordGrant. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -717,7 +717,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create Delegation. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create Delegation. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -733,7 +733,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke Delegation. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke Delegation. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -781,7 +781,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create DataPlaneBinding. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create DataPlaneBinding. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -797,7 +797,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke DataPlaneBinding. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke DataPlaneBinding. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -813,7 +813,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create a data-plane revision. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create a data-plane revision. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -829,7 +829,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Commit a checked storage cutover. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Commit a checked storage cutover. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -845,7 +845,7 @@
     "scan": false,
     "service": false,
     "future": false,
-    "description": "Authenticated bootstrap for fixed public-key and platform fields only. No prompt, files, arbitrary labels, credentials or other free-form content is accepted. The installed local service applies the bootstrap policy. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation."
+    "description": "Authenticated bootstrap for fixed public-key and platform fields only. No prompt, files, arbitrary labels, credentials or other free-form content is accepted. The installed local service applies the bootstrap policy. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation."
   },
   {
     "method": "POST",
@@ -861,7 +861,7 @@
     "scan": false,
     "service": false,
     "future": false,
-    "description": "Verify a device enrollment proof. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation."
+    "description": "Verify a device enrollment proof. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation."
   },
   {
     "method": "GET",
@@ -909,7 +909,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Update Device. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Update Device. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -925,7 +925,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke Device. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke Device. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -973,7 +973,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Create GatewayEnrollment. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create GatewayEnrollment. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -989,7 +989,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke GatewayEnrollment. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke GatewayEnrollment. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -1037,7 +1037,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Create HarnessTarget. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create HarnessTarget. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "PATCH",
@@ -1053,7 +1053,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Update HarnessTarget. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Update HarnessTarget. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -1069,7 +1069,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke HarnessTarget. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke HarnessTarget. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -1085,7 +1085,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Report target presence. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Report target presence. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -1133,7 +1133,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create Repository. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create Repository. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -1149,7 +1149,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke Repository. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke Repository. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "PATCH",
@@ -1165,7 +1165,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Set the workspace target branch. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Set the workspace target branch. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -1213,7 +1213,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Create CheckoutBinding. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create CheckoutBinding. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -1229,7 +1229,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke CheckoutBinding. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke CheckoutBinding. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -1245,7 +1245,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Apply checked harness settings. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Apply checked harness settings. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -1261,7 +1261,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Export reference-only repo config. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Export reference-only repo config. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -1277,7 +1277,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Plan repo sync without applying it. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Plan repo sync without applying it. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -1293,7 +1293,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Apply a fresh authorized sync plan. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Apply a fresh authorized sync plan. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -1309,7 +1309,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Validate current setup without launching. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Validate current setup without launching. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -1373,7 +1373,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create Persona. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create Persona. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "PATCH",
@@ -1389,7 +1389,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Update Persona. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Update Persona. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -1405,7 +1405,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke Persona. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke Persona. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -1453,7 +1453,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create PersonaVersion. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create PersonaVersion. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -1501,7 +1501,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create Agent. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create Agent. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "PATCH",
@@ -1517,7 +1517,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Update Agent. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Update Agent. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -1533,7 +1533,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke Agent. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke Agent. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -1581,7 +1581,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create AgentRelease. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create AgentRelease. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -1629,7 +1629,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create AgentMode. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create AgentMode. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -1677,7 +1677,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create Skill. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create Skill. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "PATCH",
@@ -1693,7 +1693,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Update Skill. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Update Skill. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -1709,7 +1709,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke Skill. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke Skill. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -1757,7 +1757,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create SkillVersion. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create SkillVersion. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -1805,7 +1805,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create ToolDefinition. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create ToolDefinition. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "PATCH",
@@ -1821,7 +1821,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Update ToolDefinition. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Update ToolDefinition. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -1837,7 +1837,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke ToolDefinition. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke ToolDefinition. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -1885,7 +1885,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create ToolRelease. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create ToolRelease. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -1933,7 +1933,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create ToolBinding. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create ToolBinding. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -1949,7 +1949,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke ToolBinding. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke ToolBinding. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -1997,7 +1997,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create AgentToolRule. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create AgentToolRule. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -2013,7 +2013,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Resolve the active allowed tool belt. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Resolve the active allowed tool belt. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -2077,7 +2077,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create ModelProvider. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create ModelProvider. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -2093,7 +2093,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke ModelProvider. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke ModelProvider. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -2141,7 +2141,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create ModelRelease. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create ModelRelease. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -2189,7 +2189,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create ModelRoute. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create ModelRoute. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -2205,7 +2205,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke ModelRoute. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke ModelRoute. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -2253,7 +2253,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create SecretBackendBinding. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create SecretBackendBinding. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -2269,7 +2269,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke SecretBackendBinding. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke SecretBackendBinding. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -2317,7 +2317,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create CredentialReference. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create CredentialReference. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -2333,7 +2333,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke CredentialReference. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke CredentialReference. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -2381,7 +2381,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create Connector. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create Connector. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "PATCH",
@@ -2397,7 +2397,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Update Connector. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Update Connector. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -2413,7 +2413,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke Connector. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke Connector. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -2461,7 +2461,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create ConnectorRelease. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create ConnectorRelease. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -2509,7 +2509,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create ConnectorDeployment. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create ConnectorDeployment. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -2525,7 +2525,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke ConnectorDeployment. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke ConnectorDeployment. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -2573,7 +2573,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create PolicyTemplate. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create PolicyTemplate. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -2621,7 +2621,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create Policy. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create Policy. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "PATCH",
@@ -2637,7 +2637,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Update Policy. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Update Policy. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -2653,7 +2653,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke Policy. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke Policy. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -2701,7 +2701,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create PolicyRevision. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create PolicyRevision. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -2717,7 +2717,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Validate a proposed policy revision. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Validate a proposed policy revision. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -2765,7 +2765,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create PolicyActivation. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create PolicyActivation. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -2781,7 +2781,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke PolicyActivation. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke PolicyActivation. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -2797,7 +2797,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Explain effective rules without executing. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Explain effective rules without executing. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -2813,7 +2813,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Record whether a target applied a policy. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Record whether a target applied a policy. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -2861,7 +2861,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create DataProtectionProfile. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create DataProtectionProfile. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -2877,7 +2877,7 @@
     "scan": false,
     "service": true,
     "future": false,
-    "description": "Bootstrap the receipt before artifact upload. Verify enrolled signer, signature, current policy and exact canonical request/artifact digests. Accept no raw text. A content upload is not authorized by a client assertion alone. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation."
+    "description": "Bootstrap the receipt before artifact upload. Verify enrolled signer, signature, current policy and exact canonical request/artifact digests. Accept no raw text. A content upload is not authorized by a client assertion alone. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation."
   },
   {
     "method": "GET",
@@ -2941,7 +2941,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create WorkOrder. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create WorkOrder. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "PATCH",
@@ -2957,7 +2957,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Update WorkOrder. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Update WorkOrder. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -2973,7 +2973,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke WorkOrder. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke WorkOrder. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -3021,7 +3021,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create WorkOrderRevision. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create WorkOrderRevision. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -3037,7 +3037,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Submit new work to a fixed target set. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Submit new work to a fixed target set. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -3069,7 +3069,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Request cancellation of queued or started work. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Request cancellation of queued or started work. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -3117,7 +3117,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Without interruption, admit steering after the next execution boundary and before new eligible work. With interruption, request a confirmed pause. Target versions are checked individually; broadcast is not an atomic all-device transaction. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Without interruption, admit steering after the next execution boundary and before new eligible work. With interruption, request a confirmed pause. Target versions are checked individually; broadcast is not an atomic all-device transaction. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -3149,7 +3149,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Core controls commit state. Pause and stop remain pending until effects and workers are proven quiet or safely fenced. Force continue admits more checked work; it cannot bypass policy, budget or a confirmed pause requirement, force completion, or revive a stopped run. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Core controls commit state. Pause and stop remain pending until effects and workers are proven quiet or safely fenced. Force continue admits more checked work; it cannot bypass policy, budget or a confirmed pause requirement, force completion, or revive a stopped run. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -3165,7 +3165,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Core controls commit state. Pause and stop remain pending until effects and workers are proven quiet or safely fenced. Force continue admits more checked work; it cannot bypass policy, budget or a confirmed pause requirement, force completion, or revive a stopped run. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Core controls commit state. Pause and stop remain pending until effects and workers are proven quiet or safely fenced. Force continue admits more checked work; it cannot bypass policy, budget or a confirmed pause requirement, force completion, or revive a stopped run. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -3181,7 +3181,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Core controls commit state. Pause and stop remain pending until effects and workers are proven quiet or safely fenced. Force continue admits more checked work; it cannot bypass policy, budget or a confirmed pause requirement, force completion, or revive a stopped run. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Core controls commit state. Pause and stop remain pending until effects and workers are proven quiet or safely fenced. Force continue admits more checked work; it cannot bypass policy, budget or a confirmed pause requirement, force completion, or revive a stopped run. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -3213,7 +3213,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Resume from a confirmed boundary. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Resume from a confirmed boundary. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -3229,7 +3229,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Change mode behind closed old gates. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Change mode behind closed old gates. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -3261,13 +3261,13 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Propose a governed workspace action. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Propose a governed workspace action. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
     "path": "/v0.1/organizations/{org_id}/admin-actions",
     "operation": "admin_action.propose",
-    "summary": "Propose a governed tenant admin action",
+    "summary": "Propose a governed org admin action",
     "tag": "Actions",
     "request": "ActionProposal",
     "result": "GovernedAction",
@@ -3277,7 +3277,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Requires org_admin context and null run. Scope comes from the authenticated tenant. Tenant-wide rights do not follow from the null run. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Requires org_admin context and null run. Scope comes from the authenticated org. Org-wide rights do not follow from the null run. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -3309,7 +3309,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Create a checked new attempt. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create a checked new attempt. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -3325,7 +3325,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Only the trusted authorization authority may call this route. Resolve all rule versions, record grants, scope epochs, owner fence, current control epoch, authoritative business facts and atomic budget holds. Client-supplied scope sets cannot replace server resolution. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Only the trusted authorization authority may call this route. Resolve all rule versions, record grants, scope epochs, owner fence, current control epoch, authoritative business facts and atomic budget holds. Client-supplied scope sets cannot replace server resolution. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -3341,7 +3341,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Consume authorization before tool dispatch. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Consume authorization before tool dispatch. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -3357,7 +3357,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Artifact contains the exact locally scanned final provider request. Resolve its pinned provider-wire profile and route, consume one authorization, record dispatch, and send using gateway-held credentials. No model-visible field may be added afterward. Provider responses must reach the local scanner before remote persistence. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Artifact contains the exact locally scanned final provider request. Resolve its pinned provider-wire profile and route, consume one authorization, record dispatch, and send using gateway-held credentials. No model-visible field may be added afterward. Provider responses must reach the local scanner before remote persistence. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -3373,7 +3373,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Service webhook ingress for an authenticated registered adapter after local inspection. Match issuer, deployment, attempt and stable external IDs; reject conflicting duplicate bytes. Raw provider webhook parsers and signature adapters have separate versioned contracts, not arbitrary JSON payload support. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Service webhook ingress for an authenticated registered adapter after local inspection. Match issuer, deployment, attempt and stable external IDs; reject conflicting duplicate bytes. Raw provider webhook parsers and signature adapters have separate versioned contracts, not arbitrary JSON payload support. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -3389,7 +3389,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "A raw provider stream is transiently relayed to the enrolled scanner; only cleaned response evidence may be referenced. Old epochs are evidence-only. A response receipt alone never authorizes a proposed tool call. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "A raw provider stream is transiently relayed to the enrolled scanner; only cleaned response evidence may be referenced. Old epochs are evidence-only. A response receipt alone never authorizes a proposed tool call. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -3405,7 +3405,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Reconcile an uncertain external effect. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Reconcile an uncertain external effect. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -3421,7 +3421,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Explicitly admit selected late evidence. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Explicitly admit selected late evidence. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -3469,7 +3469,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create AccessRequest. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create AccessRequest. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -3485,7 +3485,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Grant the allowed portion of an access request. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Grant the allowed portion of an access request. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -3533,7 +3533,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create ApprovalRequest. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create ApprovalRequest. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -3549,7 +3549,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Approver must hold the named right. An exception cannot waive an absolute prohibition or higher hard cap. Recheck facts, policy, identity, currency, time period and all available reservations before execution. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Approver must hold the named right. An exception cannot waive an absolute prohibition or higher hard cap. Recheck facts, policy, identity, currency, time period and all available reservations before execution. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -3597,7 +3597,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create LimitAccount. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
+    "description": "Create LimitAccount. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
   },
   {
     "method": "POST",
@@ -3613,7 +3613,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke LimitAccount. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
+    "description": "Revoke LimitAccount. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
   },
   {
     "method": "GET",
@@ -3645,7 +3645,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Change a cap through current policy. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
+    "description": "Change a cap through current policy. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
   },
   {
     "method": "POST",
@@ -3661,7 +3661,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Trusted authority resolves every applicable bucket; callers do not choose a subset. Serialize shared caps in one authority transaction or consume disjoint prepaid allocations. Unknown external exposure remains held. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
+    "description": "Trusted authority resolves every applicable bucket; callers do not choose a subset. Serialize shared caps in one authority transaction or consume disjoint prepaid allocations. Unknown external exposure remains held. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
   },
   {
     "method": "POST",
@@ -3677,7 +3677,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Settle a hold from authoritative evidence. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
+    "description": "Settle a hold from authoritative evidence. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
   },
   {
     "method": "POST",
@@ -3693,7 +3693,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Release only a proven unused reservation. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
+    "description": "Release only a proven unused reservation. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
   },
   {
     "method": "GET",
@@ -3741,7 +3741,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create PriceSchedule. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
+    "description": "Create PriceSchedule. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
   },
   {
     "method": "POST",
@@ -3757,7 +3757,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Return a scoped broker handle, never a provider key or refresh token. The trusted connector supplies transport credentials outside model-visible content and evidence. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Return a scoped broker handle, never a provider key or refresh token. The trusted connector supplies transport credentials outside model-visible content and evidence. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -3805,7 +3805,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create SourceBinding. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create SourceBinding. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -3821,7 +3821,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke SourceBinding. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke SourceBinding. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -3869,7 +3869,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create OntologyVersion. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create OntologyVersion. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -3917,7 +3917,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Create GraphEntity. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create GraphEntity. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -3965,7 +3965,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Create GraphEntityRevision. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create GraphEntityRevision. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -4013,7 +4013,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Create GraphRelation. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create GraphRelation. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -4029,7 +4029,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Append a relation assertion or retraction. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Append a relation assertion or retraction. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -4045,7 +4045,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Authorize nodes, edges, provenance and visible counts before returning them. The graph is a projection; it cannot grant access or supply fresh refund balances. No arbitrary database query language is accepted. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Authorize nodes, edges, provenance and visible counts before returning them. The graph is a projection; it cannot grant access or supply fresh refund balances. No arbitrary database query language is accepted. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -4061,7 +4061,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Request a checked source refresh. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Request a checked source refresh. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -4109,7 +4109,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create ContextRecord. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create ContextRecord. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -4125,7 +4125,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke ContextRecord. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke ContextRecord. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -4173,7 +4173,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create ContextRevision. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create ContextRevision. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -4221,7 +4221,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create MemoryView. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create MemoryView. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -4269,7 +4269,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create CGPProvider. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create CGPProvider. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -4285,7 +4285,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke CGPProvider. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke CGPProvider. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -4301,7 +4301,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Apply source rights, consent, purpose and intended model export checks. Verify signed source data locally; persist only allowed derivatives and safe verification receipts. CGP wire messages are a separate pinned adapter contract. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Apply source rights, consent, purpose and intended model export checks. Verify signed source data locally; persist only allowed derivatives and safe verification receipts. CGP wire messages are a separate pinned adapter contract. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -4317,7 +4317,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Query permitted memories. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Query permitted memories. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -4333,7 +4333,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Propose a memory change without granting rights. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Propose a memory change without granting rights. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -4349,7 +4349,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Publish a reviewed memory version. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Publish a reviewed memory version. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -4365,7 +4365,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Create an upload for sealed cleaned bytes. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create an upload for sealed cleaned bytes. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "PUT",
@@ -4381,7 +4381,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Stream only pre-inspected immutable bytes through the authenticated gateway. Verify the declared full digest, size, scope and data-plane binding before marking durable. Reject changed bytes and never silently route a private upload to public storage. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Stream only pre-inspected immutable bytes through the authenticated gateway. Verify the declared full digest, size, scope and data-plane binding before marking durable. Reject changed bytes and never silently route a private upload to public storage. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -4397,7 +4397,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Confirm durable artifact storage. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Confirm durable artifact storage. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -4445,7 +4445,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Caller cannot forge server commit sequence or trusted producer identity. Validate every event against its producer and run; duplicate IDs require matching cleaned bytes. Persist referenced artifacts before admitting dependent work. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Caller cannot forge server commit sequence or trusted producer identity. Validate every event against its producer and run; duplicate IDs require matching cleaned bytes. Persist referenced artifacts before admitting dependent work. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -4509,7 +4509,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Reach a safe checkpoint boundary. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Reach a safe checkpoint boundary. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -4525,7 +4525,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Commit an inspected checkpoint manifest. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Commit an inspected checkpoint manifest. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -4557,7 +4557,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Plan a supported continuation. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Plan a supported continuation. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -4573,7 +4573,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Start a fork with fresh grants and budgets. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Start a fork with fresh grants and budgets. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -4589,7 +4589,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Transfer ownership after source fencing. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Transfer ownership after source fencing. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -4637,7 +4637,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create RetentionPolicy. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create RetentionPolicy. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -4685,7 +4685,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create LegalHold. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create LegalHold. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -4701,7 +4701,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke LegalHold. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke LegalHold. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -4717,7 +4717,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Request a governed deletion with a tombstone. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Request a governed deletion with a tombstone. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -4733,7 +4733,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Read authorized audit facts. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Read authorized audit facts. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -4749,7 +4749,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create an approved cleaned audit export. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create an approved cleaned audit export. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -4797,7 +4797,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Refresh a report from trusted sources. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Refresh a report from trusted sources. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -4813,7 +4813,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Target is always the workspace-configured default branch at the stated settings revision. Save metadata and referenced artifacts in the configured tenant store before acknowledging durable success. CI coverage is independent of job conclusions; exact source versions and attempts are preserved. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Target is always the workspace-configured default branch at the stated settings revision. Save metadata and referenced artifacts in the configured org store before acknowledging durable success. CI coverage is independent of job conclusions; exact source versions and attempts are preserved. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -4845,7 +4845,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Connector verifies source installation and repository binding. Never queue raw webhook bodies remotely when the scanner is unavailable; retain only safe typed wakeup references, refetch later, and mark report pending or stale. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Connector verifies source installation and repository binding. Never queue raw webhook bodies remotely when the scanner is unavailable; retain only safe typed wakeup references, refetch later, and mark report pending or stale. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -4893,7 +4893,7 @@
     "scan": true,
     "service": false,
     "future": true,
-    "description": "Create PluginPackage. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine."
+    "description": "Create PluginPackage. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine."
   },
   {
     "method": "GET",
@@ -4941,7 +4941,7 @@
     "scan": true,
     "service": false,
     "future": true,
-    "description": "Create PluginInstall. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine."
+    "description": "Create PluginInstall. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine."
   },
   {
     "method": "POST",
@@ -4957,7 +4957,7 @@
     "scan": true,
     "service": false,
     "future": true,
-    "description": "Revoke PluginInstall. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine."
+    "description": "Revoke PluginInstall. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine."
   },
   {
     "method": "POST",
@@ -4973,7 +4973,7 @@
     "scan": true,
     "service": false,
     "future": true,
-    "description": "Reserved scoped plugin run control. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine."
+    "description": "Reserved scoped plugin run control. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine."
   },
   {
     "method": "POST",
@@ -4989,7 +4989,7 @@
     "scan": true,
     "service": false,
     "future": true,
-    "description": "Reserved plugin context offer. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine."
+    "description": "Reserved plugin context offer. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine."
   },
   {
     "method": "POST",
@@ -5005,7 +5005,7 @@
     "scan": true,
     "service": false,
     "future": true,
-    "description": "Reserved external plugin job. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine."
+    "description": "Reserved external plugin job. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine."
   },
   {
     "method": "GET",
@@ -5037,7 +5037,7 @@
     "scan": true,
     "service": false,
     "future": true,
-    "description": "Reserved delivery acknowledgment. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine."
+    "description": "Reserved delivery acknowledgment. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine."
   },
   {
     "method": "POST",
@@ -5053,7 +5053,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Propose completion to core controls. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Propose completion to core controls. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -5085,7 +5085,7 @@
     "scan": true,
     "service": false,
     "future": true,
-    "description": "Reserved immutable completion-seat reply. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine."
+    "description": "Reserved immutable completion-seat reply. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine."
   },
   {
     "method": "POST",
@@ -5101,7 +5101,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Resolve only the named authorized hold. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Resolve only the named authorized hold. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -5117,7 +5117,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Resolve only the named authorized hold. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Resolve only the named authorized hold. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -5133,13 +5133,13 @@
     "scan": true,
     "service": false,
     "future": true,
-    "description": "Requires trusted connector action/source identity, exact IDs and matching receipt. A model assertion, fuzzy search, matching amount or nearby timestamp cannot prove causation. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine."
+    "description": "Requires trusted connector action/source identity, exact IDs and matching receipt. A model assertion, fuzzy search, matching amount or nearby timestamp cannot prove causation. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Reserved, disabled, and uncertified. This contract does not build a plugin, marketplace or business-correlation engine."
   },
   {
     "method": "POST",
     "path": "/v0.1/organizations/{org_id}/context/resolve",
     "operation": "organization.context.resolve",
-    "summary": "Retrieve context for an allowed tenant admin action",
+    "summary": "Retrieve context for an allowed org admin action",
     "tag": "Context",
     "request": "ContextResolveRequest",
     "result": "ContextResult",
@@ -5149,13 +5149,13 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Requires org_admin context with no run; same source/record/export checks apply. Workspace-scoped records still require the caller's exact rights. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Requires org_admin context with no run; same source/record/export checks apply. Workspace-scoped records still require the caller's exact rights. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
     "path": "/v0.1/organizations/{org_id}/scan-receipts",
     "operation": "organization.scan_receipt.register",
-    "summary": "Register an approved tenant-scope scan receipt",
+    "summary": "Register an approved org-scope scan receipt",
     "tag": "Data protection",
     "request": "ScanReceipt",
     "result": "Reference",
@@ -5165,7 +5165,7 @@
     "scan": false,
     "service": true,
     "future": false,
-    "description": "Register an approved tenant-scope scan receipt. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation."
+    "description": "Register an approved org-scope scan receipt. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation."
   },
   {
     "method": "GET",
@@ -5213,7 +5213,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Create PrincipalAuthBinding. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create PrincipalAuthBinding. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -5229,7 +5229,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke PrincipalAuthBinding. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Revoke PrincipalAuthBinding. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -5245,7 +5245,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Attest tested adapter controls. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Attest tested adapter controls. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -5261,7 +5261,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Resolve the approved agent release for a target. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Resolve the approved agent release for a target. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -5277,7 +5277,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Compile a release for the tested adapter. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Compile a release for the tested adapter. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -5293,7 +5293,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Compare actual setup to approved projection. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Compare actual setup to approved projection. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -5309,7 +5309,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Prepare a pre-run tool menu without granting execution. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Prepare a pre-run tool menu without granting execution. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -5347,7 +5347,7 @@
     "method": "GET",
     "path": "/v0.1/organizations/{org_id}/admin-actions/{action_id}",
     "operation": "admin_action.get",
-    "summary": "Read a governed tenant admin action",
+    "summary": "Read a governed org admin action",
     "tag": "Actions",
     "request": null,
     "result": "GovernedAction",
@@ -5357,13 +5357,13 @@
     "scan": false,
     "service": false,
     "future": false,
-    "description": "Read a governed tenant admin action."
+    "description": "Read a governed org admin action."
   },
   {
     "method": "POST",
     "path": "/v0.1/organizations/{org_id}/admin-actions/{action_id}/attempts",
     "operation": "admin_action.attempt.create",
-    "summary": "Create a checked tenant admin attempt",
+    "summary": "Create a checked org admin attempt",
     "tag": "Actions",
     "request": "AttemptCreate",
     "result": "ActionAttempt",
@@ -5373,13 +5373,13 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Create a checked tenant admin attempt. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create a checked org admin attempt. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
     "path": "/v0.1/organizations/{org_id}/admin-actions/{action_id}/authorize",
     "operation": "admin_action.authorize",
-    "summary": "Authorize tenant admin input under all current grants",
+    "summary": "Authorize org admin input under all current grants",
     "tag": "Actions",
     "request": "AuthorizeRequest",
     "result": "AuthorizationDecision",
@@ -5389,13 +5389,13 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Authorize tenant admin input under all current grants. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Authorize org admin input under all current grants. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
     "path": "/v0.1/organizations/{org_id}/admin-actions/{action_id}/dispatch",
     "operation": "admin_action.dispatch",
-    "summary": "Dispatch a governed tenant admin action",
+    "summary": "Dispatch a governed org admin action",
     "tag": "Actions",
     "request": "DispatchRequest",
     "result": "Accepted",
@@ -5405,13 +5405,13 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Dispatch a governed tenant admin action. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Dispatch a governed org admin action. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
     "path": "/v0.1/organizations/{org_id}/admin-actions/{action_id}/reconcile",
     "operation": "admin_action.reconcile",
-    "summary": "Reconcile a tenant admin effect",
+    "summary": "Reconcile an org admin effect",
     "tag": "Actions",
     "request": "ReconcileRequest",
     "result": "GovernedAction",
@@ -5421,13 +5421,13 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Reconcile a tenant admin effect. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Reconcile an org admin effect. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
     "path": "/v0.1/platform/deployment-profiles",
     "operation": "platform.deployment_profiles.list",
-    "summary": "List approved tenant deployment profiles",
+    "summary": "List approved org deployment profiles",
     "tag": "Platform bootstrap",
     "request": null,
     "result": "DeploymentProfilePage",
@@ -5437,13 +5437,13 @@
     "scan": false,
     "service": true,
     "future": false,
-    "description": "Platform-audience workload identity and explicit platform permission are required. An authenticated human requests this through the protected provisioning service; platform authority does not confer tenant content access. Accept only fixed typed IDs of verified bootstrap proofs, never customer text, credentials or file content. The installed scanner applies the published bootstrap profile even though no tenant ScanReceipt can yet exist. Atomically create the initial tenant owner grant and checked data-plane binding, and admit no tenant work until activation. Existing identity login, owner acceptance and deployment attestation use the separately pinned bootstrap protocol."
+    "description": "Platform-audience workload identity and explicit platform permission are required. An authenticated human requests this through the protected provisioning service; platform authority does not confer org content access. Accept only fixed typed IDs of verified bootstrap proofs, never customer text, credentials or file content. The installed scanner applies the published bootstrap profile even though no org ScanReceipt can yet exist. Atomically create the initial org owner grant and checked data-plane binding, and admit no org work until activation. Existing identity login, owner acceptance and deployment attestation use the separately pinned bootstrap protocol."
   },
   {
     "method": "POST",
-    "path": "/v0.1/platform/tenant-provisions",
+    "path": "/v0.1/platform/org-provisions",
     "operation": "platform.organization.provision",
-    "summary": "Begin protected tenant provisioning",
+    "summary": "Begin protected org provisioning",
     "tag": "Platform bootstrap",
     "request": "OrganizationProvisionRequest",
     "result": "OrganizationProvisionOperation",
@@ -5453,13 +5453,13 @@
     "scan": false,
     "service": true,
     "future": false,
-    "description": "Platform-audience workload identity and explicit platform permission are required. An authenticated human requests this through the protected provisioning service; platform authority does not confer tenant content access. Accept only fixed typed IDs of verified bootstrap proofs, never customer text, credentials or file content. The installed scanner applies the published bootstrap profile even though no tenant ScanReceipt can yet exist. Atomically create the initial tenant owner grant and checked data-plane binding, and admit no tenant work until activation. Existing identity login, owner acceptance and deployment attestation use the separately pinned bootstrap protocol. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation."
+    "description": "Platform-audience workload identity and explicit platform permission are required. An authenticated human requests this through the protected provisioning service; platform authority does not confer org content access. Accept only fixed typed IDs of verified bootstrap proofs, never customer text, credentials or file content. The installed scanner applies the published bootstrap profile even though no org ScanReceipt can yet exist. Atomically create the initial org owner grant and checked data-plane binding, and admit no org work until activation. Existing identity login, owner acceptance and deployment attestation use the separately pinned bootstrap protocol. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation."
   },
   {
     "method": "GET",
-    "path": "/v0.1/platform/tenant-provisions/{provision_id}",
+    "path": "/v0.1/platform/org-provisions/{provision_id}",
     "operation": "platform.organization.provision.get",
-    "summary": "Read a tenant provisioning operation",
+    "summary": "Read an org provisioning operation",
     "tag": "Platform bootstrap",
     "request": null,
     "result": "OrganizationProvisionOperation",
@@ -5469,13 +5469,13 @@
     "scan": false,
     "service": true,
     "future": false,
-    "description": "Platform-audience workload identity and explicit platform permission are required. An authenticated human requests this through the protected provisioning service; platform authority does not confer tenant content access. Accept only fixed typed IDs of verified bootstrap proofs, never customer text, credentials or file content. The installed scanner applies the published bootstrap profile even though no tenant ScanReceipt can yet exist. Atomically create the initial tenant owner grant and checked data-plane binding, and admit no tenant work until activation. Existing identity login, owner acceptance and deployment attestation use the separately pinned bootstrap protocol."
+    "description": "Platform-audience workload identity and explicit platform permission are required. An authenticated human requests this through the protected provisioning service; platform authority does not confer org content access. Accept only fixed typed IDs of verified bootstrap proofs, never customer text, credentials or file content. The installed scanner applies the published bootstrap profile even though no org ScanReceipt can yet exist. Atomically create the initial org owner grant and checked data-plane binding, and admit no org work until activation. Existing identity login, owner acceptance and deployment attestation use the separately pinned bootstrap protocol."
   },
   {
     "method": "POST",
-    "path": "/v0.1/platform/tenant-provisions/{provision_id}/activate",
+    "path": "/v0.1/platform/org-provisions/{provision_id}/activate",
     "operation": "platform.organization.activate",
-    "summary": "Activate a tenant after checked storage and initial IAM setup",
+    "summary": "Activate an org after checked storage and initial IAM setup",
     "tag": "Platform bootstrap",
     "request": "OrganizationActivationRequest",
     "result": "OrganizationProvisionOperation",
@@ -5485,7 +5485,7 @@
     "scan": false,
     "service": true,
     "future": false,
-    "description": "Platform-audience workload identity and explicit platform permission are required. An authenticated human requests this through the protected provisioning service; platform authority does not confer tenant content access. Accept only fixed typed IDs of verified bootstrap proofs, never customer text, credentials or file content. The installed scanner applies the published bootstrap profile even though no tenant ScanReceipt can yet exist. Atomically create the initial tenant owner grant and checked data-plane binding, and admit no tenant work until activation. Existing identity login, owner acceptance and deployment attestation use the separately pinned bootstrap protocol. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation."
+    "description": "Platform-audience workload identity and explicit platform permission are required. An authenticated human requests this through the protected provisioning service; platform authority does not confer org content access. Accept only fixed typed IDs of verified bootstrap proofs, never customer text, credentials or file content. The installed scanner applies the published bootstrap profile even though no org ScanReceipt can yet exist. Atomically create the initial org owner grant and checked data-plane binding, and admit no org work until activation. Existing identity login, owner acceptance and deployment attestation use the separately pinned bootstrap protocol. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation."
   },
   {
     "method": "GET",
@@ -5533,7 +5533,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create LimitDefinition. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
+    "description": "Create LimitDefinition. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
   },
   {
     "method": "POST",
@@ -5549,7 +5549,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Revoke LimitDefinition. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
+    "description": "Revoke LimitDefinition. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
   },
   {
     "method": "GET",
@@ -5597,13 +5597,13 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Create LimitDefinitionTerms. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
+    "description": "Create LimitDefinitionTerms. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
   },
   {
     "method": "GET",
     "path": "/v0.1/organizations/{org_id}/limit-accounts",
     "operation": "organization.limit_accounts.list",
-    "summary": "Manage an explicitly tenant-wide shared limit",
+    "summary": "Manage an explicitly org-wide shared limit",
     "tag": "Budgets",
     "request": null,
     "result": "LimitAccountPage",
@@ -5613,13 +5613,13 @@
     "scan": false,
     "service": false,
     "future": false,
-    "description": "Requires the named tenant-level right. This route manages only accounts whose workspace scope is null; workspace routes manage only their named workspace accounts. Operator/agent subject rights are checked separately. Account identity and all historical exposure survive terms changes. The reservation authority automatically includes applicable tenant and workspace parent accounts; callers cannot select only a cheaper scope."
+    "description": "Requires the named org-level right. This route manages only accounts whose workspace scope is null; workspace routes manage only their named workspace accounts. Operator/agent subject rights are checked separately. Account identity and all historical exposure survive terms changes. The reservation authority automatically includes applicable org and workspace parent accounts; callers cannot select only a cheaper scope."
   },
   {
     "method": "GET",
     "path": "/v0.1/organizations/{org_id}/limit-accounts/{account_id}",
     "operation": "organization.limit_accounts.get",
-    "summary": "Manage an explicitly tenant-wide shared limit",
+    "summary": "Manage an explicitly org-wide shared limit",
     "tag": "Budgets",
     "request": null,
     "result": "LimitAccount",
@@ -5629,13 +5629,13 @@
     "scan": false,
     "service": false,
     "future": false,
-    "description": "Requires the named tenant-level right. This route manages only accounts whose workspace scope is null; workspace routes manage only their named workspace accounts. Operator/agent subject rights are checked separately. Account identity and all historical exposure survive terms changes. The reservation authority automatically includes applicable tenant and workspace parent accounts; callers cannot select only a cheaper scope."
+    "description": "Requires the named org-level right. This route manages only accounts whose workspace scope is null; workspace routes manage only their named workspace accounts. Operator/agent subject rights are checked separately. Account identity and all historical exposure survive terms changes. The reservation authority automatically includes applicable org and workspace parent accounts; callers cannot select only a cheaper scope."
   },
   {
     "method": "POST",
     "path": "/v0.1/organizations/{org_id}/limit-accounts",
     "operation": "organization.limit_accounts.create",
-    "summary": "Manage an explicitly tenant-wide shared limit",
+    "summary": "Manage an explicitly org-wide shared limit",
     "tag": "Budgets",
     "request": "LimitAccountCreate",
     "result": "LimitAccount",
@@ -5645,13 +5645,13 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Requires the named tenant-level right. This route manages only accounts whose workspace scope is null; workspace routes manage only their named workspace accounts. Operator/agent subject rights are checked separately. Account identity and all historical exposure survive terms changes. The reservation authority automatically includes applicable tenant and workspace parent accounts; callers cannot select only a cheaper scope. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
+    "description": "Requires the named org-level right. This route manages only accounts whose workspace scope is null; workspace routes manage only their named workspace accounts. Operator/agent subject rights are checked separately. Account identity and all historical exposure survive terms changes. The reservation authority automatically includes applicable org and workspace parent accounts; callers cannot select only a cheaper scope. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
   },
   {
     "method": "GET",
     "path": "/v0.1/organizations/{org_id}/limit-accounts/{account_id}/balance",
     "operation": "organization.budget.get",
-    "summary": "Manage an explicitly tenant-wide shared limit",
+    "summary": "Manage an explicitly org-wide shared limit",
     "tag": "Budgets",
     "request": null,
     "result": "BudgetBalance",
@@ -5661,13 +5661,13 @@
     "scan": false,
     "service": false,
     "future": false,
-    "description": "Requires the named tenant-level right. This route manages only accounts whose workspace scope is null; workspace routes manage only their named workspace accounts. Operator/agent subject rights are checked separately. Account identity and all historical exposure survive terms changes. The reservation authority automatically includes applicable tenant and workspace parent accounts; callers cannot select only a cheaper scope."
+    "description": "Requires the named org-level right. This route manages only accounts whose workspace scope is null; workspace routes manage only their named workspace accounts. Operator/agent subject rights are checked separately. Account identity and all historical exposure survive terms changes. The reservation authority automatically includes applicable org and workspace parent accounts; callers cannot select only a cheaper scope."
   },
   {
     "method": "POST",
     "path": "/v0.1/organizations/{org_id}/limit-accounts/{account_id}/configure",
     "operation": "organization.budget.configure",
-    "summary": "Manage an explicitly tenant-wide shared limit",
+    "summary": "Manage an explicitly org-wide shared limit",
     "tag": "Budgets",
     "request": "BudgetChange",
     "result": "Accepted",
@@ -5677,13 +5677,13 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Requires the named tenant-level right. This route manages only accounts whose workspace scope is null; workspace routes manage only their named workspace accounts. Operator/agent subject rights are checked separately. Account identity and all historical exposure survive terms changes. The reservation authority automatically includes applicable tenant and workspace parent accounts; callers cannot select only a cheaper scope. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
+    "description": "Requires the named org-level right. This route manages only accounts whose workspace scope is null; workspace routes manage only their named workspace accounts. Operator/agent subject rights are checked separately. Account identity and all historical exposure survive terms changes. The reservation authority automatically includes applicable org and workspace parent accounts; callers cannot select only a cheaper scope. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
   },
   {
     "method": "POST",
     "path": "/v0.1/organizations/{org_id}/limit-accounts/{account_id}/revoke",
     "operation": "organization.limit_accounts.revoke",
-    "summary": "Manage an explicitly tenant-wide shared limit",
+    "summary": "Manage an explicitly org-wide shared limit",
     "tag": "Budgets",
     "request": "RevocationRequest",
     "result": "Accepted",
@@ -5693,7 +5693,7 @@
     "scan": true,
     "service": false,
     "future": false,
-    "description": "Requires the named tenant-level right. This route manages only accounts whose workspace scope is null; workspace routes manage only their named workspace accounts. Operator/agent subject rights are checked separately. Account identity and all historical exposure survive terms changes. The reservation authority automatically includes applicable tenant and workspace parent accounts; callers cannot select only a cheaper scope. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
+    "description": "Requires the named org-level right. This route manages only accounts whose workspace scope is null; workspace routes manage only their named workspace accounts. Operator/agent subject rights are checked separately. Account identity and all historical exposure survive terms changes. The reservation authority automatically includes applicable org and workspace parent accounts; callers cannot select only a cheaper scope. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
   },
   {
     "method": "GET",
@@ -5741,7 +5741,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Create FinancialSource. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create FinancialSource. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -5789,7 +5789,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Create FinancialEffect. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create FinancialEffect. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "GET",
@@ -5837,7 +5837,7 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Create FinancialEffectRevision. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Create FinancialEffectRevision. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
@@ -5853,13 +5853,13 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Different receipt IDs can prove one effect revision. Verify source-native identity and reject conflicting totals before any posting; do not infer a new financial effect from each callback. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
+    "description": "Different receipt IDs can prove one effect revision. Verify source-native identity and reject conflicting totals before any posting; do not infer a new financial effect from each callback. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload."
   },
   {
     "method": "POST",
     "path": "/v0.1/organizations/{org_id}/budget-reservations",
     "operation": "organization.budget.reserve",
-    "summary": "Apply the shared reservation authority to tenant admin work",
+    "summary": "Apply the shared reservation authority to org admin work",
     "tag": "Budgets",
     "request": "ReservationRequest",
     "result": "Reservation",
@@ -5869,13 +5869,13 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Tenant-admin action context only. Reuse the same account, hold, effect and ledger authority as workspace work; never create a second tenant ledger. Resolve every applicable account and preserve unknown exposure. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
+    "description": "Org-admin action context only. Reuse the same account, hold, effect and ledger authority as workspace work; never create a second org ledger. Resolve every applicable account and preserve unknown exposure. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
   },
   {
     "method": "POST",
     "path": "/v0.1/organizations/{org_id}/budget-settlements",
     "operation": "organization.budget.settle",
-    "summary": "Apply the shared reservation authority to tenant admin work",
+    "summary": "Apply the shared reservation authority to org admin work",
     "tag": "Budgets",
     "request": "SettlementRequest",
     "result": "Reference",
@@ -5885,13 +5885,13 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Tenant-admin action context only. Reuse the same account, hold, effect and ledger authority as workspace work; never create a second tenant ledger. Resolve every applicable account and preserve unknown exposure. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
+    "description": "Org-admin action context only. Reuse the same account, hold, effect and ledger authority as workspace work; never create a second org ledger. Resolve every applicable account and preserve unknown exposure. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
   },
   {
     "method": "POST",
     "path": "/v0.1/organizations/{org_id}/budget-reservations/{hold_id}/release",
     "operation": "organization.budget.release",
-    "summary": "Apply the shared reservation authority to tenant admin work",
+    "summary": "Apply the shared reservation authority to org admin work",
     "tag": "Budgets",
     "request": "ReasonRequest",
     "result": "Reservation",
@@ -5901,6 +5901,6 @@
     "scan": true,
     "service": true,
     "future": false,
-    "description": "Tenant-admin action context only. Reuse the same account, hold, effect and ledger authority as workspace work; never create a second tenant ledger. Resolve every applicable account and preserve unknown exposure. Idempotency is scoped to tenant, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
+    "description": "Org-admin action context only. Reuse the same account, hold, effect and ledger authority as workspace work; never create a second org ledger. Resolve every applicable account and preserve unknown exposure. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload. Count-account creation, configuration, reservation and settlement are reserved and return FEATURE_DISABLED before effects in this release."
   }
 ]

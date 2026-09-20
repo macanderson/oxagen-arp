@@ -18,7 +18,7 @@ A denial names the missing role and who can grant it, without exposing private r
 
 **Policies → Model routes** is the first setup step. Paste a provider key or pick an Oxagen-managed model; the model proxy stores the key and the device never sees it. Until one route exists, Send work is disabled with the copy “No model route yet. Add a provider key to send work.”
 
-Home shows active work, blocked actions, approvals, spend, target health, and data freshness. Database row-level security, or RLS, keeps tenant rows apart. The same IAM checks also cover files, graphs, search, and exports. The browser has no privileged database login.
+Home shows active work, blocked actions, approvals, spend, target health, and data freshness. Database row-level security, or RLS, keeps org rows apart. The same IAM checks also cover files, graphs, search, and exports. The browser has no privileged database login.
 
 ## Send work or steer existing work
 
@@ -60,7 +60,7 @@ Publish versioned policies. Show draft, active, and each target's applied versio
 
 Show spent, held, pending, and remaining funds by operator, agent, and shared scope. A forecast helps planning but cannot authorize a call. The budget service reserves funds before spending.
 
-Each work report must include the repo, changed files, work branch, configured default target branch, exact compared commits and diff, PR number and link, all available CI jobs and their coverage, persona name and ID, and unique tool names with use counts. Mark stale, unknown, redacted, and missing data. Store reports in the tenant-configured data plane used by this app.
+Each work report must include the repo, changed files, work branch, configured default target branch, exact compared commits and diff, PR number and link, all available CI jobs and their coverage, persona name and ID, and unique tool names with use counts. Mark stale, unknown, redacted, and missing data. Store reports in the org-configured data plane used by this app.
 
 Approvals show safe reasons, scope, evidence, expiry, and the exact action. Record decisions and recheck before execution. Future plugins may share scoped run controls and completion checks. Only the capability stub is in scope; no plugin marketplace is built here.
 

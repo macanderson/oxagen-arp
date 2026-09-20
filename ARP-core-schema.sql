@@ -5,7 +5,7 @@
 --
 -- Schemas follow the product: auth holds sign-in users, org holds organizations and their members,
 -- workspace holds workspaces, oxagen holds the ARP control records. An organization is the customer
--- account; older prose calls it a tenant. Every private row carries org_id.
+-- account; older prose calls it an org. Every private row carries org_id.
 CREATE SCHEMA auth;
 CREATE SCHEMA org;
 CREATE SCHEMA workspace;

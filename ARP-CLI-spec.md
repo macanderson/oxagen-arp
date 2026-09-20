@@ -67,7 +67,7 @@ Provide these proposed command groups:
 | `oxagen policies validate`, `oxagen policies publish` | Check a proposed revision, then publish it only with the required rights and review. |
 | `oxagen data-protection status`, `oxagen data-protection inspect` | Show local scanner coverage or inspect a local input without sending it. Report safe findings, not matched secrets. |
 | `oxagen budget status` | Show spent, reserved, and remaining amounts for allowed scopes. |
-| `oxagen run logs`, `oxagen report show` | Read cleaned events and required work reports from the tenant's store. |
+| `oxagen run logs`, `oxagen report show` | Read cleaned events and required work reports from the org's store. |
 | `oxagen access request`, `oxagen access approve` | Request a named grant or decide a permitted approval. |
 | `oxagen fork plan`, `oxagen fork create` | Review a saved boundary and create an allowed continuation. |
 
