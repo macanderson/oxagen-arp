@@ -1,0 +1,43 @@
+{
+  "validated_at": "2026-09-20T22:12:40.908877+00:00",
+  "scope": "Offline template and adapter-contract validation only",
+  "cfn_lint_version": "1.57.0",
+  "cfn_lint": {
+    "registry.json": "passed",
+    "environment.json": "passed"
+  },
+  "focused_node_tests": {
+    "passed": 13,
+    "failed": 0
+  },
+  "generator_reproduces_checked_in_templates": true,
+  "template_counts": {
+    "registry_resources": 6,
+    "environment_resources": 87,
+    "parameters": 42,
+    "outputs": 59
+  },
+  "file_sha256": {
+    "README.md": "4cdc4f074a339769f502cf1ab8013c3c47d79b02d2bab5dd2d7c2873ab30f131",
+    "config.environment.example.json": "c2bb0ee3ade87accf2aa726424259eb7e8a244877ca5683e4f3c6f07fd5ba7c7",
+    "config.registry.example.json": "0fda3e11130857e604aa8bb112824aa7bc518bcb3127f55d523e616d7779e13d",
+    "environment.json": "253ab60ba982a7d3a6ea6e83dc665af8f1dd3b8d0143a104eee88e830c041a10",
+    "generate-templates.py": "f382afa93433caa7be10611a360fb6497d1e74f560e1cea58f9a2e635b228e7c",
+    "registry.json": "7321bfb04d5a584e3e16c7c6ae15047ae9cf8f9ea4fdb4d78847473e25c95c8a",
+    "render-targets.py": "b8eafd890f336bd5f5a95fef0ba9795ba27eaade30832cd4c955aa3300e440b7",
+    "setup.py": "ba4837205db64733208a3b1805ad8ca803073e913290afa343f11270e96596df"
+  },
+  "test_sha256": "63f801055fa094dead8056d56e00b8197bda9a1af01d2771a6054300d3c712f8",
+  "not_performed": [
+    "AWS provisioning",
+    "AWS API account checks",
+    "live IAM evaluation",
+    "Data API migration",
+    "snapshot restore",
+    "image publication",
+    "ECS rollout",
+    "TLS readiness request",
+    "billing or backup qualification"
+  ],
+  "production_ready": false
+}

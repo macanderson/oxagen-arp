@@ -4,7 +4,7 @@ This Node and Bash package now contains the code that runs the chosen Codex and 
 
 The supported local profile is a **Linux host with Docker Engine**, pinned container images, Node 22+, Git, and `gh`. Agents run with no network interface. A local socket gives them a narrow route to the configured model API. Real provider credentials and GitHub credentials stay on the host, outside their mounts. A fresh container and session are used for each implementation and review.
 
-**Release is not complete.** The staging and production hosting target has not been chosen. The local runner stops with `HOSTING_TARGET_REQUIRED` before any deployment. Choosing that target is the remaining product-specific decision needed to implement deployment, health checks, backups, migrations, and rollback. The old mTLS client remains an optional integration; it is not the local runner's execution dependency.
+**The selected release target is AWS ECS with Fargate**, using separate staging and production accounts. The package includes the artifact builder, release adapter, infrastructure templates and recovery code for that target. It uses Aurora PostgreSQL Serverless v2 and S3. Docker Compose is for local development; Kubernetes is deferred. One-time account and host setup, explicit product certification and live qualification remain required. See [RELEASE-SETUP.md](RELEASE-SETUP.md). The optional mTLS client is not an execution dependency.
 
 No paid model call, real PR, merge, product build, or deployment was run in this task. Linux isolation and live provider compatibility still need qualification on the supported host. The tests exercise real local Git, local HTTP/socket code, money accounting, state recovery, and simulated CLI/GitHub replies. See [validation](VALIDATION.md).
 
@@ -39,7 +39,8 @@ Bootstrap installs the runner, copies the reviewed source files, and writes a ha
 | GitHub | `local-github.mjs` uses host-side `gh` authentication and pinned repository identity. It publishes the exact reviewed commit and reads CI from the configured producers. |
 | Merge | Squash and merge commits are supported. The adapter verifies the actual commit's parents and tree against the reviewed base and candidate, then requires CI on that actual commit. Rebase merge is not supported. |
 | Recovery | The local adapter saves bound receipts before returning. Reconciliation can adopt those receipts, inspect GitHub, and clean up stopped or orphan containers without blindly repeating a write. |
-| Release | Blocked pending the hosting choice. No generic success flag is accepted as a deployment implementation. |
+| Artifact | `local-artifacts.mjs` exports images from the checked merged commit, verifies OCI digests, and copies the same images into separate immutable ECR repositories. |
+| Release | `local-release.mjs` restores database test copies, checks limited additive changes and old/new image compatibility, updates ECS services, checks health, and verifies signed production approval. Rollback keeps the current data and requires compatibility proof. |
 
 The model broker is a narrow build-runner profile, not the full Oxagen enterprise gateway. It supports only the documented text request formats and price profiles. Its local data rules are literal block/redact/replace rules; they are not a general secret or personal-data detector. Unsupported media, remote files, and API paths stop the call. The broader product scanner, SDKs, IAM, tenant controls, and platform support remain work in the certified product plan.
 
@@ -61,7 +62,7 @@ node certify.mjs /path/to/reviewed-payload.json \
 
 The controller never invokes this signer. Keep the private key outside all controller and agent mounts; install only the public key in the control root. Signing proves approval by the holder of that key, not the quality of the design. Do not sign before review.
 
-The runner checks the exact signed bytes before and after each product step. Every batch pins one certificate. Changed files, models, budgets, local settings, runner code, expired approval, or a replacement certificate block progress. A material change needs a new reviewed control run. Installation hashes now include executable adapters and container helpers, not just the central three files.
+The runner checks the exact signed bytes before and after each product step. Every batch pins one certificate. Changed files, models, budgets, local settings, runner code, expired approval, or a replacement certificate block progress. A material change needs a new reviewed control run. Installation hashes cover executable adapters, container helpers and infrastructure/configuration templates. Keep generated local-development files outside the installed runner.
 
 The first product review covers the full candidate against GitHub's actual default-branch base, including the approved local design commits. A branch that moves needs a fresh review. The live GitHub profile requires measured classic branch protection: up-to-date checks tied to the exact CI apps, checks enforced for administrators, no force/delete/bypass allowance, and an ordinary non-admin write identity. A separate read-only credential may inspect protection without raising the writer's rights. Those server rules reject an outdated branch; the adapter still verifies parents and tree after merging. GitHub's merge request does not itself offer an expected-base compare-and-swap. A policy change or unproved result stops the run; an already possible merge is never reported as no effect.
 

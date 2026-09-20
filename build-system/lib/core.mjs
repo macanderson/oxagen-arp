@@ -6,7 +6,7 @@ export const canonical=v=>JSON.stringify(v,(_,x)=>x&&typeof x==='object'&&!Array
 export const digest=v=>crypto.createHash('sha256').update(typeof v==='string'?v:canonical(v)).digest('hex');
 export const hashFile=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 export function installationDigest(root){
- const files=[];function walk(dir=''){for(const e of fs.readdirSync(path.join(root,dir),{withFileTypes:true})){const p=path.posix.join(dir,e.name);if(['test','node_modules','.git'].includes(e.name))continue;assert(!e.isSymbolicLink(),'Runner installation cannot contain symlinks');if(e.isDirectory())walk(p);else if(/\.(mjs|cjs|js|sh)$/.test(p)||/(^|\.)Dockerfile$/.test(e.name))files.push([p,hashFile(path.join(root,p))]);}}walk();return digest(files.sort((a,b)=>a[0].localeCompare(b[0])));
+ const files=[];function walk(dir=''){for(const e of fs.readdirSync(path.join(root,dir),{withFileTypes:true})){const p=path.posix.join(dir,e.name);if(['test','node_modules','.git'].includes(e.name))continue;assert(!e.isSymbolicLink(),'Runner installation cannot contain symlinks');if(e.isDirectory())walk(p);else if(/\.(mjs|cjs|js|sh|py|json|yaml|yml|sql)$/.test(p)||/(^|\.)Dockerfile$/.test(e.name))files.push([p,hashFile(path.join(root,p))]);}}walk();return digest(files.sort((a,b)=>a[0].localeCompare(b[0])));
 }
 export function executionProfileDigest(config){if(config.adapter==='local')assert(Object.keys(config.hook?.env||{}).every(k=>k==='PATH'),'Local launcher environment permits only PATH; use protected credential files');return digest({runnerDigest:config.runnerDigest,adapter:config.adapter,hook:config.hook,local:config.local,models:config.models,targets:config.targets,runBudgetCents:config.runBudgetCents,maxRunSeconds:config.maxRunSeconds});}
 export function assert(ok,message){if(!ok)throw new Error(message)}
@@ -73,11 +73,21 @@ export function reconcileNoEffect(journal,result){
 // Adopt only an already durable result from the protected local adapter. Never
 // reconstruct successful execution from agent prose or a caller-supplied file.
 export function adoptLocalReceipt(journal,result){
- const active=journal.state.active;assert(active&&active.kind!=='rollback','No adoptable operation');
+ const active=journal.state.active;assert(active,'No adoptable operation');
+ if(active.kind==='rollback'){completeRollback(journal,result);return;}
  if(knownCheckFailure(active,result)){recordCheckFailure(journal,active,result);return;}
  assert(result.status==='succeeded'&&result.operationId===active.id,'Stored operation receipt mismatch');
  assert(Number.isSafeInteger(result.costCents)&&result.costCents>=0&&result.costCents<=active.maxCostCents,'Invalid stored settled cost');
  if(active.kind==='agent')assert(result.allChildrenStopped===true&&result.budgetReceipt&&result.isolationReceipt,'Stored agent result lacks cleanup and budget proof');
  const b=journal.state.batches[active.batchId];assert(b,'Unknown stored batch');
  journal.record('operation.adopted',{...journal.state,active:null,blocked:null,spentCents:(journal.state.spentCents||0)+result.costCents,batches:{...journal.state.batches,[active.batchId]:{...b,spentCents:(b.spentCents||0)+result.costCents,lastReceipt:result}},pendingReceipt:{kind:active.kind,batchId:active.batchId,payloadDigest:digest(active.payload),result}});
+}
+
+// A recovered rollback uses the same checks and final blocked state as a direct reply.
+export function completeRollback(journal,result){
+ const active=journal.state.active;assert(active?.kind==='rollback'&&active.recovery?.blocked?.rollbackRequired,'No active failed-health rollback');
+ const p=active.payload,failed=p.failedHealth;
+ assert(result.operationId===active.id&&result.status==='succeeded'&&result.costCents===0&&result.authorized===true&&result.restored===true&&result.healthy===true&&result.restoredArtifactDigest,'Rollback lacks exact operation, authorization, artifact and health proof');
+ assert(result.head===p.head&&result.target&&[p.targets.staging,p.targets.production].includes(result.target)&&failed?.target===result.target,'Rollback target or source mismatch');
+ journal.record('rollback.completed',{...journal.state,active:null,pendingReceipt:null,blocked:{batchId:active.batchId,reason:'Rollback complete. A new reviewed release plan is required.'},rollbackReceipt:result});
 }

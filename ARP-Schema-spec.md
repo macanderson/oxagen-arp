@@ -697,3 +697,11 @@ GRANT EXECUTE ON FUNCTION reserve_limit_hold(uuid,uuid,uuid,uuid,uuid[],bigint[]
 -- Omits settlement, all-policy evaluation joins, source/price/FX tables and their FKs; see the full typed catalog.
 -- It is not a production admission API: interval/fact/FX checks and complete scope resolution are required integration gates.
 ```
+
+## First hosted database and release changes
+
+The first hosted database is Aurora PostgreSQL Serverless v2 in separate staging and production AWS accounts. It uses encrypted storage, managed backups and bounded capacity. Runtime roles must not own tenant tables or bypass RLS. Keep schema-maintenance access separate from app access. The [AWS infrastructure](build-system/infrastructure/aws/README.md) provides cloud resources; the complete certified schema, database roles and RLS policies still need their product implementation and tests.
+
+The [release adapter](build-system/adapters/local-release.md) uses a source-bound plan for a small set of added schema changes. It creates and restores a snapshot, applies the change to a test copy, and checks old and new app images before the live change. Unsupported changes stop release and need a separate reviewed plan. Do not call this limited adapter a replacement for the full schema migration system.
+
+App rollback keeps the current database. It requires proof that the old app still fits that database. A database restore is an incident recovery decision with a stated loss window, not an automatic release rollback. The [release setup](build-system/RELEASE-SETUP.md) explains the source, image, approval and recovery records.

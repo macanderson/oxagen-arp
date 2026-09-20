@@ -1,0 +1,50 @@
+{
+  "local": {
+    "artifacts": {
+      "dockerCommand": "/usr/bin/docker",
+      "dockerHost": "unix:///var/run/docker.sock",
+      "skopeoCommand": "/usr/bin/skopeo",
+      "builderName": "oxagen-release",
+      "builderContainer": "buildx_buildkit_oxagen-release0",
+      "builderImageId": "sha256:CONFIGURE_INSTALLED_BUILDKIT_IMAGE_ID",
+      "buildxConfigDir": "/srv/oxagen-control/buildx",
+      "builderMemoryBytes": 8589934592,
+      "builderCpuQuota": 400000,
+      "builderCpuPeriod": 100000,
+      "timeoutSeconds": 7200,
+      "maxImageBytes": 2147483648,
+      "baseImages": [
+        "CONFIGURE_REVIEWED_PUBLIC_DEPENDENCY_IMAGE@sha256:CONFIGURE_DIGEST"
+      ],
+      "dockerfiles": {
+        "api": "infra/images/api.Dockerfile",
+        "gateway": "infra/images/gateway.Dockerfile",
+        "worker": "infra/images/worker.Dockerfile"
+      },
+      "targets": {
+        "staging": {
+          "accountId": "CONFIGURE_STAGING_ACCOUNT",
+          "region": "CONFIGURE_AWS_REGION",
+          "profile": "oxagen-staging-publish",
+          "roleArn": "CONFIGURE_ARTIFACT_PUBLISHER_ROLE_ARN",
+          "repositories": {
+            "api": "CONFIGURE_API_REPOSITORY",
+            "gateway": "CONFIGURE_GATEWAY_REPOSITORY",
+            "worker": "CONFIGURE_WORKER_REPOSITORY"
+          }
+        },
+        "production": {
+          "accountId": "CONFIGURE_PRODUCTION_ACCOUNT",
+          "region": "CONFIGURE_AWS_REGION",
+          "profile": "oxagen-production-publish",
+          "roleArn": "CONFIGURE_ARTIFACT_PUBLISHER_ROLE_ARN",
+          "repositories": {
+            "api": "CONFIGURE_API_REPOSITORY",
+            "gateway": "CONFIGURE_GATEWAY_REPOSITORY",
+            "worker": "CONFIGURE_WORKER_REPOSITORY"
+          }
+        }
+      }
+    }
+  }
+}

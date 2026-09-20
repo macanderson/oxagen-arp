@@ -2,7 +2,7 @@
 
 This is the setup path for the code in this package. It uses a Linux host or a local Linux VM with Docker Engine. Direct macOS/Windows execution and a remote Docker daemon are not supported by this profile. The controller and Docker must see the same absolute paths. Agents never receive the Docker socket.
 
-The operator chooses the repository, model budget, credentials, allowed data, images, and required tests. Those are configuration choices, not missing execution services. **The hosting target for staging and production is still a required decision.** Release stays disabled until its concrete adapter is implemented.
+The operator chooses the repository, model budget, credentials, allowed data, images, and required tests. Those are configuration choices, not missing execution services. The chosen release target is **AWS ECS with Fargate** in separate staging and production accounts. Follow [RELEASE-SETUP.md](RELEASE-SETUP.md) for the concrete cloud setup. Release remains disabled in the supplied example until real settings are reviewed.
 
 ## 1. Install tools and copy the approved inputs
 
@@ -90,4 +90,4 @@ The [README](README.md#certification-before-product-work) gives the exact snapsh
 
 After certification, the runner implements each batch, gets a fresh opposite-harness review, runs the configured local checks, creates a PR, waits for required CI, verifies the actual merge result, and waits for checks on that merge commit. It keeps durable records for resume and bounded repair.
 
-Use `status`, `cancel`, `reconcile`, and `retry` as documented. Never delete unknown cost holds or edit journal records. A hosting choice and target-specific release implementation are still needed before the final release stage can run.
+Use `status`, `cancel`, `reconcile`, and `retry` as documented. Never delete unknown cost holds or edit journal records. Before the release stage, complete the AWS setup, infrastructure review, exact-image checks and required certification in [RELEASE-SETUP.md](RELEASE-SETUP.md).

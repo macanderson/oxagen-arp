@@ -1,0 +1,16 @@
+{
+  "account_id": "REPLACE_ACCOUNT_ID",
+  "region": "REPLACE_REGION",
+  "aws_profile": "REPLACE_PROFILE",
+  "stack_name": "REPLACE_STACK_NAME",
+  "cloudformation_role_arn": "REPLACE_APPROVED_PROVISIONING_ROLE_ARN",
+  "template": "registry.json",
+  "parameters": {
+    "NamePrefix": "oxagen",
+    "Environment": "staging",
+    "ControllerPrincipalArn": "REPLACE_ControllerPrincipalArn",
+    "GitHubOidcProviderArn": "",
+    "GitHubRepository": "",
+    "EcrKmsKeyArn": "REPLACE_EcrKmsKeyArn"
+  }
+}

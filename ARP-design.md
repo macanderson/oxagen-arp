@@ -1271,6 +1271,28 @@ Offline use needs signed local rules and proof of who may act. Both must expire.
 
 Ship signed releases that rebuild to the same output from the same source. List the software parts and their sources. Include steps to upgrade, roll back, and move stored data to new formats. Document data reporting and backup. Let customers manage keys without changing ARP's core records.
 
+### First hosted release: AWS ECS with Fargate
+
+The first hosted release uses **Amazon ECS with Fargate**. AWS runs three small groups of containers: the web app and API, the gateway, and background workers. Each has its own access role. Add more services only when there is a clear need.
+
+Use separate AWS accounts for staging and production. Staging is where a release is tested before it reaches customers. Each account has its own keys, database, file store, secrets and access roles. Private services sit behind an HTTPS entry point. They do not expose their own public network addresses.
+
+Use Aurora PostgreSQL Serverless v2 for the first hosted database and S3 for files. Aurora runs PostgreSQL and is managed by AWS. Set bounds on database size and compute, service counts and log retention. Keep encrypted backups and test restores. SQL row rules and Oxagen's shared IAM checks still apply; choosing AWS does not supply those product controls by itself.
+
+A release starts from the exact merged commit that passed CI. Build the images once. Check their fingerprints in both accounts. Test the same images in staging, then require signed approval for that exact release before production. A changed image or commit needs new evidence.
+
+Before a database change, make a snapshot, restore a private test copy, and test the change there. Check that both the old and new app can still use it. The supplied release path accepts only its small set of safe, added schema changes. It rejects other changes. A failed update may restore the old app only while it still fits the data. Never overwrite the live database with an old snapshot just to undo an app update.
+
+![After design certification, the exact merged commit must pass CI. A protected builder makes API, gateway and worker images once and checks their digests in separate staging and production registries. Each environment restores a database snapshot into a private test copy, applies the supported migration and tests old and new app compatibility. Staging deploys those images and must pass health checks. A human signs approval for the exact source, artifact and production target. Production deploys the same digests. Failed health keeps release stopped; the old app may return only if compatible with the current data. Unknown writes keep their records and locks until reconciled. The live database is not automatically rewound.](diagrams/aws_release.svg)
+
+*The selected AWS release path uses separate accounts, exact images, restored database tests, health checks and signed approval. Unknown results remain blocked. This drawing describes the implemented release controls; cloud qualification and product certification are still required.*
+
+Use Docker Compose for local development only. It runs the reviewed app images with local PostgreSQL and a local file store. It is not a production install or proof that the protected build runner works on a Mac. That runner still requires its qualified Linux setup. Kubernetes is deferred until a measured need justifies it. The private-customer design keeps its own deployment options; ARP does not depend on AWS.
+
+The package includes configurable AWS templates and release code. It does not include a running product or provisioned cloud resources. Account, region, network, domain, certificate, image and access settings must come from the operator. Design, full API and schema certification still comes before product implementation. See the [build plan](ARP-Build-plan.md) and [AWS release setup](build-system/RELEASE-SETUP.md).
+
+AWS cost alerts are alerts. They do not enforce a hard cloud bill cap. Finite run deadlines and fixed resource bounds limit a release's work. Running databases and services keep costing money until they are changed or stopped. Model-call budgets remain a separate, enforced limit in Oxagen.
+
 ### Start the SOC 2 work on day one
 
 SOC 2 needs controls that work and an outside review. Encryption alone is not enough. Define service promises and who owns each control. Review access and remove it when people leave. Check releases, flaws, and vendors. Plan for incidents, practice recovery, and test for break-ins. Keep evidence as each control runs. [AICPA SOC resources](https://www.aicpa-cima.com/resources/landing/system-and-organization-controls-soc-suite-of-services)

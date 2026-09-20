@@ -25,7 +25,7 @@ Search with the Search button, `/`, or Cmd/Ctrl+K. Open a drawing for full-scree
 - [Core SQL](ARP-core-schema.sql): representative subset, not the full production migration.
 - [Build plan](ARP-Build-plan.md): prebuild certification, batches, independent review and release gates.
 
-`diagrams/` contains the 16 portable SVGs with embedded fonts. `diagram-source/` contains the original SVG source and captions. `reference/` holds the detailed ARP reference. `licenses/` contains font and code-highlighter licenses. Supporting API contracts, workspace examples and build-system files are included when referenced by the current specs. `SHA256SUMS.txt` covers every packaged file.
+`diagrams/` contains the 17 portable SVGs with embedded fonts. `diagram-source/` contains the original SVG source and captions. `reference/` holds the detailed ARP reference. `licenses/` contains font and code-highlighter licenses. Supporting API contracts, workspace examples and build-system files are included when referenced by the current specs. `SHA256SUMS.txt` covers every packaged file.
 
 ## Status
 
