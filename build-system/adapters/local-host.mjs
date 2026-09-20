@@ -19,6 +19,7 @@ export async function dispatchLocal(request,config,modules={}){
  const execution=modules.execution||await import('./local-execution.mjs');
  const github=modules.github||await import('./local-github.mjs');
  const quality=modules.quality||await import('./local-quality.mjs');
+ const release=modules.release||await import('./local-release.mjs');
  if(request.kind==='preflight'){
   const e=await execution.preflight(config);
   assert(e.verified===true,'Docker/harness preflight failed');
@@ -27,7 +28,7 @@ export async function dispatchLocal(request,config,modules={}){
   const plan=JSON.parse(fs.readFileSync(config.manifest));
   assert(Array.isArray(plan.batches)&&plan.batches.length,'A build plan is required');
   for(const b of plan.batches)quality.validateQualityConfig({id:'preflight-'+b.id,kind:'quality',batchId:b.id,timeoutSeconds:b.timeoutSeconds,payload:{head:'0'.repeat(40)}},config);
-  return {status:'succeeded',operationId:request.id,profile:'linux-docker-local-v1',execution:e,repository:g.repository,mergeProtection:g.mergeProtection,quality:{configured:true},deployment:{configured:false,requiredDecision:'Choose a staging and production hosting target before the release adapter is implemented.'}};
+  return {status:'succeeded',operationId:request.id,profile:'linux-docker-local-v1',execution:e,repository:g.repository,mergeProtection:g.mergeProtection,quality:{configured:true},deployment:config.local?.deployment?.enabled===true?await release.preflight(config):{configured:false,provider:'aws-ecs-fargate',requiredSetup:'Configure the chosen AWS accounts, infrastructure outputs, artifact builder and approval keys before release.'}};
  }
  if(request.kind==='reconcile'){
   const op=request.operation;assert(op?.id,'Missing interrupted operation');
@@ -48,6 +49,7 @@ export async function dispatchLocal(request,config,modules={}){
    if(result.status==='succeeded'||result.status==='failed'&&result.noExternalEffect===true)return {status:'succeeded',operationId:op.id,completedReceipt:result};
    return result;
   }
+  if(['release_preflight','staging_deploy','staging_health','production_authorize','production_deploy','production_health','rollback'].includes(op.kind))return release.reconcile(op,config);
   throw new Error('No durable completed receipt. Inspect and reconcile the recorded operation; automatic retry is disabled.');
  }
  assert(request.payload&&Number.isSafeInteger(request.maxCostCents)&&request.maxCostCents>=0,'Missing bounded operation payload');
@@ -67,7 +69,7 @@ export async function dispatchLocal(request,config,modules={}){
  if(request.kind==='agent')result=await execution.execute(request,config);
  else if(request.kind==='quality')result=await quality.runLocalQuality(request,config);
  else if(['pull_request','ci','merge','post_merge_ci'].includes(request.kind))result=await github.execute(request,config);
- else if(['release_preflight','staging_deploy','staging_health','production_authorize','production_deploy','production_health','rollback'].includes(request.kind))throw new Error('HOSTING_TARGET_REQUIRED: choose the staging and production platform. Product work is preserved; no deployment was attempted.');
+ else if(['release_preflight','staging_deploy','staging_health','production_authorize','production_deploy','production_health','rollback'].includes(request.kind))result=await release.execute(request,config);
  else throw new Error('Unsupported local operation');
  assert(result?.operationId===request.id&&(result.status==='succeeded'||result.status==='failed'&&result.noExternalEffect===true&&result.allChildrenStopped===true&&result.costCents===0),'Operation failed or returned an unbound result');
  durableJSON(file,{operationId:request.id,kind:request.kind,batchId:request.batchId,requestDigest,profileDigest,state:'completed',result});

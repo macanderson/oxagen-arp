@@ -6,8 +6,8 @@
   "files": [
     {
       "path": "ARP-API-spec.md",
-      "sha256": "277dee589e39f763742f05588b3f46a28eca5d2c568d70840744826adbf2243b",
-      "bytes": 408251
+      "sha256": "6830d6b6a0a08b9017c67bcfd36e1f7274881c9070bc0a739cb50b7ae76b5967",
+      "bytes": 409292
     },
     {
       "path": "ARP-Brand-spec.md",
@@ -16,8 +16,8 @@
     },
     {
       "path": "ARP-Build-plan.md",
-      "sha256": "4fe67ca52c0f5dbe58f6c19585528278df709563a31600c54d4c152c23a71888",
-      "bytes": 25311
+      "sha256": "6477ed3ea90f7c05b330888b0e7ca70ce63998568d90334b4b5ac15f67f3c222",
+      "bytes": 28288
     },
     {
       "path": "ARP-CLI-spec.md",
@@ -31,8 +31,8 @@
     },
     {
       "path": "ARP-Drawings.md",
-      "sha256": "a5a95d3354236ecceaa2697417e727e7c62dff63d7d12b576f243d3b383703fc",
-      "bytes": 19391
+      "sha256": "44f5d7469e059e3148c414305dcd1ec7552cef0cfb1687e398bb2eb44919d0d3",
+      "bytes": 20490
     },
     {
       "path": "ARP-MCP-spec.md",
@@ -41,8 +41,8 @@
     },
     {
       "path": "ARP-Schema-spec.md",
-      "sha256": "d6c067c3c16d6cf5a7149ced7423e78011b9e50eebb41616d80e36a83a95748f",
-      "bytes": 127076
+      "sha256": "e7c0eccc7c1e4247de4eb150d9069feccd67cc21b4ed61d942ed2062c7daf890",
+      "bytes": 128357
     },
     {
       "path": "ARP-Web-app-spec.md",
@@ -56,13 +56,13 @@
     },
     {
       "path": "ARP-design.md",
-      "sha256": "3e25cd6233c913641b922646a6f95f870d5431ba4c7b849943a5f50e0e6122bb",
-      "bytes": 224299
+      "sha256": "ad47600df3ffcc3cabf30191dd31fe3ae5a169c5bd5bfe0a945f44cc5c4757e9",
+      "bytes": 228138
     },
     {
       "path": "ARP-short-guide.md",
-      "sha256": "6566bde61253d1d5f3d90c79c33d67c68b43f791853bcadaa7a88297cd2058cc",
-      "bytes": 19605
+      "sha256": "fea91e9f7b6c63fc2c0bd432ca3183d49dfb48f1191ee2a7246d6e91b2df1772",
+      "bytes": 20332
     },
     {
       "path": "api/API-REFERENCE.md",
@@ -130,24 +130,44 @@
       "bytes": 912
     },
     {
+      "path": "build-system/INDEPENDENT-REVIEW.md",
+      "sha256": "4040c7be867aa5f4b612aa40d94332293b0fff20399e3ebc0a169fe885bdb593",
+      "bytes": 7447
+    },
+    {
       "path": "build-system/LOCAL-SETUP.md",
-      "sha256": "e3d3ce3731ffb0094b193fd4430303b07038ae0443f9ed3eb9b8dd50020afc51",
-      "bytes": 9774
+      "sha256": "ee08a9a693df97cce964cf0d810217701f885ce843bd9d0ac5c2b8ba6506d87f",
+      "bytes": 9927
     },
     {
       "path": "build-system/README.md",
-      "sha256": "5f92eef817ac3fbea7dcaa6d4819b3a055f92b9f3c53b8f94aaa1eca8ab74461",
-      "bytes": 10302
+      "sha256": "60adc885f83c873a1f5c00052a7c4196e7fd533fa1e9b158eedda3a9c8f349d9",
+      "bytes": 10824
+    },
+    {
+      "path": "build-system/RELEASE-SETUP.md",
+      "sha256": "e7264d5d531b51103fe965f4444d3998b184949c1e5847b8ecf90ebaf12f4c2c",
+      "bytes": 10394
     },
     {
       "path": "build-system/VALIDATION.md",
-      "sha256": "1929b5c02f9dbe41a497b88d92922a67a9c301ceceee802a39119629c9d36729",
-      "bytes": 4799
+      "sha256": "78dae22fd13ab72b9a6f4e65eeefd6725eb3c66181c63074c52f1041fb118049",
+      "bytes": 6391
     },
     {
       "path": "build-system/adapters/LOCAL-EXECUTION.md",
       "sha256": "8e1b698b6b0b3cf1b2e139e3c7ff53c684546e9fee44d5a728c94805dd14ec94",
       "bytes": 11851
+    },
+    {
+      "path": "build-system/adapters/local-artifacts.md",
+      "sha256": "4f49922215d0b1ad64ce377b9444114680d7abe46a7a683394c4c5111064c632",
+      "bytes": 5621
+    },
+    {
+      "path": "build-system/adapters/local-artifacts.mjs",
+      "sha256": "d69579394978225ffa63cf5b779906680a6e73968c5f5710bd4830d76b64341d",
+      "bytes": 18423
     },
     {
       "path": "build-system/adapters/local-execution-broker.mjs",
@@ -191,8 +211,8 @@
     },
     {
       "path": "build-system/adapters/local-host.mjs",
-      "sha256": "a95f817738c91de30dbc229c89914d570882a054933380f851ef2463362a2a6c",
-      "bytes": 6650
+      "sha256": "16b5d37f6a8fadde26e793e66dc329d5f0b8a7217f03aa6876955105e2ab52c6",
+      "bytes": 6927
     },
     {
       "path": "build-system/adapters/local-host.sh",
@@ -205,6 +225,16 @@
       "bytes": 14276
     },
     {
+      "path": "build-system/adapters/local-release.md",
+      "sha256": "99895c02303b98d9a1091509a8bf14592f39b131e5a0a61856a5f819c26dcf00",
+      "bytes": 13704
+    },
+    {
+      "path": "build-system/adapters/local-release.mjs",
+      "sha256": "adec3ddd16d758b4e9e0e4821247d0af99c1c435dfae094aa68434fda5b4fd64",
+      "bytes": 42020
+    },
+    {
       "path": "build-system/adapters/mtls-services.mjs",
       "sha256": "ec94fba745946773e61f21debcc3572f737fd5908ffec41cd6d1bd31c0e82b39",
       "bytes": 4673
@@ -213,6 +243,11 @@
       "path": "build-system/adapters/trusted-host.sh",
       "sha256": "16d426a8df0d81040df2a0b16da4ae90f8181615348c1c7662ec59d410e9f264",
       "bytes": 123
+    },
+    {
+      "path": "build-system/approve-release.mjs",
+      "sha256": "ed89655e3ea0c651dff4e4c6d4e1bb919a2e604430da5da9127fcce70a17872a",
+      "bytes": 1861
     },
     {
       "path": "build-system/bootstrap.mjs",
@@ -226,13 +261,23 @@
     },
     {
       "path": "build-system/examples/config.json",
-      "sha256": "c03994947cacbeacc30e22faeca6edb168c77d17a3b0b87db6b7a5ac5893984c",
-      "bytes": 11109
+      "sha256": "910f700164672a221d8e7fe8108ebd7f84ebef4204c10d73c5424a2d6d78bb27",
+      "bytes": 11170
+    },
+    {
+      "path": "build-system/examples/local-artifacts.json",
+      "sha256": "b7b5b8889c34f78eee3cb5fb7bd536fa6e0f6b82aa1b3fbdf11fdd4331836f8f",
+      "bytes": 1768
     },
     {
       "path": "build-system/examples/local-execution.json",
       "sha256": "5032089b7fd2545761a779ca120d9f7f3be03a72070e950de97cb8c400ac7170",
       "bytes": 1461
+    },
+    {
+      "path": "build-system/examples/local-release.json",
+      "sha256": "9b50760e9146d9355c20914a0f44a6b3d40116784c84aa6591c5461c3c3828b7",
+      "bytes": 7524
     },
     {
       "path": "build-system/examples/plan.json",
@@ -270,14 +315,104 @@
       "bytes": 1501
     },
     {
+      "path": "build-system/infrastructure/aws/README.md",
+      "sha256": "4cdc4f074a339769f502cf1ab8013c3c47d79b02d2bab5dd2d7c2873ab30f131",
+      "bytes": 16314
+    },
+    {
+      "path": "build-system/infrastructure/aws/VALIDATION.json",
+      "sha256": "508c4bf81077b09abf1cb49f50f86c7d304a06132f7dd0c595939c337be9cdd6",
+      "bytes": 1646
+    },
+    {
+      "path": "build-system/infrastructure/aws/config.environment.example.json",
+      "sha256": "c2bb0ee3ade87accf2aa726424259eb7e8a244877ca5683e4f3c6f07fd5ba7c7",
+      "bytes": 2494
+    },
+    {
+      "path": "build-system/infrastructure/aws/config.registry.example.json",
+      "sha256": "0fda3e11130857e604aa8bb112824aa7bc518bcb3127f55d523e616d7779e13d",
+      "bytes": 496
+    },
+    {
+      "path": "build-system/infrastructure/aws/environment.json",
+      "sha256": "253ab60ba982a7d3a6ea6e83dc665af8f1dd3b8d0143a104eee88e830c041a10",
+      "bytes": 135500
+    },
+    {
+      "path": "build-system/infrastructure/aws/generate-templates.py",
+      "sha256": "f382afa93433caa7be10611a360fb6497d1e74f560e1cea58f9a2e635b228e7c",
+      "bytes": 36352
+    },
+    {
+      "path": "build-system/infrastructure/aws/registry.json",
+      "sha256": "7321bfb04d5a584e3e16c7c6ae15047ae9cf8f9ea4fdb4d78847473e25c95c8a",
+      "bytes": 12421
+    },
+    {
+      "path": "build-system/infrastructure/aws/render-targets.py",
+      "sha256": "b8eafd890f336bd5f5a95fef0ba9795ba27eaade30832cd4c955aa3300e440b7",
+      "bytes": 5565
+    },
+    {
+      "path": "build-system/infrastructure/aws/setup.py",
+      "sha256": "ba4837205db64733208a3b1805ad8ca803073e913290afa343f11270e96596df",
+      "bytes": 13234
+    },
+    {
+      "path": "build-system/infrastructure/local/.env.example",
+      "sha256": "48af182ed74056fcc1dc3286302066a4bcaf6c17c4086b4cbfe7e1dba238ccc6",
+      "bytes": 642
+    },
+    {
+      "path": "build-system/infrastructure/local/.gitignore",
+      "sha256": "2a19e5c87561cc85345eecd3f98e1c54fcb86a4deeaf3cbd85b3192f9865da94",
+      "bytes": 62
+    },
+    {
+      "path": "build-system/infrastructure/local/README.md",
+      "sha256": "d9298d27eb33eff5bf5267a8fe128b1b7f145a627890218e66c087bf8f32f264",
+      "bytes": 9660
+    },
+    {
+      "path": "build-system/infrastructure/local/compose.json",
+      "sha256": "5ed8304affa904b243e5a78214edb46b0b39fd9c2577da1680a26d60740f4c65",
+      "bytes": 15745
+    },
+    {
+      "path": "build-system/infrastructure/local/compose.mjs",
+      "sha256": "ad747cb707867894c616a601a15a794a77d2136e7c6ba77b5e35bc0078bf7d83",
+      "bytes": 6122
+    },
+    {
+      "path": "build-system/infrastructure/local/filer.toml",
+      "sha256": "0e2d61bce0f91e5fc5c7fa17c8289ae80b8c15ae923ed92f3b6b00f4f413693b",
+      "bytes": 50
+    },
+    {
+      "path": "build-system/infrastructure/local/local-config.json",
+      "sha256": "950a4644af54669521626f766df401664946f0db7cf2b9e41ca511c2654ca898",
+      "bytes": 463
+    },
+    {
+      "path": "build-system/infrastructure/local/local.mjs",
+      "sha256": "fe995b3c61bdbaf814bae1906c05c225850c69a640778d9300bd64e327c81aa4",
+      "bytes": 8442
+    },
+    {
+      "path": "build-system/infrastructure/local/postgres-init.sh",
+      "sha256": "a5606aa9d3d192ec418ff7027177899c767e1b12cceb3980c4168b64367a0070",
+      "bytes": 1168
+    },
+    {
       "path": "build-system/lib/core.mjs",
-      "sha256": "398abae889595c5c9f1d3e546e23e94da46ad989aaee131f0e058271b612dd35",
-      "bytes": 13962
+      "sha256": "0f46856578a7775a60442f9fb10dec42fe19bc1a057c54d04fa6b1b5126b5c72",
+      "bytes": 15033
     },
     {
       "path": "build-system/lib/engine.mjs",
-      "sha256": "c11e3890359da3d129aa30dbfb4e80c6044ed063acde93b183d0d9009d6bb1b6",
-      "bytes": 19584
+      "sha256": "febc71e2d73c105d28b655f19acf443cb3bf80a59b41ab452dcbb13f380f16c7",
+      "bytes": 19836
     },
     {
       "path": "build-system/package.json",
@@ -291,13 +426,18 @@
     },
     {
       "path": "build-system/runner.mjs",
-      "sha256": "c16ba28c02126523830474bc54a8052e9d335e24dee43c52f79704258e1d1fd5",
-      "bytes": 6672
+      "sha256": "835e3a6ab023195d64b277e14aa390a67a6580d709d5d4f8222ec5037e6485ff",
+      "bytes": 6535
     },
     {
       "path": "build-system/test/adapter.test.mjs",
       "sha256": "8180c1f9d73bfcaf6a1b65b39a01754591c3fff44625d449952fede49ea78c6f",
       "bytes": 1178
+    },
+    {
+      "path": "build-system/test/aws-infrastructure.test.mjs",
+      "sha256": "63f801055fa094dead8056d56e00b8197bda9a1af01d2771a6054300d3c712f8",
+      "bytes": 15259
     },
     {
       "path": "build-system/test/core.test.mjs",
@@ -308,6 +448,16 @@
       "path": "build-system/test/engine.test.mjs",
       "sha256": "c5ef925fc170e74fa03611837e4ef42d7236d2987b006d51f4a432f78be9c3cf",
       "bytes": 10564
+    },
+    {
+      "path": "build-system/test/local-artifacts.test.mjs",
+      "sha256": "43b870c1e777dad974b750ae6c25c11f55368ab52e542560471f736595283a40",
+      "bytes": 8791
+    },
+    {
+      "path": "build-system/test/local-compose.test.mjs",
+      "sha256": "fc0a2649ed8bd353c63c41db2606bf12eb1f7d89f2a2cbd3f78bb59ba588fb3f",
+      "bytes": 4736
     },
     {
       "path": "build-system/test/local-execution.test.mjs",
@@ -321,8 +471,8 @@
     },
     {
       "path": "build-system/test/local-integration.test.mjs",
-      "sha256": "a54eb1172aafbf915e8a6542e9b5dc7b88b31c6be22e00108879c420db8dd941",
-      "bytes": 9802
+      "sha256": "8159bafcb479d8d1578a623be9df94eb39185e497b885756d0c8b9ab87ce6843",
+      "bytes": 13521
     },
     {
       "path": "build-system/test/local-quality.test.mjs",
@@ -330,9 +480,19 @@
       "bytes": 9511
     },
     {
+      "path": "build-system/test/local-release.test.mjs",
+      "sha256": "c07709cfaa61be2e71dd86a0c78fca3829a75b1f38875cbb519cdd075a827f05",
+      "bytes": 23082
+    },
+    {
       "path": "build-system/test/lock.test.mjs",
       "sha256": "5c4ed0c8604ca1f7a30f8a4f86978ae8ae7830a47cebabd6e2de2e092c9eb928",
       "bytes": 3099
+    },
+    {
+      "path": "build-system/test/release-approval.test.mjs",
+      "sha256": "8f7d7df6404106cadbb1c03d8002e18c6a611a8fdaaa8d667fa622d0e334fdb6",
+      "bytes": 1791
     },
     {
       "path": "certification/Mockups.md",
@@ -351,13 +511,18 @@
     },
     {
       "path": "certification/REVIEW-PACKET.md",
-      "sha256": "62534694b5aa54dbd9094fb92b48286bbb0255201ff9181b8542941b1e71f1b8",
-      "bytes": 5423
+      "sha256": "f95d43c0cfd751ac752e2d4a3ce7f4b71d25a82f11e46d08030921089ccd9515",
+      "bytes": 5802
     },
     {
       "path": "diagrams/authorization.svg",
       "sha256": "5b8124f0a20409d0872a9341f8aa9fda48bcedf8b22b15242be4b13b18fc9357",
       "bytes": 174385
+    },
+    {
+      "path": "diagrams/aws_release.svg",
+      "sha256": "3769eeddde09b95bcbd2fc65433b435e9e5522cbb62e5ee8c0695fbcbd12b86e",
+      "bytes": 172981
     },
     {
       "path": "diagrams/budget.svg",

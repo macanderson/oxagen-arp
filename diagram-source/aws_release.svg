@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="arp-aws_release" class="arp-diagram" viewBox="0 0 1200 1000" role="img" aria-labelledby="arp-aws_release-title arp-aws_release-desc">
+<title id="arp-aws_release-title">Build once. Test it. Release the same images.</title><desc id="arp-aws_release-desc">After design certification, the exact merged commit must pass CI. A protected builder makes API, gateway and worker images once and checks their digests in separate staging and production registries. Each environment restores a database snapshot into a private test copy, applies the supported migration and tests old and new app compatibility. Staging deploys those images and must pass health checks. A human signs approval for the exact source, artifact and production target. Production deploys the same digests. Failed health keeps release stopped; the old app may return only if compatible with the current data. Unknown writes keep their records and locks until reconciled. The live database is not automatically rewound.</desc>
+<defs><marker id="arp-aws_release-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="var(--diagram-line,var(--arp-line,#A1A1AA))" stroke-width="1.5" stroke-linejoin="round"/></marker></defs>
+<style>
+#arp-aws_release{--arp-bg:#09090B;--arp-panel:#18181B;--arp-text:#FFFFFF;--arp-muted:#A1A1AA;--arp-line:#A1A1AA}
+@media(prefers-color-scheme:light){#arp-aws_release{--arp-bg:#FFFFFF;--arp-panel:#FFFFFF;--arp-text:#09090B;--arp-muted:#71717A;--arp-line:#71717A}}
+#arp-aws_release .box{fill:var(--diagram-panel,var(--arp-panel,#18181B));stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2}
+#arp-aws_release .inner{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:1.5}
+#arp-aws_release .edge{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2;stroke-linejoin:round;marker-end:url(#arp-aws_release-arrow)}
+#arp-aws_release .title{font-family:"Space Grotesk",sans-serif;font-size:32px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-aws_release .label{font-family:Geist,sans-serif;font-size:24px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-aws_release .body{font-family:Geist,sans-serif;font-size:22px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-aws_release .note{font-family:Geist,sans-serif;font-size:20px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-aws_release .number{font-family:"Monaspace Neon",monospace;font-size:26px;font-weight:500;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+</style>
+<rect width="1200" height="1000" fill="var(--diagram-bg,var(--arp-bg,#09090B))"/>
+<text x="40" y="54" class="title">Build once. Test it. Release the same images.</text>
+<rect x="40" y="105" width="320" height="155" rx="12" class="box"/>
+<text x="62" y="143" class="label">Checked source</text>
+<text x="62" y="179" class="body">Design is certified</text>
+<text x="62" y="209" class="body">CI passed on the merge</text>
+<text x="62" y="239" class="body">Exact commit is pinned</text>
+<rect x="440" y="105" width="320" height="155" rx="12" class="box"/>
+<text x="462" y="143" class="label">Build images once</text>
+<text x="462" y="179" class="body">API · gateway · workers</text>
+<text x="462" y="209" class="body">Same image fingerprints</text>
+<text x="462" y="239" class="body">Separate AWS registries</text>
+<rect x="840" y="105" width="320" height="155" rx="12" class="box"/>
+<text x="862" y="143" class="label">Test the data change</text>
+<text x="862" y="179" class="body">Restore private test copies</text>
+<text x="862" y="209" class="body">Test old and new apps</text>
+<text x="862" y="239" class="body">Keep recovery evidence</text>
+<path d="M 360 181 H 440" class="edge"/>
+<path d="M 760 181 H 840" class="edge"/>
+<path d="M 1000 260 V 320 H 200 V 375" class="edge"/>
+<rect x="40" y="375" width="500" height="200" rx="12" class="box"/>
+<text x="62" y="413" class="label">Staging account</text>
+<text x="62" y="449" class="body">Deploy the exact images</text>
+<text x="62" y="479" class="body">Apply the tested added schema changes</text>
+<text x="62" y="509" class="body">Check tasks, load balancer and HTTPS</text>
+<text x="62" y="539" class="body">Save the health result</text>
+<rect x="660" y="375" width="500" height="200" rx="12" class="box"/>
+<text x="682" y="413" class="label">Signed production approval</text>
+<text x="682" y="449" class="body">Bind the source commit and images</text>
+<text x="682" y="479" class="body">Name the production target</text>
+<text x="682" y="509" class="body">Use a short-lived approval</text>
+<text x="682" y="539" class="body">The signing key stays with the approver</text>
+<path d="M 540 475 H 660" class="edge"/>
+<path d="M 910 575 V 635 H 910 V 675" class="edge"/>
+<rect x="660" y="675" width="500" height="200" rx="12" class="box"/>
+<text x="682" y="713" class="label">Production account</text>
+<text x="682" y="749" class="body">Deploy the same image fingerprints</text>
+<text x="682" y="779" class="body">Use separate roles, keys and storage</text>
+<text x="682" y="809" class="body">Check health before reporting success</text>
+<text x="682" y="839" class="body">Keep the exact release evidence</text>
+<rect x="40" y="675" width="500" height="200" rx="12" class="box"/>
+<text x="62" y="713" class="label">If the release fails</text>
+<text x="62" y="749" class="body">Stop further work</text>
+<text x="62" y="779" class="body">Restore old app only when compatible</text>
+<text x="62" y="809" class="body">Keep uncertain writes and locks visible</text>
+<text x="62" y="839" class="body">Do not rewind the live database</text>
+<path d="M 660 775 H 540" class="edge"/>
+<text x="40" y="935" class="note">ECS with Fargate runs the three services. Aurora PostgreSQL stores rows. S3 stores files.</text>
+<text x="40" y="968" class="note">Docker Compose is for local development. No cloud resources were started for this document.</text>
+</svg>

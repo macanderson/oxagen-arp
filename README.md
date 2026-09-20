@@ -28,7 +28,7 @@ Search with the Search button, `/`, or Cmd/Ctrl+K. Open a drawing for full-scree
 
 `.oxagen/` holds the workspace binding and 50 context records in the product's `context-record/v0.1` format, the steering a builder needs when turning these plans into code. The customer account is an org (`org_id`) throughout the schema, the API, and the prose; the schema is `org` and the table is `org.organizations`.
 
-`diagrams/` contains the 16 portable SVGs with embedded fonts. `diagram-source/` contains the original SVG source and captions. `reference/` holds the detailed ARP reference. `licenses/` contains font and code-highlighter licenses. Supporting API contracts, workspace examples and build-system files are included when referenced by the current specs. `SHA256SUMS.txt` covers every packaged file.
+`diagrams/` contains the 17 portable SVGs with embedded fonts. `diagram-source/` contains the original SVG source and captions. `reference/` holds the detailed ARP reference. `licenses/` contains font and code-highlighter licenses. Supporting API contracts, workspace examples and build-system files are included when referenced by the current specs. `SHA256SUMS.txt` covers every packaged file.
 
 ## Status
 

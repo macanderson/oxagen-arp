@@ -1,0 +1,33 @@
+name: Surfaces
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  surfaces:
+    name: Kernel, binders, mockup app, parity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Typecheck every package and app
+        run: pnpm typecheck
+      - name: Kernel, fixture, API, MCP, CLI tests
+        run: pnpm test
+      - name: Surface parity (strict)
+        run: pnpm check:parity:strict
+      - name: Mockup app build
+        run: pnpm --filter @oxagen-arp/web build
+      - name: Storybook build
+        run: pnpm --filter @oxagen-arp/web build-storybook
+      - name: Build controller tests
+        run: cd build-system && node --test test/*.test.mjs

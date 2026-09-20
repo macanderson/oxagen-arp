@@ -1,0 +1,4 @@
+.env.local
+.local-secrets/
+.local-data/
+compose.resolved.json

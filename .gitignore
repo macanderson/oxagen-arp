@@ -58,5 +58,11 @@ coverage/
 *.tmp
 *.bak
 
+# Next.js and Storybook
+.next/
+next-env.d.ts
+storybook-static/
+*.tsbuildinfo
+
 # Claude Code worktrees
 .claude/worktrees/

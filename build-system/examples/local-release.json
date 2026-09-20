@@ -1,0 +1,201 @@
+{
+  "targets": {
+    "staging": "CONFIGURE_STAGING_TARGET",
+    "production": "CONFIGURE_PRODUCTION_TARGET"
+  },
+  "local": {
+    "deployment": {
+      "enabled": false,
+      "provider": "aws-ecs-fargate",
+      "aws": {
+        "command": "/usr/local/bin/aws",
+        "version": "CONFIGURE_APPROVED_CLI_VERSION",
+        "homeDir": "/srv/oxagen-control/aws-home",
+        "configFile": "/srv/oxagen-control/aws-config",
+        "credentialsFile": "/srv/oxagen-control/aws-credentials"
+      },
+      "timeoutSeconds": 14400,
+      "pollSeconds": 10,
+      "migration": {
+        "path": "infra/release/migration.json",
+        "sha256": "<64 hex characters: exact file bytes in the merged commit>"
+      },
+      "productionApproval": {
+        "publicKeyFile": "/srv/oxagen-control/production-approval.pub",
+        "approvalFile": "/srv/oxagen-control/production-approval.json"
+      },
+      "targets": {
+        "staging": {
+          "id": "CONFIGURE_STAGING_TARGET",
+          "accountId": "<12 digit AWS account>",
+          "region": "CONFIGURE_AWS_REGION",
+          "profile": "oxagen-staging-deploy",
+          "deploymentRoleArn": "<DeploymentRoleArn output>",
+          "clusterArn": "<ClusterArn output>",
+          "lockTable": "<DeploymentLockTableName output>",
+          "releaseScope": "oxagen-staging",
+          "namePrefix": "oxagen",
+          "services": {
+            "api": {
+              "name": "CONFIGURE_API_SERVICE",
+              "containerName": "api",
+              "taskRoleArn": "CONFIGURE_API_TASK_ROLE_ARN",
+              "executionRoleArn": "CONFIGURE_API_EXECUTION_ROLE_ARN",
+              "databaseSecretArn": "CONFIGURE_API_DATABASE_SECRET_ARN",
+              "compatibilityCommand": [
+                "/opt/oxagen/bin/oxagen",
+                "database",
+                "check-compatibility",
+                "--component",
+                "api"
+              ]
+            },
+            "gateway": {
+              "name": "CONFIGURE_GATEWAY_SERVICE",
+              "containerName": "gateway",
+              "taskRoleArn": "CONFIGURE_GATEWAY_TASK_ROLE_ARN",
+              "executionRoleArn": "CONFIGURE_GATEWAY_EXECUTION_ROLE_ARN",
+              "databaseSecretArn": "CONFIGURE_GATEWAY_DATABASE_SECRET_ARN",
+              "compatibilityCommand": [
+                "/opt/oxagen/bin/oxagen",
+                "database",
+                "check-compatibility",
+                "--component",
+                "gateway"
+              ]
+            },
+            "worker": {
+              "name": "CONFIGURE_WORKER_SERVICE",
+              "containerName": "worker",
+              "taskRoleArn": "CONFIGURE_WORKER_TASK_ROLE_ARN",
+              "executionRoleArn": "CONFIGURE_WORKER_EXECUTION_ROLE_ARN",
+              "databaseSecretArn": "CONFIGURE_WORKER_DATABASE_SECRET_ARN",
+              "compatibilityCommand": [
+                "/opt/oxagen/bin/oxagen",
+                "database",
+                "check-compatibility",
+                "--component",
+                "worker"
+              ]
+            }
+          },
+          "healthUrls": [
+            "https://<approved hostname>/health/ready"
+          ],
+          "database": {
+            "identifier": "<DatabaseClusterIdentifier>",
+            "arn": "<DatabaseClusterArn>",
+            "secretArn": "<DatabaseMasterSecretArn>",
+            "name": "oxagen",
+            "engineVersion": "<exact supported Aurora PostgreSQL version>",
+            "kmsKeyArn": "<DataKmsKeyArn>"
+          },
+          "rehearsal": {
+            "subnetGroup": "<DatabaseSubnetGroupName>",
+            "securityGroupIds": [
+              "<RehearsalDatabaseSecurityGroupId>"
+            ],
+            "subnetIds": [
+              "<private subnet A>",
+              "<private subnet B>"
+            ],
+            "taskSecurityGroupIds": [
+              "<RehearsalTaskSecurityGroupId>"
+            ],
+            "taskRoleArn": "<RehearsalTaskRoleArn>",
+            "executionRoleArn": "<RehearsalExecutionRoleArn>",
+            "taskFamily": "<CompatibilityTaskFamily>",
+            "logGroup": "<RehearsalLogGroupName>",
+            "minCapacity": 0.5,
+            "maxCapacity": 2
+          }
+        },
+        "production": {
+          "id": "CONFIGURE_PRODUCTION_TARGET",
+          "accountId": "<12 digit AWS account>",
+          "region": "CONFIGURE_AWS_REGION",
+          "profile": "oxagen-production-deploy",
+          "deploymentRoleArn": "<DeploymentRoleArn output>",
+          "clusterArn": "<ClusterArn output>",
+          "lockTable": "<DeploymentLockTableName output>",
+          "releaseScope": "oxagen-production",
+          "namePrefix": "oxagen",
+          "services": {
+            "api": {
+              "name": "CONFIGURE_API_SERVICE",
+              "containerName": "api",
+              "taskRoleArn": "CONFIGURE_API_TASK_ROLE_ARN",
+              "executionRoleArn": "CONFIGURE_API_EXECUTION_ROLE_ARN",
+              "databaseSecretArn": "CONFIGURE_API_DATABASE_SECRET_ARN",
+              "compatibilityCommand": [
+                "/opt/oxagen/bin/oxagen",
+                "database",
+                "check-compatibility",
+                "--component",
+                "api"
+              ]
+            },
+            "gateway": {
+              "name": "CONFIGURE_GATEWAY_SERVICE",
+              "containerName": "gateway",
+              "taskRoleArn": "CONFIGURE_GATEWAY_TASK_ROLE_ARN",
+              "executionRoleArn": "CONFIGURE_GATEWAY_EXECUTION_ROLE_ARN",
+              "databaseSecretArn": "CONFIGURE_GATEWAY_DATABASE_SECRET_ARN",
+              "compatibilityCommand": [
+                "/opt/oxagen/bin/oxagen",
+                "database",
+                "check-compatibility",
+                "--component",
+                "gateway"
+              ]
+            },
+            "worker": {
+              "name": "CONFIGURE_WORKER_SERVICE",
+              "containerName": "worker",
+              "taskRoleArn": "CONFIGURE_WORKER_TASK_ROLE_ARN",
+              "executionRoleArn": "CONFIGURE_WORKER_EXECUTION_ROLE_ARN",
+              "databaseSecretArn": "CONFIGURE_WORKER_DATABASE_SECRET_ARN",
+              "compatibilityCommand": [
+                "/opt/oxagen/bin/oxagen",
+                "database",
+                "check-compatibility",
+                "--component",
+                "worker"
+              ]
+            }
+          },
+          "healthUrls": [
+            "https://<approved hostname>/health/ready"
+          ],
+          "database": {
+            "identifier": "<DatabaseClusterIdentifier>",
+            "arn": "<DatabaseClusterArn>",
+            "secretArn": "<DatabaseMasterSecretArn>",
+            "name": "oxagen",
+            "engineVersion": "<exact supported Aurora PostgreSQL version>",
+            "kmsKeyArn": "<DataKmsKeyArn>"
+          },
+          "rehearsal": {
+            "subnetGroup": "<DatabaseSubnetGroupName>",
+            "securityGroupIds": [
+              "<RehearsalDatabaseSecurityGroupId>"
+            ],
+            "subnetIds": [
+              "<private subnet A>",
+              "<private subnet B>"
+            ],
+            "taskSecurityGroupIds": [
+              "<RehearsalTaskSecurityGroupId>"
+            ],
+            "taskRoleArn": "<RehearsalTaskRoleArn>",
+            "executionRoleArn": "<RehearsalExecutionRoleArn>",
+            "taskFamily": "<CompatibilityTaskFamily>",
+            "logGroup": "<RehearsalLogGroupName>",
+            "minCapacity": 0.5,
+            "maxCapacity": 2
+          }
+        }
+      }
+    }
+  }
+}

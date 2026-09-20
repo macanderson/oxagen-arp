@@ -1,0 +1,15 @@
+{
+  "name": "oxagen-arp",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@11.23.0",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "build": "pnpm -r --filter ./packages/* --filter ./apps/* build",
+    "typecheck": "pnpm -r --filter ./packages/* --filter ./apps/* typecheck",
+    "test": "pnpm -r --filter ./packages/* --filter ./apps/* test",
+    "storybook": "pnpm --filter @oxagen-arp/web storybook",
+    "check:parity": "node tools/check-surface-parity.mjs",
+    "check:parity:strict": "node tools/check-surface-parity.mjs --strict"
+  }
+}

@@ -177,6 +177,14 @@ Oxagen can run as an online service with protected spaces for each customer. A t
 SOC 2 is an outside review of how a company protects customer data. The team must check access, make safe updates, and test how it recovers from failures. It must keep proof that these checks took place.
 
 
+## How the first hosted version will run
+
+AWS will run the app, gateway and workers using a service called ECS with Fargate. The test space and the live customer space use separate AWS accounts. AWS also stores the database and files.
+
+A release is built once. That same release is tested before it reaches customers. The team tests a copy of the database too. Production needs approval for that exact release. If an update fails, the old app can return only if it still works with the current data.
+
+Docker Compose is for local development. Kubernetes can wait. The AWS setup does not change the plan to support customers who keep data in their own network. No cloud resources or live product were started for this document.
+
 ## Set up your first workspace
 
 This is the proposed setup, not a released product. The fastest path is one command, `oxagen quickstart`. It signs you in, enrolls the device, creates a personal workspace if you have none, links the checkout, applies safe read-only defaults, and runs one small task. It uses the same checks as the full path and cannot weaken them.

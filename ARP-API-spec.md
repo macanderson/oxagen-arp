@@ -7450,3 +7450,9 @@ The OpenAPI and reference describe a proposed HTTP contract. They do not certify
 ## Validation performed for this artifact
 
 Read [validation-report.json](api/validation-report.json) for the actual checks. Local references, unique operation IDs, path parameters, required authentication/idempotency/scan declarations, component JSON Schema structure and representative positive/negative payloads are checked. The official OpenAPI structural schema is used when retrievable. No live service, generated SDK, provider adapter, database, race test or end-to-end security test is claimed here.
+
+## Hosted release and API checks
+
+The first hosted target is AWS ECS with Fargate. The app/API, gateway and workers remain separate services behind checked entry points. This hosting choice does not change the API's IAM, org scope, scan rules or completion rules. AWS service roles are infrastructure access; they do not replace human and agent identities in Oxagen.
+
+The [release setup](build-system/RELEASE-SETUP.md) binds the exact checked merge commit and immutable image bundle to staging tests and signed production approval. The [release adapter](build-system/adapters/local-release.md) checks ECS task definitions, image digests, task health, load balancer health and configured HTTPS readiness routes. The source and image proof comes from the bound release and task records; an HTTP 200 response alone does not identify a release. That operational health proof is separate from a claim that all product API behavior is correct. Live API, org-isolation and budget tests remain required after explicit contract certification.

@@ -2,7 +2,7 @@
 
 The package now includes clickable product mockups, a proposed HTTP API contract, typed schema designs, and a runnable build controller. They are review candidates. **The user has not certified them, and the product build has not started.** No live agent build, PR, merge, or deployment ran in this task.
 
-The package now includes concrete local Codex/Claude execution, a local model budget broker, isolated test commands, and GitHub PR/CI/merge operations. They use a supported Linux Docker profile. No separate execution or Git service must be built. Live qualification is still required. **Deployment remains incomplete until the staging and production hosting target is chosen.**
+The package now includes concrete local Codex/Claude execution, a local model budget broker, isolated test commands, and GitHub PR/CI/merge operations. They use a supported Linux Docker profile. No separate execution or Git service must be built. Live qualification is still required. **The chosen release target is AWS ECS with Fargate in separate staging and production accounts.** The package now includes its artifact builder, deployment adapter and infrastructure templates. Setup, certification and live qualification are still required.
 
 The [review packet](certification/REVIEW-PACKET.md) links the concrete files, validation evidence, known gaps and unsigned file manifest.
 
@@ -45,7 +45,7 @@ Follow [the one-time setup](build-system/LOCAL-SETUP.md): pin the CLI and qualit
 
 The unpaid `preflight` command checks the actual container restrictions, pinned CLI versions and two-request synthetic model/tool loops. It reads GitHub identity and fetches the existing branch. It creates no PR or paid model request. A successful fixture is not a substitute for approved live-provider testing.
 
-The staging and production hosting target is not configured or invented. That choice is needed to implement the concrete release adapter.
+The hosting choice is settled: ECS with Fargate, Aurora PostgreSQL Serverless v2 and S3. Fill in real account, region, network and secret-reference settings using the [release setup](build-system/RELEASE-SETUP.md). The supplied example keeps release disabled. Docker Compose is only for local development; Kubernetes is deferred.
 
 ## Certification is an exact gate
 
@@ -279,9 +279,19 @@ Live merges require measured classic branch protection: up-to-date checks pinned
 
 GitHub's merge request itself does not expose an expected-base compare-and-swap. The adapter still verifies parents and tree after the write. Changed or unproved policy and merge results stop all later work; a possibly completed merge is never reported as no effect.
 
-**The release implementation still needs one user decision: the staging and production hosting target.** The local adapter returns `HOSTING_TARGET_REQUIRED` before deployment. Choosing a platform will allow concrete build-artifact upload, rollout, health, migration/backup and rollback code to be added. No account or target is invented and no deployment is authorized by this document.
+The concrete target is **AWS ECS with Fargate**, with three services: app/API, gateway and workers. Staging and production use separate accounts, roles, keys, databases and object stores. The [AWS templates](build-system/infrastructure/aws/README.md) separate initial registry setup from environment setup, so no fake baseline app is needed. Initial product installation still needs certified code and schema, reviewed settings and a qualified baseline.
 
-The controller preserves the required release contract: bind one immutable artifact and actual checked source commit through staging, health, production approval, deployment and rollback. Failed health stops release. Unknown deployment effects require reconciliation. The existing mTLS client remains optional for organizations with compatible services; it is not used to claim the missing local release implementation is complete.
+The [artifact builder](build-system/adapters/local-artifacts.md) takes the actual CI-checked merged commit, builds three images once, and copies their exact digests to each account. The [release adapter](build-system/adapters/local-release.md) uses real AWS CLI operations. It creates and restores snapshots, checks a source-bound set of added schema changes, runs old/new image compatibility checks, updates ECS services, and checks tasks, load balancer targets and HTTPS readiness. These are implemented code paths, not calls to a service that someone still has to build.
+
+![After design certification, the exact merged commit must pass CI. A protected builder makes API, gateway and worker images once and checks their digests in separate staging and production registries. Each environment restores a database snapshot into a private test copy, applies the supported migration and tests old and new app compatibility. Staging deploys those images and must pass health checks. A human signs approval for the exact source, artifact and production target. Production deploys the same digests. Failed health keeps release stopped; the old app may return only if compatible with the current data. Unknown writes keep their records and locks until reconciled. The live database is not automatically rewound.](diagrams/aws_release.svg)
+
+*The selected AWS release path uses separate accounts, exact images, restored database tests, health checks and signed approval. Unknown results remain blocked. This drawing describes the implemented release controls; cloud qualification and product certification are still required.*
+
+Signed production approval binds that release's commit, images and target. The private approval key stays away from agents and the controller. Production writes recheck that approval. Application rollback keeps the current database and requires compatibility proof. Unsupported schema changes need a separate reviewed plan. Partial or unknown writes retain their records and locks for recovery. See [release setup](build-system/RELEASE-SETUP.md) for exact inputs and remaining cloud qualification.
+
+The cloud bill is separate from model-call limits. Fixed resource bounds and deadlines constrain work; AWS budget alerts do not impose a hard spend cap. No cloud provisioning, product build or live deployment ran here.
+
+The controller preserves the required release contract: bind one immutable artifact and actual checked source commit through staging, health, production approval, deployment and rollback. Failed health stops release. Unknown deployment effects require reconciliation. The existing mTLS client remains optional for organizations with compatible services. The supplied AWS path uses the concrete local modules.
 
 ## Checkpoints, cancellation, and unknown effects
 
@@ -300,12 +310,12 @@ The protected local adapter saves its own receipt before returning. If the wrapp
 
 A cancellation request is not a confirmed pause. It blocks new steps and signals the process group; container/remote evidence must confirm what stopped. An unproved result stays blocked. Do not clear holds or edit journals to force progress.
 
-The release state machine retains failed-health evidence across an interrupted rollback. Its local deployment and rollback commands remain disabled until the chosen target's adapter exists and is tested.
+The release state machine retains failed-health evidence across an interrupted rollback. The AWS adapter records write intent and exact resource IDs, then uses observed state for recovery. A completed rollback can be adopted after a lost reply, but the run stays stopped for a new reviewed release plan.
 
 ## What the tests check
 
-The [validation report](build-system/VALIDATION.md) records the current test count and scope. The suite includes real local Git worktrees and merge objects, HTTP over a Unix socket with a fake provider, money reservation/settlement, exact profile certificates, bounded repair, saved-result adoption, lock races, and container argv checks. GitHub command fixtures cover pagination, check producers, changed bases, actual merge trees, lost replies and reconciliation.
+The [validation report](build-system/VALIDATION.md) records the final 125 passing tests and their scope. Both AWS templates pass static validation. The suite includes real local Git worktrees and merge objects, HTTP over a Unix socket with a fake provider, money reservation/settlement, exact profile certificates, bounded repair, saved-result adoption, lock races, and container argv checks. GitHub command fixtures cover pagination, check producers, changed bases, actual merge trees, lost replies and reconciliation.
 
 The quality tests check exact-head snapshots, actual launcher result shapes, failed checks, cleanups and configured commands. The Linux preflight is implemented but was not run on this macOS host. No paid model, live GitHub write, cloud deployment or production restore was tested.
 
-Certification, live host/provider qualification, real migrations, org-isolation tests, budget races and staging/production drills remain release gates. The target-independent code is concrete. The release adapter remains open pending the hosting decision.
+Certification, live host/provider qualification, real migrations, org-isolation tests, budget races and staging/production drills remain release gates. The local runner and AWS release code are concrete within their documented profiles. Fixture and static checks do not prove real AWS behavior, image compatibility or customer readiness.

@@ -1,0 +1,21 @@
+{
+  "name": "@oxagen-arp/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "OXAGEN_DATA_SOURCE=fixtures node src/server.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "node --test src/**/*.test.ts",
+    "build": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@oxagen-arp/fixtures": "workspace:*",
+    "@oxagen-arp/kernel": "workspace:*",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  }
+}

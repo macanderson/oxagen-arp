@@ -81,7 +81,7 @@ test('known quality failure uses bounded repair and saved completed receipts are
 });
 
 test('installation digest covers executable adapters and container launchers',()=>{
- const dir=fs.mkdtempSync(path.join(os.tmpdir(),'oxagen-install-digest-'));try{fs.mkdirSync(path.join(dir,'adapters'));fs.writeFileSync(path.join(dir,'adapters/a.mjs'),'first');const before=installationDigest(dir);fs.writeFileSync(path.join(dir,'adapters/a.mjs'),'second');assert.notEqual(installationDigest(dir),before);}finally{fs.rmSync(dir,{recursive:true,force:true});}
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'oxagen-install-digest-'));try{fs.mkdirSync(path.join(dir,'adapters'));fs.writeFileSync(path.join(dir,'adapters/a.mjs'),'first');const before=installationDigest(dir);fs.writeFileSync(path.join(dir,'adapters/a.mjs'),'second');assert.notEqual(installationDigest(dir),before);const after=installationDigest(dir);fs.mkdirSync(path.join(dir,'infrastructure'));fs.writeFileSync(path.join(dir,'infrastructure/setup.py'),'print(1)');assert.notEqual(installationDigest(dir),after);}finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
 
 test('reconciliation cannot race a living adapter or guess that missing startup records mean no effect',async()=>{
@@ -92,4 +92,25 @@ test('reconciliation cannot race a living adapter or guess that missing startup 
   await assert.rejects(dispatchLocal({kind:'reconcile',operation:op},config,modules),/still running/);
   await assert.rejects(dispatchLocal({kind:'reconcile',operation:{...op,id:'never-recorded'}},config,modules),/startup is unconfirmed/);
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
+
+test('recovered rollback binds the failed target and remains stopped after restoring service',async()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'oxagen-rollback-adoption-'));try{
+  const j=new Journal(dir,'plan'),op={id:'rollback-known',kind:'rollback',batchId:'release',maxCostCents:0,payload:{head:'h',targets:{staging:'s',production:'p'},failedHealth:{target:'p'}},recovery:{blocked:{batchId:'release',rollbackRequired:true},pendingReceipt:{}}};j.record('seed',{...j.state,active:op,blocked:{reason:'lost reply'},batches:{release:{stage:'production_health'}}});
+  const receipt={operationId:op.id,status:'succeeded',head:'h',costCents:0,authorized:true,restored:true,healthy:true,restoredArtifactDigest:'old-digest',target:'p'};
+  assert.throws(()=>adoptLocalReceipt(j,{...receipt,target:'s'}),/target or source/);assert(j.state.active);adoptLocalReceipt(j,receipt);assert.equal(j.state.active,null);assert.match(j.state.blocked.reason,/new reviewed release plan/);assert.deepEqual(j.state.rollbackReceipt,receipt);assert.equal(j.state.pendingReceipt,null);
+ }finally{fs.rmSync(dir,{recursive:true,force:true})}
+});
+
+test('local release preflight binds the actual merged commit and failed staging health blocks production',async()=>{
+ const f=fixture();try{
+  f.config.targets.staging='staging-account';f.config.targets.production='production-account';f.plan.batches[1].phase='release';
+  let failedHealth=false;
+  const hook=async q=>{const r=await f.hook(q),p=q.payload;if(!p)return r;if(['release_preflight','staging_deploy','staging_health','production_authorize','production_deploy','production_health'].includes(q.kind)){Object.assign(r,{executionHead:p.executionHead,artifactDigest:'exact-bundle'});if(q.kind==='release_preflight')Object.assign(r,{backupVerified:true,migrationsRehearsed:true,rollbackReady:true});else r.target=q.kind.startsWith('production')?f.config.targets.production:f.config.targets.staging;if(q.kind.endsWith('_health'))r.healthy=!failedHealth;if(q.kind==='production_authorize')r.authorized=true;}return r;};
+  await assert.rejects(new Engine({...f,hook}).run());f.certify();failedHealth=true;await assert.rejects(new Engine({...f,hook}).run(),/Health failed/);assert.equal(f.journal.state.blocked.rollbackRequired,true);assert.equal(f.journal.state.pendingReceipt.result.target,'staging-account');assert(!f.calls.some(x=>x[1]==='production_deploy'));assert.notEqual(f.journal.state.batches.product.receipts.release_preflight.executionHead,f.journal.state.batches.product.head);
+ }finally{fs.rmSync(f.root,{recursive:true,force:true})}
+});
+
+test('local dispatcher uses concrete release module and adopts its stored exact result',async()=>{
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'oxagen-release-dispatch-'));try{const config={adapter:'local',controlDir:root,local:{deployment:{enabled:true}},targets:{staging:'s',production:'p'}},q={id:'release-route',kind:'staging_deploy',batchId:'release',maxCostCents:0,payload:{head:'candidate',executionHead:'merge',targets:config.targets}},modules={execution:{},github:{},quality:{},release:{execute:async request=>({operationId:request.id,status:'succeeded',head:'candidate',executionHead:'merge',costCents:0,artifactDigest:'exact',target:'s'})}};const out=await dispatchLocal(q,config,modules);const recovered=await dispatchLocal({kind:'reconcile',operation:q},config,modules);assert.equal(out.executionHead,'merge');assert.deepEqual(recovered.completedReceipt,out);}finally{fs.rmSync(root,{recursive:true,force:true})}
 });
