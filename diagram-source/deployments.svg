@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="arp-deployments" class="arp-diagram" viewBox="0 0 1200 790" role="img" aria-labelledby="arp-deployments-title arp-deployments-desc">
+<title id="arp-deployments-title">The same rules can live in three places</title><desc id="arp-deployments-desc">Three deployment options use the same architecture. Hosted Oxagen keeps management and request checks in its cloud with isolated customer data. In a split setup, hosted management sends commands to customer-local gates, keys, records, and approved models. Fully private Oxagen keeps both management and data services within the customer environment. Cloud commands cannot override local customer rules, and offline use needs prior allowed limits.</desc>
+<defs><marker id="arp-deployments-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="var(--diagram-line,var(--arp-line,#A1A1AA))" stroke-width="1.5" stroke-linejoin="round"/></marker></defs>
+<style>
+#arp-deployments{--arp-bg:#09090B;--arp-panel:#18181B;--arp-text:#FFFFFF;--arp-muted:#A1A1AA;--arp-line:#A1A1AA}
+@media(prefers-color-scheme:light){#arp-deployments{--arp-bg:#FFFFFF;--arp-panel:#FFFFFF;--arp-text:#09090B;--arp-muted:#71717A;--arp-line:#71717A}}
+#arp-deployments .box{fill:var(--diagram-panel,var(--arp-panel,#18181B));stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2}
+#arp-deployments .inner{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:1.5}
+#arp-deployments .edge{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2;stroke-linejoin:round;marker-end:url(#arp-deployments-arrow)}
+#arp-deployments .title{font-family:"Space Grotesk",sans-serif;font-size:32px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-deployments .label{font-family:Geist,sans-serif;font-size:24px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-deployments .body{font-family:Geist,sans-serif;font-size:22px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-deployments .note{font-family:Geist,sans-serif;font-size:20px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-deployments .number{font-family:"Monaspace Neon",monospace;font-size:26px;font-weight:500;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+</style>
+<rect width="1200" height="790" fill="var(--diagram-bg,var(--arp-bg,#09090B))"/>
+
+<text x="40" y="52" class="title" text-anchor="start">The same rules can live in three places</text>
+<rect x="40" y="120" width="320" height="125" rx="12" class="box"/>
+<text x="64" y="159" class="label" text-anchor="start">Hosted Oxagen</text>
+<text x="64" y="196" class="body" text-anchor="start">SaaS</text>
+<rect x="440" y="120" width="320" height="125" rx="12" class="box"/>
+<text x="464" y="159" class="label" text-anchor="start">Split setup</text>
+<text x="464" y="196" class="body" text-anchor="start">Cloud + your network</text>
+<rect x="840" y="120" width="320" height="125" rx="12" class="box"/>
+<text x="864" y="159" class="label" text-anchor="start">Fully private</text>
+<text x="864" y="196" class="body" text-anchor="start">Your network</text>
+<rect x="40" y="320" width="320" height="260" rx="12" class="box"/>
+<text x="64" y="359" class="label" text-anchor="start">Oxagen cloud</text>
+<text x="64" y="396" class="body" text-anchor="start">Agent rules and web app</text>
+<text x="64" y="426" class="body" text-anchor="start">Request gates and records</text>
+<text x="64" y="456" class="body" text-anchor="start">Separate customer keys</text>
+<text x="64" y="486" class="body" text-anchor="start">Separate customer data</text>
+<path d="M 200 245 V 320" class="edge"/>
+<rect x="440" y="320" width="320" height="95" rx="12" class="box"/>
+<text x="464" y="359" class="label" text-anchor="start">Cloud: app and rules</text>
+<path d="M 600 245 V 320" class="edge"/>
+<rect x="440" y="500" width="320" height="165" rx="12" class="box"/>
+<text x="464" y="539" class="label" text-anchor="start">Your network</text>
+<text x="464" y="576" class="body" text-anchor="start">Request gates and records</text>
+<text x="464" y="606" class="body" text-anchor="start">Keys and approved models</text>
+<text x="464" y="636" class="body" text-anchor="start">Local rules have final say.</text>
+<path d="M 600 415 V 500" class="edge"/>
+<text x="620" y="468" class="note" text-anchor="start">Allowed commands</text>
+<rect x="840" y="320" width="320" height="260" rx="12" class="box"/>
+<text x="864" y="359" class="label" text-anchor="start">Your network</text>
+<text x="864" y="396" class="body" text-anchor="start">Agent rules and web app</text>
+<text x="864" y="426" class="body" text-anchor="start">Request gates and records</text>
+<text x="864" y="456" class="body" text-anchor="start">Keys and approved models</text>
+<text x="864" y="486" class="body" text-anchor="start">Local evidence and backup</text>
+<path d="M 1000 245 V 320" class="edge"/>
+<text x="40" y="720" class="note" text-anchor="start">Cloud commands cannot bypass customer-local rules or export controls.</text>
+<text x="40" y="756" class="note" text-anchor="start">Offline use needs approved limits in advance. It cannot promise instant cloud steering.</text>
+</svg>

@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:oxagen:proposed:repo-common:0.2",
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "dateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "cleanedSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "repoPath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[A-Za-z0-9._/-]+$"
+    },
+    "source": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "vcs_file"
+            },
+            "path": {
+              "$ref": "#/$defs/repoPath"
+            },
+            "version": {
+              "const": "checkout"
+            }
+          },
+          "required": [
+            "kind",
+            "path",
+            "version"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "oxagen_record"
+            },
+            "record_id": {
+              "$ref": "#/$defs/uuid"
+            },
+            "revision_id": {
+              "$ref": "#/$defs/uuid"
+            }
+          },
+          "required": [
+            "kind",
+            "record_id",
+            "revision_id"
+          ]
+        }
+      ]
+    },
+    "configFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/repoPath"
+        },
+        "source_commit_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-f0-9]{40,64}$"
+        },
+        "source_snapshot_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "cleaned_sha256": {
+          "$ref": "#/$defs/cleanedSha256"
+        }
+      },
+      "required": [
+        "path",
+        "source_commit_id",
+        "source_snapshot_id",
+        "cleaned_sha256"
+      ]
+    }
+  }
+}

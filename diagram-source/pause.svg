@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="arp-pause" class="arp-diagram" viewBox="0 0 1200 890" role="img" aria-labelledby="arp-pause-title arp-pause-desc">
+<title id="arp-pause-title">A pause needs proof</title><desc id="arp-pause-desc">A pause request holds new actions and late results. All workers must acknowledge the hold or be proved isolated. Local files and active context must stop changing. Unknown outside writes keep the run pausing. A confirmed saved boundary allows the paused state. Late replies go to evidence only and can enter a future run only through a separate checked adoption.</desc>
+<defs><marker id="arp-pause-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="var(--diagram-line,var(--arp-line,#A1A1AA))" stroke-width="1.5" stroke-linejoin="round"/></marker></defs>
+<style>
+#arp-pause{--arp-bg:#09090B;--arp-panel:#18181B;--arp-text:#FFFFFF;--arp-muted:#A1A1AA;--arp-line:#A1A1AA}
+@media(prefers-color-scheme:light){#arp-pause{--arp-bg:#FFFFFF;--arp-panel:#FFFFFF;--arp-text:#09090B;--arp-muted:#71717A;--arp-line:#71717A}}
+#arp-pause .box{fill:var(--diagram-panel,var(--arp-panel,#18181B));stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2}
+#arp-pause .inner{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:1.5}
+#arp-pause .edge{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2;stroke-linejoin:round;marker-end:url(#arp-pause-arrow)}
+#arp-pause .title{font-family:"Space Grotesk",sans-serif;font-size:32px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-pause .label{font-family:Geist,sans-serif;font-size:24px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-pause .body{font-family:Geist,sans-serif;font-size:22px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-pause .note{font-family:Geist,sans-serif;font-size:20px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-pause .number{font-family:"Monaspace Neon",monospace;font-size:26px;font-weight:500;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+</style>
+<rect width="1200" height="890" fill="var(--diagram-bg,var(--arp-bg,#09090B))"/>
+
+<text x="40" y="52" class="title" text-anchor="start">A pause needs proof</text>
+<rect x="40" y="120" width="300" height="150" rx="12" class="box" stroke-dasharray="8 7"/>
+<text x="64" y="159" class="label" text-anchor="start">1. Request a pause</text>
+<text x="64" y="196" class="body" text-anchor="start">Hold new requests.</text>
+<text x="64" y="226" class="body" text-anchor="start">Hold late results.</text>
+<rect x="450" y="120" width="300" height="150" rx="12" class="box" stroke-dasharray="8 7"/>
+<text x="474" y="159" class="label" text-anchor="start">2. Check each worker</text>
+<text x="474" y="196" class="body" text-anchor="start">Stop it or prove</text>
+<text x="474" y="226" class="body" text-anchor="start">it cannot act.</text>
+<rect x="860" y="120" width="300" height="150" rx="12" class="box" stroke-dasharray="8 7"/>
+<text x="884" y="159" class="label" text-anchor="start">3. Check the state</text>
+<text x="884" y="196" class="body" text-anchor="start">Files and context stop.</text>
+<text x="884" y="226" class="body" text-anchor="start">Resolve outside writes.</text>
+<path d="M 340 195 H 450" class="edge"/>
+<path d="M 750 195 H 860" class="edge"/>
+<rect x="860" y="355" width="300" height="135" rx="12" class="box" stroke-dasharray="8 7"/>
+<text x="884" y="394" class="label" text-anchor="start">Still not sure?</text>
+<text x="884" y="431" class="body" text-anchor="start">Keep the run pausing.</text>
+<text x="884" y="461" class="body" text-anchor="start">Show what is missing.</text>
+<path d="M 1010 270 V 355" class="edge"/>
+<text x="1030" y="322" class="note" text-anchor="start">If proof is missing</text>
+<rect x="40" y="355" width="300" height="135" rx="12" class="box"/>
+<text x="64" y="394" class="label" text-anchor="start">4. Save the boundary</text>
+<text x="64" y="431" class="body" text-anchor="start">Commit the proof</text>
+<text x="64" y="461" class="body" text-anchor="start">and the saved state.</text>
+<path d="M 930 270 V 308 H 190 V 355" class="edge"/>
+<text x="510" y="301" class="note" text-anchor="middle">Only when all checks hold</text>
+<rect x="450" y="355" width="300" height="135" rx="12" class="box"/>
+<rect x="456" y="361" width="288" height="123" rx="7" class="inner"/>
+<text x="474" y="394" class="label" text-anchor="start">Paused</text>
+<text x="474" y="431" class="body" text-anchor="start">Resume needs this proof</text>
+<text x="474" y="461" class="body" text-anchor="start">and fresh checks.</text>
+<path d="M 340 420 H 450" class="edge"/>
+<rect x="40" y="600" width="300" height="135" rx="12" class="box"/>
+<text x="64" y="639" class="label" text-anchor="start">A late reply arrives</text>
+<text x="64" y="676" class="body" text-anchor="start">Keep the full evidence.</text>
+<text x="64" y="706" class="body" text-anchor="start">Link it to the old request.</text>
+<rect x="450" y="600" width="300" height="135" rx="12" class="box"/>
+<text x="474" y="639" class="label" text-anchor="start">Evidence only</text>
+<text x="474" y="676" class="body" text-anchor="start">No new tool call.</text>
+<text x="474" y="706" class="body" text-anchor="start">No silent memory change.</text>
+<rect x="860" y="600" width="300" height="135" rx="12" class="box" stroke-dasharray="8 7"/>
+<text x="884" y="639" class="label" text-anchor="start">Use it later?</text>
+<text x="884" y="676" class="body" text-anchor="start">A separate decision</text>
+<text x="884" y="706" class="body" text-anchor="start">must check it again.</text>
+<path d="M 340 667 H 450" class="edge"/>
+<path d="M 750 667 H 860" class="edge" stroke-dasharray="7 6"/>
+<text x="40" y="802" class="note" text-anchor="start">A model may still be computing elsewhere. Paused means it cannot drive this run.</text>
+<text x="40" y="838" class="note" text-anchor="start">Late receipts can still settle cost or show that an outside write needs review.</text>
+</svg>

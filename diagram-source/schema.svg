@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="arp-schema" class="arp-diagram" viewBox="0 0 1200 1370" role="img" aria-labelledby="arp-schema-title arp-schema-desc">
+<title id="arp-schema-title">One set of records, with checked views of the same work</title><desc id="arp-schema-desc">Tenant, workspace, and canonical IAM records identify people and agents and hold per-record permissions. Runs and governed actions reference these identities. Policy decisions and shared limits reference the exact action. These primary PostgreSQL records use tenant and workspace row-level security plus canonical record grants. Sanitized evidence and a transactional outbox are saved with the work. Large clean evidence files live in a separate encrypted object store through checked references; object storage is not a competing authority or an escape from record access. Outbox workers build graph and search projections from committed records. Source systems such as version control and business services keep authority over their own facts. Checked source bindings retain stable IDs, native versions, permissions, and cleaned data. These also feed the required context graph. A future business ingestion block joins the shared trusted connector receipt to external business records using exact source IDs and versions. The future join never uses a model guess or a fuzzy amount match. Every graph edge and search result still receives record access checks. This drawing groups schema domains rather than depicting each physical table.</desc>
+<defs><marker id="arp-schema-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="var(--diagram-line,var(--arp-line,#A1A1AA))" stroke-width="1.5" stroke-linejoin="round"/></marker></defs>
+<style>
+#arp-schema{--arp-bg:#09090B;--arp-panel:#18181B;--arp-text:#FFFFFF;--arp-muted:#A1A1AA;--arp-line:#A1A1AA}
+@media(prefers-color-scheme:light){#arp-schema{--arp-bg:#FFFFFF;--arp-panel:#FFFFFF;--arp-text:#09090B;--arp-muted:#71717A;--arp-line:#71717A}}
+#arp-schema .box{fill:var(--diagram-panel,var(--arp-panel,#18181B));stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2}
+#arp-schema .inner{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:1.5}
+#arp-schema .edge{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2;stroke-linejoin:round;marker-end:url(#arp-schema-arrow)}
+#arp-schema .title{font-family:"Space Grotesk",sans-serif;font-size:32px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-schema .label{font-family:Geist,sans-serif;font-size:24px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-schema .body{font-family:Geist,sans-serif;font-size:22px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-schema .note{font-family:Geist,sans-serif;font-size:20px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-schema .number{font-family:"Monaspace Neon",monospace;font-size:26px;font-weight:500;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+</style>
+<rect width="1200" height="1370" fill="var(--diagram-bg,var(--arp-bg,#09090B))"/>
+
+<text x="40" y="52" class="title" text-anchor="start">One set of records, with checked views of the same work</text>
+<text x="40" y="88" class="note" text-anchor="start">Primary database rows use tenant, workspace, and record access checks.</text>
+<rect x="40" y="125" width="330" height="170" rx="12" class="box"/>
+<text x="64" y="164" class="label" text-anchor="start">Tenant + shared IAM</text>
+<text x="64" y="201" class="body" text-anchor="start">People and agent identities</text>
+<text x="64" y="231" class="body" text-anchor="start">Workspaces + record rights</text>
+<text x="64" y="261" class="body" text-anchor="start">One trusted set of grants</text>
+<rect x="435" y="125" width="330" height="170" rx="12" class="box"/>
+<text x="459" y="164" class="label" text-anchor="start">Runs + governed actions</text>
+<text x="459" y="201" class="body" text-anchor="start">Task, run, and exact action</text>
+<text x="459" y="231" class="body" text-anchor="start">Attempts and current state</text>
+<text x="459" y="261" class="body" text-anchor="start">Link the acting identity.</text>
+<rect x="830" y="125" width="330" height="170" rx="12" class="box"/>
+<text x="854" y="164" class="label" text-anchor="start">Rules + shared limits</text>
+<text x="854" y="201" class="body" text-anchor="start">Policy versions + decisions</text>
+<text x="854" y="231" class="body" text-anchor="start">Approvals only if required</text>
+<text x="854" y="261" class="body" text-anchor="start">Reserve shared limits.</text>
+<path d="M 370 210 H 435" class="edge"/>
+<path d="M 765 210 H 830" class="edge"/>
+<rect x="40" y="420" width="725" height="165" rx="12" class="box"/>
+<text x="64" y="459" class="label" text-anchor="start">Clean evidence + saved change events</text>
+<text x="64" y="496" class="body" text-anchor="start">Save the checked result with its action.</text>
+<text x="64" y="526" class="body" text-anchor="start">Commit the outbox event in the same database transaction.</text>
+<text x="64" y="556" class="body" text-anchor="start">Keep the decision and its proof linked.</text>
+<path d="M 995 295 V 355 H 400 V 420" class="edge"/>
+<rect x="850" y="420" width="310" height="165" rx="12" class="box"/>
+<text x="874" y="459" class="label" text-anchor="start">Evidence object store</text>
+<text x="874" y="496" class="body" text-anchor="start">Encrypted clean files</text>
+<text x="874" y="526" class="body" text-anchor="start">Checked file references</text>
+<text x="874" y="556" class="body" text-anchor="start">Same record access rules</text>
+<path d="M 765 502 H 850" class="edge"/>
+<rect x="40" y="735" width="330" height="170" rx="12" class="box"/>
+<text x="64" y="774" class="label" text-anchor="start">Authoritative sources</text>
+<text x="64" y="811" class="body" text-anchor="start">Code repo + source systems</text>
+<text x="64" y="841" class="body" text-anchor="start">Keep the source of truth.</text>
+<text x="64" y="871" class="body" text-anchor="start">Clean before data leaves.</text>
+<rect x="435" y="735" width="330" height="170" rx="12" class="box"/>
+<text x="459" y="774" class="label" text-anchor="start">Source and version links</text>
+<text x="459" y="811" class="body" text-anchor="start">Stable source + record IDs</text>
+<text x="459" y="841" class="body" text-anchor="start">Native versions + freshness</text>
+<text x="459" y="871" class="body" text-anchor="start">Source access still applies.</text>
+<rect x="830" y="735" width="330" height="170" rx="12" class="box"/>
+<text x="854" y="774" class="label" text-anchor="start">Graph + search views</text>
+<text x="854" y="811" class="body" text-anchor="start">Build from committed rows.</text>
+<text x="854" y="841" class="body" text-anchor="start">Link allowed context.</text>
+<text x="854" y="871" class="body" text-anchor="start">Check every result and link.</text>
+<path d="M 370 820 H 435" class="edge"/>
+<path d="M 765 820 H 830" class="edge"/>
+<path d="M 400 585 V 650 H 995 V 735" class="edge"/>
+<text x="450" y="630" class="note" text-anchor="start">The outbox feeds rebuildable views.</text>
+<rect x="40" y="1010" width="1120" height="250" rx="12" class="box" stroke-dasharray="8 7"/>
+<text x="64" y="1049" class="label" text-anchor="start">Future joins to business records</text>
+<rect x="65" y="1090" width="310" height="125" rx="12" class="box"/>
+<text x="89" y="1129" class="label" text-anchor="start">Trusted tool receipt</text>
+<text x="89" y="1166" class="body" text-anchor="start">Exact request + source IDs</text>
+<text x="89" y="1196" class="body" text-anchor="start">Part of the action record</text>
+<rect x="445" y="1090" width="310" height="125" rx="12" class="box"/>
+<text x="469" y="1129" class="label" text-anchor="start">Checked correlation</text>
+<text x="469" y="1166" class="body" text-anchor="start">Join with trusted proof.</text>
+<text x="469" y="1196" class="body" text-anchor="start">Keep unknown links clear.</text>
+<rect x="825" y="1090" width="310" height="125" rx="12" class="box"/>
+<text x="849" y="1129" class="label" text-anchor="start">Source business record</text>
+<text x="849" y="1166" class="body" text-anchor="start">Refund, order, customer</text>
+<text x="849" y="1196" class="body" text-anchor="start">Keep source versions.</text>
+<path d="M 375 1152 H 445" class="edge"/>
+<path d="M 755 1152 H 825" class="edge"/>
+<text x="40" y="1318" class="note" text-anchor="start">Files and projections do not create new authority. They use the same record rights.</text>
+<text x="40" y="1354" class="note" text-anchor="start">The graph foundation is required. Business ingestion and partner plugins remain future work.</text>
+</svg>

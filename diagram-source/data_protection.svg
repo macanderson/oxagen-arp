@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="arp-data_protection" class="arp-diagram" viewBox="0 0 1200 1100" role="img" aria-labelledby="arp-data_protection-title arp-data_protection-desc">
+<title id="arp-data_protection-title">Clean data locally before anything leaves</title><desc id="arp-data_protection-desc">Raw prompt text, full history, tool inputs and results, tool schemas, files, images, attachments, URLs, and request headers enter the protected local desktop gateway. The service is separate from the app UI and protected from the controlled agent. The workspace scanner checks the full assembled outgoing request and every required attachment. Workspace rules may block the send, redact content, or replace sensitive values. If required content cannot be checked, the send is blocked. The blocked path does not upload raw content or raw evidence. The allowed path carries only the cleaned full request and a minimal ScanReceipt without raw text. This receipt binds the exact cleaned request digest and workspace scan-policy version. The tenant gateway checks the receipt and blocks missing, stale, or mismatched receipts. Changed requests are rechecked under current access and policy. Only this cleaned form reaches the tenant gateway, approved model or tool, and sanitized Oxagen evidence records. The same path applies to outgoing reports and telemetry. No raw request, raw evidence, or replacement mapping may take a separate cloud path.</desc>
+<defs><marker id="arp-data_protection-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="var(--diagram-line,var(--arp-line,#A1A1AA))" stroke-width="1.5" stroke-linejoin="round"/></marker></defs>
+<style>
+#arp-data_protection{--arp-bg:#09090B;--arp-panel:#18181B;--arp-text:#FFFFFF;--arp-muted:#A1A1AA;--arp-line:#A1A1AA}
+@media(prefers-color-scheme:light){#arp-data_protection{--arp-bg:#FFFFFF;--arp-panel:#FFFFFF;--arp-text:#09090B;--arp-muted:#71717A;--arp-line:#71717A}}
+#arp-data_protection .box{fill:var(--diagram-panel,var(--arp-panel,#18181B));stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2}
+#arp-data_protection .inner{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:1.5}
+#arp-data_protection .edge{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2;stroke-linejoin:round;marker-end:url(#arp-data_protection-arrow)}
+#arp-data_protection .title{font-family:"Space Grotesk",sans-serif;font-size:32px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-data_protection .label{font-family:Geist,sans-serif;font-size:24px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-data_protection .body{font-family:Geist,sans-serif;font-size:22px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-data_protection .note{font-family:Geist,sans-serif;font-size:20px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-data_protection .number{font-family:"Monaspace Neon",monospace;font-size:26px;font-weight:500;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+</style>
+<rect width="1200" height="1100" fill="var(--diagram-bg,var(--arp-bg,#09090B))"/>
+
+<text x="40" y="52" class="title" text-anchor="start">Clean data locally before anything leaves</text>
+<text x="40" y="88" class="note" text-anchor="start">The protected desktop service is separate from the app UI.</text>
+<rect x="40" y="120" width="1120" height="640" rx="12" class="box"/>
+<text x="64" y="159" class="label" text-anchor="start">On the operator’s device</text>
+<rect x="75" y="200" width="420" height="230" rx="12" class="box"/>
+<text x="99" y="239" class="label" text-anchor="start">Raw local inputs</text>
+<text x="99" y="276" class="body" text-anchor="start">Prompt and full history</text>
+<text x="99" y="306" class="body" text-anchor="start">Tool inputs, results, and schemas</text>
+<text x="99" y="336" class="body" text-anchor="start">Files, images, and attachments</text>
+<text x="99" y="366" class="body" text-anchor="start">URLs and request headers</text>
+<rect x="590" y="200" width="535" height="230" rx="12" class="box"/>
+<text x="614" y="239" class="label" text-anchor="start">Local gateway + workspace scanner</text>
+<text x="614" y="276" class="body" text-anchor="start">Scan the full assembled request.</text>
+<text x="614" y="306" class="body" text-anchor="start">Use this workspace’s data rules.</text>
+<text x="614" y="336" class="body" text-anchor="start">Block, redact, or replace content.</text>
+<text x="614" y="366" class="body" text-anchor="start">Check attachments before sending.</text>
+<text x="614" y="396" class="body" text-anchor="start">If a part cannot be checked, block.</text>
+<path d="M 495 315 H 590" class="edge"/>
+<rect x="75" y="530" width="420" height="160" rx="12" class="box"/>
+<text x="99" y="569" class="label" text-anchor="start">Blocked: no upload</text>
+<text x="99" y="606" class="body" text-anchor="start">Do not call the model or tool.</text>
+<text x="99" y="636" class="body" text-anchor="start">Do not upload raw evidence.</text>
+<text x="99" y="666" class="body" text-anchor="start">Show a local reason.</text>
+<rect x="660" y="530" width="465" height="160" rx="12" class="box"/>
+<rect x="666" y="536" width="453" height="148" rx="7" class="inner"/>
+<text x="684" y="569" class="label" text-anchor="start">Cleaned request + scan receipt</text>
+<text x="684" y="606" class="body" text-anchor="start">Receipt binds exact request + rules.</text>
+<text x="684" y="636" class="body" text-anchor="start">No raw content in the receipt.</text>
+<text x="684" y="666" class="body" text-anchor="start">Recheck any changed request.</text>
+<path d="M 857 430 V 480 H 285 V 530" class="edge"/>
+<path d="M 857 480 H 892 V 530" class="edge"/>
+<text x="75" y="730" class="note" text-anchor="start">Only the checked, cleaned form may leave this device.</text>
+<rect x="75" y="850" width="420" height="135" rx="12" class="box"/>
+<text x="99" y="889" class="label" text-anchor="start">Oxagen evidence records</text>
+<text x="99" y="926" class="body" text-anchor="start">Only cleaned data and receipts</text>
+<text x="99" y="956" class="body" text-anchor="start">Record what was actually sent.</text>
+<rect x="660" y="850" width="465" height="135" rx="12" class="box"/>
+<text x="684" y="889" class="label" text-anchor="start">Tenant gateway + approved model</text>
+<text x="684" y="926" class="body" text-anchor="start">Check request and scan receipt.</text>
+<text x="684" y="956" class="body" text-anchor="start">Then check access, rules, and budget.</text>
+<path d="M 892 690 V 795 H 285 V 850" class="edge"/>
+<path d="M 892 795 V 850" class="edge"/>
+<text x="40" y="1045" class="note" text-anchor="start">Only the cleaned output may leave. An unknown or failed scan blocks the send.</text>
+<text x="40" y="1081" class="note" text-anchor="start">Outgoing reports and telemetry use this same path. Raw content is not a fallback.</text>
+</svg>

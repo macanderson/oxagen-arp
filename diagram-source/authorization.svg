@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="arp-authorization" class="arp-diagram" viewBox="0 0 1200 1110" role="img" aria-labelledby="arp-authorization-title arp-authorization-desc">
+<title id="arp-authorization-title">One toolbelt, checked on every call</title><desc id="arp-authorization-desc">Oxagen stores a versioned agent definition with allowed and denied tool lists. The effective toolbelt keeps only tools allowed by that definition, the approved mode, workspace, operator rights, current policy, and current run grant. Deny wins and unknown tools are denied. One logical Oxagen MCP endpoint authenticates each request and returns this agent and workspace’s allowed managed catalog. In the support-agent example, lookup_customer is shown and process_refund is denied. Every tools/call is checked again for trusted identity, tool assignment, inputs, approvals, access to each record, current policy, run state, and budget. A protected run guard also checks registered native, shell, file, other MCP, and hosted tool paths. Only an exact governed action with a saved decision, reserved cost, and current authorization may run. A hidden or stale tool name does not grant permission. MCP alone cannot block other tool paths. Strict mode refuses a harness setup whose required tool paths cannot be guarded or disabled.</desc>
+<defs><marker id="arp-authorization-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="var(--diagram-line,var(--arp-line,#A1A1AA))" stroke-width="1.5" stroke-linejoin="round"/></marker></defs>
+<style>
+#arp-authorization{--arp-bg:#09090B;--arp-panel:#18181B;--arp-text:#FFFFFF;--arp-muted:#A1A1AA;--arp-line:#A1A1AA}
+@media(prefers-color-scheme:light){#arp-authorization{--arp-bg:#FFFFFF;--arp-panel:#FFFFFF;--arp-text:#09090B;--arp-muted:#71717A;--arp-line:#71717A}}
+#arp-authorization .box{fill:var(--diagram-panel,var(--arp-panel,#18181B));stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2}
+#arp-authorization .inner{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:1.5}
+#arp-authorization .edge{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2;stroke-linejoin:round;marker-end:url(#arp-authorization-arrow)}
+#arp-authorization .title{font-family:"Space Grotesk",sans-serif;font-size:32px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-authorization .label{font-family:Geist,sans-serif;font-size:24px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-authorization .body{font-family:Geist,sans-serif;font-size:22px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-authorization .note{font-family:Geist,sans-serif;font-size:20px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-authorization .number{font-family:"Monaspace Neon",monospace;font-size:26px;font-weight:500;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+</style>
+<rect width="1200" height="1110" fill="var(--diagram-bg,var(--arp-bg,#09090B))"/>
+
+<text x="40" y="52" class="title" text-anchor="start">One toolbelt, checked on every call</text>
+<rect x="40" y="125" width="330" height="190" rx="12" class="box"/>
+<text x="64" y="164" class="label" text-anchor="start">Agent definition</text>
+<text x="64" y="201" class="body" text-anchor="start">Allowed tool list</text>
+<text x="64" y="231" class="body" text-anchor="start">Denied tool list</text>
+<text x="64" y="261" class="body" text-anchor="start">Version set in Oxagen</text>
+<rect x="450" y="125" width="330" height="190" rx="12" class="box"/>
+<text x="474" y="164" class="label" text-anchor="start">Active run limits</text>
+<text x="474" y="201" class="body" text-anchor="start">Agent mode + workspace</text>
+<text x="474" y="231" class="body" text-anchor="start">Operator rights + rules</text>
+<text x="474" y="261" class="body" text-anchor="start">Current run rights</text>
+<rect x="860" y="125" width="300" height="190" rx="12" class="box"/>
+<text x="884" y="164" class="label" text-anchor="start">Effective toolbelt</text>
+<text x="884" y="201" class="body" text-anchor="start">Keep allowed tools.</text>
+<text x="884" y="231" class="body" text-anchor="start">Remove every deny.</text>
+<text x="884" y="261" class="body" text-anchor="start">Unknown tools: denied.</text>
+<path d="M 370 220 H 450" class="edge"/>
+<path d="M 780 220 H 860" class="edge"/>
+<path d="M 1010 315 V 365 H 250 V 425" class="edge"/>
+<path d="M 1010 365 V 425" class="edge"/>
+<rect x="40" y="425" width="420" height="210" rx="12" class="box"/>
+<text x="64" y="464" class="label" text-anchor="start">One Oxagen MCP endpoint</text>
+<text x="64" y="501" class="body" text-anchor="start">Check who asks on each request.</text>
+<text x="64" y="531" class="body" text-anchor="start">List this agent’s allowed tools.</text>
+<text x="64" y="561" class="body" text-anchor="start">Support agent example:</text>
+<text x="64" y="605" class="number" text-anchor="start">lookup_customer</text>
+<rect x="650" y="425" width="510" height="210" rx="12" class="box"/>
+<text x="674" y="464" class="label" text-anchor="start">Protected guard checks each call</text>
+<text x="674" y="501" class="body" text-anchor="start">Identity, tool, inputs, and approvals</text>
+<text x="674" y="531" class="body" text-anchor="start">Rights to each customer record</text>
+<text x="674" y="561" class="body" text-anchor="start">Current rules, run state, and budget</text>
+<path d="M 460 525 H 650" class="edge"/>
+<text x="555" y="506" class="number" text-anchor="middle">tools/call</text>
+<rect x="40" y="705" width="420" height="205" rx="12" class="box"/>
+<text x="64" y="744" class="label" text-anchor="start">Other tool paths</text>
+<text x="64" y="781" class="body" text-anchor="start">Native tools, shell, and files</text>
+<text x="64" y="811" class="body" text-anchor="start">Other MCP and hosted tools</text>
+<text x="64" y="841" class="body" text-anchor="start">Each needs a registered identity</text>
+<text x="64" y="871" class="body" text-anchor="start">and a path the guard can check.</text>
+<path d="M 460 790 H 550 V 590 H 650" class="edge"/>
+<rect x="650" y="705" width="510" height="140" rx="12" class="box"/>
+<rect x="656" y="711" width="498" height="128" rx="7" class="inner"/>
+<text x="674" y="744" class="label" text-anchor="start">Allowed: run this exact call</text>
+<text x="674" y="781" class="body" text-anchor="start">Save the decision and cost hold.</text>
+<text x="674" y="811" class="body" text-anchor="start">Check this governed action at the gate.</text>
+<path d="M 905 635 V 705" class="edge"/>
+<rect x="650" y="895" width="510" height="110" rx="12" class="box"/>
+<text x="674" y="934" class="label" text-anchor="start">Denied or cannot be checked</text>
+<text x="674" y="971" class="body" text-anchor="start">Stop before the tool has an effect.</text>
+<path d="M 1160 560 H 1185 V 950 H 1160" class="edge"/>
+<text x="40" y="955" class="note" text-anchor="start">Refund tool: denied for this support agent.</text>
+<text x="40" y="990" class="number" text-anchor="start">process_refund</text>
+<text x="40" y="1050" class="note" text-anchor="start">MCP controls its own catalog. The protected guard covers other tool paths too.</text>
+<text x="40" y="1086" class="note" text-anchor="start">No reliable guard? Strict mode refuses that setup. Every mode stays within the agent definition’s limits.</text>
+</svg>

@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:oxagen:proposed:run-start-receipt:0.2",
+  "title": "Proposed Oxagen run-start-receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "const": "../project/.oxagen/schemas/run-start-receipt.schema.json"
+    },
+    "format_version": {
+      "const": "arp.repo/0.2"
+    },
+    "record_type": {
+      "const": "RunStartReceipt"
+    },
+    "status": {
+      "const": "started"
+    },
+    "tenant_id": {
+      "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+    },
+    "workspace_id": {
+      "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+    },
+    "repository_id": {
+      "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+    },
+    "run_id": {
+      "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+    },
+    "work_request_id": {
+      "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+    },
+    "work_order_revision_id": {
+      "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+    },
+    "target_id": {
+      "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+    },
+    "checkout_binding_id": {
+      "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+    },
+    "agent_release_id": {
+      "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+    },
+    "mode_id": {
+      "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+    },
+    "sync_receipt_id": {
+      "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+    },
+    "start_event_id": {
+      "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+    },
+    "first_model_attempt_id": {
+      "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+    },
+    "first_model_dispatch_event_id": {
+      "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+    },
+    "scan_receipt_id": {
+      "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+    },
+    "config_files": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/configFile"
+      },
+      "minItems": 3,
+      "maxItems": 256
+    },
+    "context_manifest_id": {
+      "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+    },
+    "steering_manifest_id": {
+      "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+    },
+    "policy_revision_ids": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "tool_belt_snapshot_id": {
+      "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+    },
+    "started_at": {
+      "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/dateTime"
+    },
+    "issuer_key_id": {
+      "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+    },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "const": "Ed25519"
+        },
+        "value_base64": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9+/]{86}==$"
+        }
+      },
+      "required": [
+        "algorithm",
+        "value_base64"
+      ]
+    },
+    "composition_receipt_id": {
+      "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+    }
+  },
+  "required": [
+    "$schema",
+    "format_version",
+    "record_type",
+    "status",
+    "tenant_id",
+    "workspace_id",
+    "repository_id",
+    "run_id",
+    "work_request_id",
+    "work_order_revision_id",
+    "target_id",
+    "checkout_binding_id",
+    "agent_release_id",
+    "mode_id",
+    "sync_receipt_id",
+    "start_event_id",
+    "first_model_attempt_id",
+    "first_model_dispatch_event_id",
+    "scan_receipt_id",
+    "config_files",
+    "context_manifest_id",
+    "steering_manifest_id",
+    "policy_revision_ids",
+    "tool_belt_snapshot_id",
+    "started_at",
+    "issuer_key_id",
+    "signature",
+    "composition_receipt_id"
+  ]
+}

@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="arp-work_order" class="arp-diagram" viewBox="0 0 1200 1080" role="img" aria-labelledby="arp-work_order-title arp-work_order-desc">
+<title id="arp-work_order-title">A work order sets the task. Each call still gets checked.</title><desc id="arp-work_order-desc">A versioned work order assigns a task to an agent and records its owner and fixed revision. Reusable policies and the agent’s Permissions &amp; limits separately govern access, tools, context, and shared budget limits. A work order cannot grant rights beyond the agent definition or workspace. Every proposed model, tool, or data call is checked against current identity and record access, policy, approval requirements, and the shared budget. Outgoing data is cleaned locally before remote disclosure, and checks bind the final cleaned request. Oxagen saves the decision and reserves the bounded cost. The resulting governed action is one exact checked call. Its internal one-use authorization binds the exact request, caller, run, current authority, and expiry. The protected gate rechecks current access and uses that authorization once. Changed inputs or reuse are denied. Oxagen records the order version, action ID, cleaned request and output, usage, cost, and outcome. Uncertain remote results remain explicit and need reconciliation before an unsafe retry. One-use internal authorization does not make a remote system exactly once. Human approval is needed only when current policy requires it.</desc>
+<defs><marker id="arp-work_order-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="var(--diagram-line,var(--arp-line,#A1A1AA))" stroke-width="1.5" stroke-linejoin="round"/></marker></defs>
+<style>
+#arp-work_order{--arp-bg:#09090B;--arp-panel:#18181B;--arp-text:#FFFFFF;--arp-muted:#A1A1AA;--arp-line:#A1A1AA}
+@media(prefers-color-scheme:light){#arp-work_order{--arp-bg:#FFFFFF;--arp-panel:#FFFFFF;--arp-text:#09090B;--arp-muted:#71717A;--arp-line:#71717A}}
+#arp-work_order .box{fill:var(--diagram-panel,var(--arp-panel,#18181B));stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2}
+#arp-work_order .inner{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:1.5}
+#arp-work_order .edge{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2;stroke-linejoin:round;marker-end:url(#arp-work_order-arrow)}
+#arp-work_order .title{font-family:"Space Grotesk",sans-serif;font-size:32px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-work_order .label{font-family:Geist,sans-serif;font-size:24px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-work_order .body{font-family:Geist,sans-serif;font-size:22px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-work_order .note{font-family:Geist,sans-serif;font-size:20px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-work_order .number{font-family:"Monaspace Neon",monospace;font-size:26px;font-weight:500;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+</style>
+<rect width="1200" height="1080" fill="var(--diagram-bg,var(--arp-bg,#09090B))"/>
+
+<text x="40" y="52" class="title" text-anchor="start">A work order sets the task. Each call still gets checked.</text>
+<rect x="40" y="125" width="400" height="230" rx="12" class="box"/>
+<text x="64" y="164" class="label" text-anchor="start">Versioned work order</text>
+<text x="64" y="201" class="body" text-anchor="start">Task and assigned agent</text>
+<text x="64" y="231" class="body" text-anchor="start">Scope of the requested work</text>
+<text x="64" y="261" class="body" text-anchor="start">Owner + fixed version</text>
+<text x="64" y="291" class="body" text-anchor="start">No new access rights</text>
+<rect x="660" y="125" width="500" height="230" rx="12" class="box"/>
+<text x="684" y="164" class="label" text-anchor="start">Policies + Permissions &amp; limits</text>
+<text x="684" y="201" class="body" text-anchor="start">Reusable rules govern this work.</text>
+<text x="684" y="231" class="body" text-anchor="start">Agent and workspace rights set limits.</text>
+<text x="684" y="261" class="body" text-anchor="start">Tools, context, and shared budgets</text>
+<text x="684" y="291" class="body" text-anchor="start">All current checks must pass.</text>
+<rect x="40" y="445" width="310" height="185" rx="12" class="box"/>
+<text x="64" y="484" class="label" text-anchor="start">Proposed call</text>
+<text x="64" y="521" class="body" text-anchor="start">Tool, model, or data</text>
+<text x="64" y="551" class="body" text-anchor="start">Cleaned inputs + target</text>
+<text x="64" y="581" class="body" text-anchor="start">Current run identity</text>
+<rect x="430" y="445" width="350" height="185" rx="12" class="box"/>
+<text x="454" y="484" class="label" text-anchor="start">Check this call now</text>
+<text x="454" y="521" class="body" text-anchor="start">Identity + record rights</text>
+<text x="454" y="551" class="body" text-anchor="start">Current policy + approval</text>
+<text x="454" y="581" class="body" text-anchor="start">Reserve the shared budget</text>
+<text x="454" y="611" class="body" text-anchor="start">Save the decision</text>
+<rect x="860" y="445" width="300" height="185" rx="12" class="box"/>
+<text x="884" y="484" class="label" text-anchor="start">Governed action</text>
+<text x="884" y="521" class="body" text-anchor="start">Exact checked request</text>
+<text x="884" y="551" class="body" text-anchor="start">Caller + run + time limit</text>
+<text x="884" y="581" class="body" text-anchor="start">One internal approval</text>
+<path d="M 240 355 V 395 H 195 V 445" class="edge"/>
+<path d="M 910 355 V 395 H 605 V 445" class="edge"/>
+<path d="M 350 537 H 430" class="edge"/>
+<path d="M 780 537 H 860" class="edge"/>
+<rect x="860" y="745" width="300" height="135" rx="12" class="box"/>
+<text x="884" y="784" class="label" text-anchor="start">Gate checks and runs</text>
+<text x="884" y="821" class="body" text-anchor="start">Recheck current access.</text>
+<text x="884" y="851" class="body" text-anchor="start">Use approval only once.</text>
+<path d="M 1010 630 V 745" class="edge"/>
+<rect x="40" y="745" width="680" height="155" rx="12" class="box"/>
+<text x="64" y="784" class="label" text-anchor="start">Record the action and result</text>
+<text x="64" y="821" class="body" text-anchor="start">Keep the work order, action ID, and cleaned request.</text>
+<text x="64" y="851" class="body" text-anchor="start">Keep cleaned output, usage, cost, and outcome.</text>
+<text x="64" y="881" class="body" text-anchor="start">Mark missing results or unknown charges.</text>
+<path d="M 860 812 H 720" class="edge"/>
+<text x="40" y="969" class="note" text-anchor="start">Each action must stay within current agent and workspace rights.</text>
+<text x="40" y="1005" class="note" text-anchor="start">A rule can allow the request. A person is asked only when the rule requires it.</text>
+<text x="40" y="1041" class="note" text-anchor="start">A governed action is one exact checked call. It stays within current rights.</text>
+</svg>

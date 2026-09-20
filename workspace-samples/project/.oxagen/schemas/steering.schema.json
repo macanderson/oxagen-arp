@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:oxagen:proposed:steering-config:0.2",
+  "title": "Proposed Oxagen steering-config",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "const": "./schemas/steering.schema.json"
+    },
+    "format_version": {
+      "const": "arp.repo/0.2"
+    },
+    "priority": {
+      "const": "task_guidance"
+    },
+    "delivery": {
+      "const": "turn_start"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+          },
+          "source": {
+            "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/source"
+          },
+          "required": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "key",
+          "source",
+          "required"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 256
+    }
+  },
+  "required": [
+    "$schema",
+    "format_version",
+    "priority",
+    "delivery",
+    "entries"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "controlDir": "/srv/oxagen-control",
+  "workRoot": "/srv/oxagen-agent-work",
+  "manifest": "/srv/oxagen-control/plan.json",
+  "runnerDigest": "REPLACE_WITH_INSTALL_DIGEST",
+  "phaseZeroCertificate": "/srv/oxagen-control/phase-zero.cert.json",
+  "certifierPublicKey": "/srv/oxagen-control/certifier-public.pem",
+  "runBudgetCents": 0,
+  "maxRunSeconds": 604800,
+  "models": {
+    "implement": {},
+    "review": {}
+  },
+  "targets": {
+    "repository": "CONFIGURE_EXACT_REPOSITORY",
+    "staging": "CONFIGURE_EXACT_STAGING_TARGET",
+    "production": "CONFIGURE_EXACT_PRODUCTION_TARGET"
+  },
+  "hook": {
+    "command": "/srv/oxagen-control/runner/adapters/trusted-host.sh",
+    "args": [
+      "/srv/oxagen-control/services.json"
+    ],
+    "maxSeconds": 14400,
+    "env": {
+      "PATH": "/usr/local/bin:/usr/bin:/bin"
+    }
+  },
+  "inputManifest": "/srv/oxagen-control/source-inputs.json",
+  "inputRoot": "/srv/oxagen-readonly-inputs"
+}

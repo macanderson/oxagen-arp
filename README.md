@@ -1,0 +1,36 @@
+# Oxagen ARP document pack
+
+Open **Oxagen-ARP.html** in a browser. Reading, search, themes, code colors, and diagram zoom work offline. **Oxagen-ARP-TLDR.html** starts with the Short guide.
+
+## Read and export
+
+The top navigation has four items, in order: **Design**, **Short guide**, **Drawings**, and **Specs**. Specs opens Desktop app, Web app, API, MCP, CLI, Brand, Schema, and Build plan. Plugin capabilities are part of Design under ARP. There is no separate plugin protocol or prose-audit page.
+
+**Save Markdown** exports the complete current view, including its tables and fenced code. **Full ZIP** saves the full ZIP when the archive sits beside the reader. Keep this folder together for linked API, SQL and sample files. Each HTML reader contains its document text, drawings, fonts and search code, but supporting file downloads still need those files.
+
+Search with the Search button, `/`, or Cmd/Ctrl+K. Open a drawing for full-screen viewing. Use + or − to zoom, drag to pan, 0 or Fit to reset, and Esc to close. Each drawing can be saved as SVG. The theme button switches light and dark. Print this view prints the open document.
+
+## Documents
+
+- [Design](ARP-design.md): the shared architecture, governed actions, local protection, IAM, limits, records, graph and plugin capabilities.
+- [Short guide](ARP-short-guide.md): basic concepts and the first-workspace journey.
+- [Drawings](ARP-Drawings.md): captions, text descriptions and relative SVG links.
+- [Desktop app](ARP-Desktop-app-spec.md): local setup, protected service and data checks.
+- [Web app](ARP-Web-app-spec.md): mission control and workspace administration.
+- [API](ARP-API-spec.md): programmatic contracts and endpoint documentation.
+- [MCP](ARP-MCP-spec.md): each agent's allowed tool belt and context.
+- [CLI](ARP-CLI-spec.md): proposed commands through the same gates.
+- [Brand](ARP-Brand-spec.md): words, fonts, colors and component rules.
+- [Schema](ARP-Schema-spec.md): concrete table catalog, constraints, isolation and operations.
+- [Core SQL](ARP-core-schema.sql): representative subset, not the full production migration.
+- [Build plan](ARP-Build-plan.md): prebuild certification, batches, independent review and release gates.
+
+`diagrams/` contains the 16 portable SVGs with embedded fonts. `diagram-source/` contains the original SVG source and captions. `reference/` holds the detailed ARP reference. `licenses/` contains font and code-highlighter licenses. Supporting API contracts, workspace examples and build-system files are included when referenced by the current specs. `SHA256SUMS.txt` covers every packaged file.
+
+## Status
+
+The product architecture is a greenfield proposal. It does not claim these Oxagen features are shipped. The build system documents its own tested scope separately. Product mockups and contracts require explicit certification before product implementation. No live product build or production deployment was performed for this document. The representative PostgreSQL SQL was reviewed, not database-executed here.
+
+## Brand source
+
+The supplied hive, wordmark, colors and fonts come from `macanderson/oxagen-brand`, commit `fb62b40b38050a5aa7b717eb30039f0ea226291b`. The fonts are Space Grotesk, Geist, and Monaspace Neon. Product usage guidance is proposed. The source brand repository was not modified.

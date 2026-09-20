@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="arp-steering" class="arp-diagram" viewBox="0 0 1200 830" role="img" aria-labelledby="arp-steering-title arp-steering-desc">
+<title id="arp-steering-title">One message can steer many agents</title><desc id="arp-steering-desc">A person submits a workspace message. Oxagen saves the target list and places it in each run inbox. Without interrupting, current admitted work ends and the message enters before the next step. With interruption, Oxagen first confirms a pause, then applies the message and resumes. The web app shows per-run receipts, including offline runs.</desc>
+<defs><marker id="arp-steering-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="var(--diagram-line,var(--arp-line,#A1A1AA))" stroke-width="1.5" stroke-linejoin="round"/></marker></defs>
+<style>
+#arp-steering{--arp-bg:#09090B;--arp-panel:#18181B;--arp-text:#FFFFFF;--arp-muted:#A1A1AA;--arp-line:#A1A1AA}
+@media(prefers-color-scheme:light){#arp-steering{--arp-bg:#FFFFFF;--arp-panel:#FFFFFF;--arp-text:#09090B;--arp-muted:#71717A;--arp-line:#71717A}}
+#arp-steering .box{fill:var(--diagram-panel,var(--arp-panel,#18181B));stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2}
+#arp-steering .inner{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:1.5}
+#arp-steering .edge{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2;stroke-linejoin:round;marker-end:url(#arp-steering-arrow)}
+#arp-steering .title{font-family:"Space Grotesk",sans-serif;font-size:32px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-steering .label{font-family:Geist,sans-serif;font-size:24px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-steering .body{font-family:Geist,sans-serif;font-size:22px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-steering .note{font-family:Geist,sans-serif;font-size:20px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-steering .number{font-family:"Monaspace Neon",monospace;font-size:26px;font-weight:500;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+</style>
+<rect width="1200" height="830" fill="var(--diagram-bg,var(--arp-bg,#09090B))"/>
+
+<text x="40" y="52" class="title" text-anchor="start">One message can steer many agents</text>
+<rect x="40" y="115" width="250" height="130" rx="12" class="box"/>
+<text x="64" y="154" class="label" text-anchor="start">You click Steer</text>
+<text x="64" y="191" class="body" text-anchor="start">Pick a workspace.</text>
+<text x="64" y="221" class="body" text-anchor="start">Write one message.</text>
+<rect x="370" y="115" width="330" height="130" rx="12" class="box"/>
+<text x="394" y="154" class="label" text-anchor="start">Save the target list</text>
+<text x="394" y="191" class="body" text-anchor="start">Enrolled runs in the</text>
+<text x="394" y="221" class="body" text-anchor="start">workspace repos</text>
+<rect x="780" y="115" width="380" height="130" rx="12" class="box" stroke-dasharray="8 7"/>
+<text x="804" y="154" class="label" text-anchor="start">Each run gets an inbox</text>
+<text x="804" y="191" class="body" text-anchor="start">Save the message and order.</text>
+<text x="804" y="221" class="body" text-anchor="start">Offline runs stay waiting.</text>
+<path d="M 290 180 H 370" class="edge"/>
+<path d="M 700 180 H 780" class="edge"/>
+<path d="M 970 245 V 292 H 340 V 345" class="edge"/>
+<path d="M 970 292 H 860 V 345" class="edge"/>
+<rect x="130" y="345" width="420" height="200" rx="12" class="box"/>
+<text x="154" y="384" class="label" text-anchor="start">Without interruption</text>
+<text x="154" y="421" class="body" text-anchor="start">Let the current step finish.</text>
+<text x="154" y="451" class="body" text-anchor="start">Read the inbox at the boundary.</text>
+<text x="154" y="481" class="body" text-anchor="start">Apply before the next step.</text>
+<rect x="650" y="345" width="420" height="200" rx="12" class="box"/>
+<text x="674" y="384" class="label" text-anchor="start">With interruption</text>
+<text x="674" y="421" class="body" text-anchor="start">Hold new work and late results.</text>
+<text x="674" y="451" class="body" text-anchor="start">Confirm the pause boundary.</text>
+<text x="674" y="481" class="body" text-anchor="start">Apply, then resume with new checks.</text>
+<path d="M 340 545 V 593 H 600 V 635" class="edge"/>
+<path d="M 860 545 V 593 H 600" class="edge"/>
+<rect x="290" y="635" width="620" height="115" rx="12" class="box"/>
+<text x="314" y="674" class="label" text-anchor="start">Show the result for each run</text>
+<text x="314" y="711" class="body" text-anchor="start">Applied, waiting, offline, or unable to pause</text>
+<text x="40" y="795" class="note" text-anchor="start">“Applied” means the next model request contains the message. It does not prove the agent obeyed it.</text>
+</svg>

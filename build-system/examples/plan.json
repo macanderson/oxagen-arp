@@ -1,0 +1,653 @@
+{
+  "version": 1,
+  "name": "Oxagen greenfield product build",
+  "certificationFiles": [
+    "phase0/desktop.html",
+    "phase0/web.html",
+    "phase0/openapi.json",
+    "phase0/schema.sql",
+    "phase0/certification-pack.md"
+  ],
+  "batches": [
+    {
+      "id": "desktop-mockups",
+      "phase": "design",
+      "depends": [],
+      "implementer": "codex",
+      "goal": "Produce complete clickable desktop-app mockups covering enrollment, workspace/repo binding, gateway health, local scan block/redact/replace, offline limits, steering, pause proof, credential requests, policy explanations, and errors. Include light/dark states, accessibility notes, and review evidence. Only phase0 design artifacts.",
+      "allowedPaths": [
+        "phase0/"
+      ],
+      "maxCostCents": 2000,
+      "timeoutSeconds": 7200,
+      "maxAttempts": 3,
+      "acceptance": [
+        "Trace each delivered behavior to the approved source pack; report and resolve missing or conflicting requirements before claiming completion.",
+        "Run and retain the batch-specific positive, denial, concurrency, timeout, and recovery checks; no required check may be missing or silently skipped.",
+        "Render and inspect every screen and state on narrow and wide layouts, or validate every API/schema example and reference, as applicable.",
+        "Publish a coverage map naming all required workflows, operations, data fields, security decisions, and open gaps; gaps block certification."
+      ]
+    },
+    {
+      "id": "web-mockups",
+      "phase": "design",
+      "depends": [
+        "desktop-mockups"
+      ],
+      "implementer": "claude",
+      "goal": "Produce complete clickable web-app mockups for organization/workspace setup, identities and RBAC, agent Permissions & limits, policies and business-rule forms, work orders, dispatch, steering, cost reports, records, graph search, and private deployment setup. Include all empty/error/loading and narrow-screen states. Only phase0 design artifacts.",
+      "allowedPaths": [
+        "phase0/"
+      ],
+      "maxCostCents": 2000,
+      "timeoutSeconds": 7200,
+      "maxAttempts": 3,
+      "acceptance": [
+        "Trace each delivered behavior to the approved source pack; report and resolve missing or conflicting requirements before claiming completion.",
+        "Run and retain the batch-specific positive, denial, concurrency, timeout, and recovery checks; no required check may be missing or silently skipped.",
+        "Render and inspect every screen and state on narrow and wide layouts, or validate every API/schema example and reference, as applicable.",
+        "Publish a coverage map naming all required workflows, operations, data fields, security decisions, and open gaps; gaps block certification."
+      ]
+    },
+    {
+      "id": "api-contracts",
+      "phase": "design",
+      "depends": [
+        "web-mockups"
+      ],
+      "implementer": "codex",
+      "goal": "Write the full OpenAPI 3.1 API contract and JSON Schemas for every proposed web, desktop, CLI, MCP control, ARP event, run action, policy, context, report, IAM, and plugin-stub operation. Define request/response/error/security/idempotency/cursor/version fields and cross-surface traceability. Validate all references and examples; no placeholder paths.",
+      "allowedPaths": [
+        "phase0/"
+      ],
+      "maxCostCents": 2000,
+      "timeoutSeconds": 7200,
+      "maxAttempts": 3,
+      "acceptance": [
+        "Trace each delivered behavior to the approved source pack; report and resolve missing or conflicting requirements before claiming completion.",
+        "Run and retain the batch-specific positive, denial, concurrency, timeout, and recovery checks; no required check may be missing or silently skipped.",
+        "Render and inspect every screen and state on narrow and wide layouts, or validate every API/schema example and reference, as applicable.",
+        "Publish a coverage map naming all required workflows, operations, data fields, security decisions, and open gaps; gaps block certification."
+      ]
+    },
+    {
+      "id": "design-certification-pack",
+      "phase": "design",
+      "depends": [
+        "api-contracts"
+      ],
+      "implementer": "claude",
+      "goal": "Consolidate desktop and web mockups, the full OpenAPI contract, typed database schema design, threat model, source requirements map, test plan, migration plan, deployment topology, and unresolved decisions into the phase-zero certification pack. Independent cross-surface review must find no missing flow. Do not implement product code.",
+      "allowedPaths": [
+        "phase0/"
+      ],
+      "maxCostCents": 2000,
+      "timeoutSeconds": 7200,
+      "maxAttempts": 3,
+      "acceptance": [
+        "Trace each delivered behavior to the approved source pack; report and resolve missing or conflicting requirements before claiming completion.",
+        "Run and retain the batch-specific positive, denial, concurrency, timeout, and recovery checks; no required check may be missing or silently skipped.",
+        "Render and inspect every screen and state on narrow and wide layouts, or validate every API/schema example and reference, as applicable.",
+        "Publish a coverage map naming all required workflows, operations, data fields, security decisions, and open gaps; gaps block certification."
+      ]
+    },
+    {
+      "id": "storage-iam",
+      "phase": "product",
+      "depends": [
+        "design-certification-pack"
+      ],
+      "implementer": "codex",
+      "goal": "Build tenant/workspace storage, canonical human and agent identities, RBAC and per-record grants, SQL RLS, protected object registry, signed storage access, and audit migrations. Prove cross-tenant and forbidden-record denial.",
+      "allowedPaths": [
+        "apps/",
+        "services/",
+        "packages/",
+        "schemas/",
+        "tests/",
+        "infra/",
+        "docs/",
+        ".github/",
+        "package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "README.md"
+      ],
+      "maxCostCents": 2000,
+      "timeoutSeconds": 7200,
+      "maxAttempts": 3,
+      "acceptance": [
+        "Trace each delivered behavior to the approved source pack; report and resolve missing or conflicting requirements before claiming completion.",
+        "Run and retain the batch-specific positive, denial, concurrency, timeout, and recovery checks; no required check may be missing or silently skipped.",
+        "Honor the certified OpenAPI and schema contract; prove current identity, tenant/workspace isolation, record access, and clean-data constraints for every new request path."
+      ]
+    },
+    {
+      "id": "control-records",
+      "phase": "product",
+      "depends": [
+        "storage-iam"
+      ],
+      "implementer": "claude",
+      "goal": "Build durable commands, events, transactional outbox, run/turn/action state machines, authority epochs, idempotency and reconciliation. Prove crash recovery and late-event handling.",
+      "allowedPaths": [
+        "apps/",
+        "services/",
+        "packages/",
+        "schemas/",
+        "tests/",
+        "infra/",
+        "docs/",
+        ".github/",
+        "package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "README.md"
+      ],
+      "maxCostCents": 2000,
+      "timeoutSeconds": 7200,
+      "maxAttempts": 3,
+      "acceptance": [
+        "Trace each delivered behavior to the approved source pack; report and resolve missing or conflicting requirements before claiming completion.",
+        "Run and retain the batch-specific positive, denial, concurrency, timeout, and recovery checks; no required check may be missing or silently skipped.",
+        "Honor the certified OpenAPI and schema contract; prove current identity, tenant/workspace isolation, record access, and clean-data constraints for every new request path."
+      ]
+    },
+    {
+      "id": "desktop-enrollment",
+      "phase": "product",
+      "depends": [
+        "control-records"
+      ],
+      "implementer": "codex",
+      "goal": "Build desktop installation, device identity, enrolled repositories and paths, protected service setup, operator UI, and workspace-bound grants. Verify supported OS isolation and fail closed elsewhere.",
+      "allowedPaths": [
+        "apps/",
+        "services/",
+        "packages/",
+        "schemas/",
+        "tests/",
+        "infra/",
+        "docs/",
+        ".github/",
+        "package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "README.md"
+      ],
+      "maxCostCents": 2000,
+      "timeoutSeconds": 7200,
+      "maxAttempts": 3,
+      "acceptance": [
+        "Trace each delivered behavior to the approved source pack; report and resolve missing or conflicting requirements before claiming completion.",
+        "Run and retain the batch-specific positive, denial, concurrency, timeout, and recovery checks; no required check may be missing or silently skipped.",
+        "Honor the certified OpenAPI and schema contract; prove current identity, tenant/workspace isolation, record access, and clean-data constraints for every new request path."
+      ]
+    },
+    {
+      "id": "local-data-gateway",
+      "phase": "product",
+      "depends": [
+        "desktop-enrollment"
+      ],
+      "implementer": "claude",
+      "goal": "Build full-request local scanning, attachment handling, block/redact/replace, ScanReceipt binding, safe telemetry, and egress controls. Prove no raw-content bypass or unscanned replay.",
+      "allowedPaths": [
+        "apps/",
+        "services/",
+        "packages/",
+        "schemas/",
+        "tests/",
+        "infra/",
+        "docs/",
+        ".github/",
+        "package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "README.md"
+      ],
+      "maxCostCents": 2000,
+      "timeoutSeconds": 7200,
+      "maxAttempts": 3,
+      "acceptance": [
+        "Trace each delivered behavior to the approved source pack; report and resolve missing or conflicting requirements before claiming completion.",
+        "Run and retain the batch-specific positive, denial, concurrency, timeout, and recovery checks; no required check may be missing or silently skipped.",
+        "Honor the certified OpenAPI and schema contract; prove current identity, tenant/workspace isolation, record access, and clean-data constraints for every new request path."
+      ]
+    },
+    {
+      "id": "model-gateway",
+      "phase": "product",
+      "depends": [
+        "local-data-gateway"
+      ],
+      "implementer": "codex",
+      "goal": "Build mandatory provider proxy, isolated credential mediation, exact model-request evidence, token/cost holds, streaming, cancellation, and unknown-charge reconciliation.",
+      "allowedPaths": [
+        "apps/",
+        "services/",
+        "packages/",
+        "schemas/",
+        "tests/",
+        "infra/",
+        "docs/",
+        ".github/",
+        "package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "README.md"
+      ],
+      "maxCostCents": 2000,
+      "timeoutSeconds": 7200,
+      "maxAttempts": 3,
+      "acceptance": [
+        "Trace each delivered behavior to the approved source pack; report and resolve missing or conflicting requirements before claiming completion.",
+        "Run and retain the batch-specific positive, denial, concurrency, timeout, and recovery checks; no required check may be missing or silently skipped.",
+        "Honor the certified OpenAPI and schema contract; prove current identity, tenant/workspace isolation, record access, and clean-data constraints for every new request path."
+      ]
+    },
+    {
+      "id": "tools-business-policies",
+      "phase": "product",
+      "depends": [
+        "model-gateway"
+      ],
+      "implementer": "claude",
+      "goal": "Build reviewed tool bindings, one authenticated dynamic MCP catalog, native/MCP tool guard paths, exact request checks, business policy evaluation, atomic shared limits and trusted connector receipts.",
+      "allowedPaths": [
+        "apps/",
+        "services/",
+        "packages/",
+        "schemas/",
+        "tests/",
+        "infra/",
+        "docs/",
+        ".github/",
+        "package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "README.md"
+      ],
+      "maxCostCents": 2000,
+      "timeoutSeconds": 7200,
+      "maxAttempts": 3,
+      "acceptance": [
+        "Trace each delivered behavior to the approved source pack; report and resolve missing or conflicting requirements before claiming completion.",
+        "Run and retain the batch-specific positive, denial, concurrency, timeout, and recovery checks; no required check may be missing or silently skipped.",
+        "Honor the certified OpenAPI and schema contract; prove current identity, tenant/workspace isolation, record access, and clean-data constraints for every new request path."
+      ]
+    },
+    {
+      "id": "context-graph",
+      "phase": "product",
+      "depends": [
+        "tools-business-policies"
+      ],
+      "implementer": "codex",
+      "goal": "Build source registry, versioned knowledge graph, provenance, protected retrieval/composition receipts, CGP provider exchange, memory views, skills references, and access-filtered search.",
+      "allowedPaths": [
+        "apps/",
+        "services/",
+        "packages/",
+        "schemas/",
+        "tests/",
+        "infra/",
+        "docs/",
+        ".github/",
+        "package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "README.md"
+      ],
+      "maxCostCents": 2000,
+      "timeoutSeconds": 7200,
+      "maxAttempts": 3,
+      "acceptance": [
+        "Trace each delivered behavior to the approved source pack; report and resolve missing or conflicting requirements before claiming completion.",
+        "Run and retain the batch-specific positive, denial, concurrency, timeout, and recovery checks; no required check may be missing or silently skipped.",
+        "Honor the certified OpenAPI and schema contract; prove current identity, tenant/workspace isolation, record access, and clean-data constraints for every new request path."
+      ]
+    },
+    {
+      "id": "steering-pause",
+      "phase": "product",
+      "depends": [
+        "context-graph"
+      ],
+      "implementer": "claude",
+      "goal": "Build dispatch, broadcast steering, supported next-boundary application, interrupt requests, confirmed pause proof, and quarantined late responses. Prove unknown writes prevent false paused state.",
+      "allowedPaths": [
+        "apps/",
+        "services/",
+        "packages/",
+        "schemas/",
+        "tests/",
+        "infra/",
+        "docs/",
+        ".github/",
+        "package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "README.md"
+      ],
+      "maxCostCents": 2000,
+      "timeoutSeconds": 7200,
+      "maxAttempts": 3,
+      "acceptance": [
+        "Trace each delivered behavior to the approved source pack; report and resolve missing or conflicting requirements before claiming completion.",
+        "Run and retain the batch-specific positive, denial, concurrency, timeout, and recovery checks; no required check may be missing or silently skipped.",
+        "Honor the certified OpenAPI and schema contract; prove current identity, tenant/workspace isolation, record access, and clean-data constraints for every new request path."
+      ]
+    },
+    {
+      "id": "fork-portability",
+      "phase": "product",
+      "depends": [
+        "steering-pause"
+      ],
+      "implementer": "codex",
+      "goal": "Build safe checkpoints, capability manifests, allowed cleaned continuation snapshots, declared losses, new grants and fork/move semantics across supported harnesses.",
+      "allowedPaths": [
+        "apps/",
+        "services/",
+        "packages/",
+        "schemas/",
+        "tests/",
+        "infra/",
+        "docs/",
+        ".github/",
+        "package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "README.md"
+      ],
+      "maxCostCents": 2000,
+      "timeoutSeconds": 7200,
+      "maxAttempts": 3,
+      "acceptance": [
+        "Trace each delivered behavior to the approved source pack; report and resolve missing or conflicting requirements before claiming completion.",
+        "Run and retain the batch-specific positive, denial, concurrency, timeout, and recovery checks; no required check may be missing or silently skipped.",
+        "Honor the certified OpenAPI and schema contract; prove current identity, tenant/workspace isolation, record access, and clean-data constraints for every new request path."
+      ]
+    },
+    {
+      "id": "required-reporting",
+      "phase": "product",
+      "depends": [
+        "fork-portability"
+      ],
+      "implementer": "claude",
+      "goal": "Build required trusted reports for branches/diffs, personas, tool counts, PRs, per-job CI commit binding, freshness, and record statuses in the selected tenant data service.",
+      "allowedPaths": [
+        "apps/",
+        "services/",
+        "packages/",
+        "schemas/",
+        "tests/",
+        "infra/",
+        "docs/",
+        ".github/",
+        "package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "README.md"
+      ],
+      "maxCostCents": 2000,
+      "timeoutSeconds": 7200,
+      "maxAttempts": 3,
+      "acceptance": [
+        "Trace each delivered behavior to the approved source pack; report and resolve missing or conflicting requirements before claiming completion.",
+        "Run and retain the batch-specific positive, denial, concurrency, timeout, and recovery checks; no required check may be missing or silently skipped.",
+        "Honor the certified OpenAPI and schema contract; prove current identity, tenant/workspace isolation, record access, and clean-data constraints for every new request path."
+      ]
+    },
+    {
+      "id": "agent-adapters-sdks",
+      "phase": "product",
+      "depends": [
+        "required-reporting"
+      ],
+      "implementer": "codex",
+      "goal": "Build and certify Codex and Claude Code adapters plus custom-agent SDK contracts; generate supported language clients from the certified API and prove profile compatibility and strict-mode limits.",
+      "allowedPaths": [
+        "apps/",
+        "services/",
+        "packages/",
+        "schemas/",
+        "tests/",
+        "infra/",
+        "docs/",
+        ".github/",
+        "package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "README.md"
+      ],
+      "maxCostCents": 2000,
+      "timeoutSeconds": 7200,
+      "maxAttempts": 3,
+      "acceptance": [
+        "Trace each delivered behavior to the approved source pack; report and resolve missing or conflicting requirements before claiming completion.",
+        "Run and retain the batch-specific positive, denial, concurrency, timeout, and recovery checks; no required check may be missing or silently skipped.",
+        "Honor the certified OpenAPI and schema contract; prove current identity, tenant/workspace isolation, record access, and clean-data constraints for every new request path."
+      ]
+    },
+    {
+      "id": "web-product",
+      "phase": "product",
+      "depends": [
+        "agent-adapters-sdks"
+      ],
+      "implementer": "claude",
+      "goal": "Implement the certified web screens against real gated APIs, accessible controls, agent administration, policy editing, dispatch/steer, report inspection, graph views, and complete failure states.",
+      "allowedPaths": [
+        "apps/",
+        "services/",
+        "packages/",
+        "schemas/",
+        "tests/",
+        "infra/",
+        "docs/",
+        ".github/",
+        "package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "README.md"
+      ],
+      "maxCostCents": 2000,
+      "timeoutSeconds": 7200,
+      "maxAttempts": 3,
+      "acceptance": [
+        "Trace each delivered behavior to the approved source pack; report and resolve missing or conflicting requirements before claiming completion.",
+        "Run and retain the batch-specific positive, denial, concurrency, timeout, and recovery checks; no required check may be missing or silently skipped.",
+        "Honor the certified OpenAPI and schema contract; prove current identity, tenant/workspace isolation, record access, and clean-data constraints for every new request path."
+      ]
+    },
+    {
+      "id": "desktop-product",
+      "phase": "product",
+      "depends": [
+        "web-product"
+      ],
+      "implementer": "codex",
+      "goal": "Implement the certified desktop screens against the protected service, with clear local states, setup walkthrough, scan decisions, request controls, and offline behavior.",
+      "allowedPaths": [
+        "apps/",
+        "services/",
+        "packages/",
+        "schemas/",
+        "tests/",
+        "infra/",
+        "docs/",
+        ".github/",
+        "package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "README.md"
+      ],
+      "maxCostCents": 2000,
+      "timeoutSeconds": 7200,
+      "maxAttempts": 3,
+      "acceptance": [
+        "Trace each delivered behavior to the approved source pack; report and resolve missing or conflicting requirements before claiming completion.",
+        "Run and retain the batch-specific positive, denial, concurrency, timeout, and recovery checks; no required check may be missing or silently skipped.",
+        "Honor the certified OpenAPI and schema contract; prove current identity, tenant/workspace isolation, record access, and clean-data constraints for every new request path."
+      ]
+    },
+    {
+      "id": "cli-administration",
+      "phase": "product",
+      "depends": [
+        "desktop-product"
+      ],
+      "implementer": "claude",
+      "goal": "Build the operator CLI with consistent IAM, dry-run modes, stable machine output, per-workspace targeting, credentials through approved broker, and predictable errors.",
+      "allowedPaths": [
+        "apps/",
+        "services/",
+        "packages/",
+        "schemas/",
+        "tests/",
+        "infra/",
+        "docs/",
+        ".github/",
+        "package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "README.md"
+      ],
+      "maxCostCents": 2000,
+      "timeoutSeconds": 7200,
+      "maxAttempts": 3,
+      "acceptance": [
+        "Trace each delivered behavior to the approved source pack; report and resolve missing or conflicting requirements before claiming completion.",
+        "Run and retain the batch-specific positive, denial, concurrency, timeout, and recovery checks; no required check may be missing or silently skipped.",
+        "Honor the certified OpenAPI and schema contract; prove current identity, tenant/workspace isolation, record access, and clean-data constraints for every new request path."
+      ]
+    },
+    {
+      "id": "plugin-capability-stub",
+      "phase": "product",
+      "depends": [
+        "cli-administration"
+      ],
+      "implementer": "codex",
+      "goal": "Build only the checked plugin capability interface seam, reserved schemas, mock peers, scoped controls, immutable completion rounds, required seats, and named waivers. Do not implement partner plugins or a marketplace.",
+      "allowedPaths": [
+        "apps/",
+        "services/",
+        "packages/",
+        "schemas/",
+        "tests/",
+        "infra/",
+        "docs/",
+        ".github/",
+        "package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "README.md"
+      ],
+      "maxCostCents": 2000,
+      "timeoutSeconds": 7200,
+      "maxAttempts": 3,
+      "acceptance": [
+        "Trace each delivered behavior to the approved source pack; report and resolve missing or conflicting requirements before claiming completion.",
+        "Run and retain the batch-specific positive, denial, concurrency, timeout, and recovery checks; no required check may be missing or silently skipped.",
+        "Honor the certified OpenAPI and schema contract; prove current identity, tenant/workspace isolation, record access, and clean-data constraints for every new request path."
+      ]
+    },
+    {
+      "id": "private-deployment",
+      "phase": "product",
+      "depends": [
+        "plugin-capability-stub"
+      ],
+      "implementer": "claude",
+      "goal": "Build reproducible SaaS and customer-private placement, tenant keys, rotation, data retention/export, restore, regional controls, network policy, and auditable operational configuration.",
+      "allowedPaths": [
+        "apps/",
+        "services/",
+        "packages/",
+        "schemas/",
+        "tests/",
+        "infra/",
+        "docs/",
+        ".github/",
+        "package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "README.md"
+      ],
+      "maxCostCents": 2000,
+      "timeoutSeconds": 7200,
+      "maxAttempts": 3,
+      "acceptance": [
+        "Trace each delivered behavior to the approved source pack; report and resolve missing or conflicting requirements before claiming completion.",
+        "Run and retain the batch-specific positive, denial, concurrency, timeout, and recovery checks; no required check may be missing or silently skipped.",
+        "Honor the certified OpenAPI and schema contract; prove current identity, tenant/workspace isolation, record access, and clean-data constraints for every new request path."
+      ]
+    },
+    {
+      "id": "system-qualification",
+      "phase": "product",
+      "depends": [
+        "private-deployment"
+      ],
+      "implementer": "codex",
+      "goal": "Run all four hard requirement scenarios and multi-tenant load, recovery, bypass, budget, auth, accessibility, portability, privacy, and storage consistency checks. Close all findings with fresh independent reviews.",
+      "allowedPaths": [
+        "apps/",
+        "services/",
+        "packages/",
+        "schemas/",
+        "tests/",
+        "infra/",
+        "docs/",
+        ".github/",
+        "package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "README.md"
+      ],
+      "maxCostCents": 2000,
+      "timeoutSeconds": 7200,
+      "maxAttempts": 3,
+      "acceptance": [
+        "Trace each delivered behavior to the approved source pack; report and resolve missing or conflicting requirements before claiming completion.",
+        "Run and retain the batch-specific positive, denial, concurrency, timeout, and recovery checks; no required check may be missing or silently skipped.",
+        "Honor the certified OpenAPI and schema contract; prove current identity, tenant/workspace isolation, record access, and clean-data constraints for every new request path."
+      ]
+    },
+    {
+      "id": "staging-release",
+      "phase": "release",
+      "depends": [
+        "system-qualification"
+      ],
+      "implementer": "claude",
+      "goal": "Produce a pinned deployable artifact and rehearse staging migration, backup restore, smoke/health tests, rollback, and operational response. Production requires configured targets and trusted exact-artifact authorization after staging health.",
+      "allowedPaths": [
+        "apps/",
+        "services/",
+        "packages/",
+        "schemas/",
+        "tests/",
+        "infra/",
+        "docs/",
+        ".github/",
+        "package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "README.md"
+      ],
+      "maxCostCents": 2000,
+      "timeoutSeconds": 7200,
+      "maxAttempts": 3,
+      "acceptance": [
+        "Trace each delivered behavior to the approved source pack; report and resolve missing or conflicting requirements before claiming completion.",
+        "Run and retain the batch-specific positive, denial, concurrency, timeout, and recovery checks; no required check may be missing or silently skipped.",
+        "Pin one exact artifact digest and source head through staging, migration rehearsal, backup restore, health, authorization, production, and rollback proof."
+      ]
+    }
+  ]
+}

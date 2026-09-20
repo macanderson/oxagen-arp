@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="arp-plugins" class="arp-diagram" viewBox="0 0 1200 1120" role="img" aria-labelledby="arp-plugins-title arp-plugins-desc">
+<title id="arp-plugins-title">A shared control seam for future plugins</title><desc id="arp-plugins-desc">Possible future plugins include remote documentation, allowed context, Slack notices, and a witness with an oracle. They send stop, pause, resume, or force continue requests to the same shared control interface used by the Supervisor. The core checks identity, permissions, policy, budgets, and pause proof, then orders allowed requests through the Supervisor and gates. When a turn asks to end, Oxagen freezes its version. Subscribed plugin seats vote ready, hold, continue, or abstain. Required seats that are missing, in error, or not ready keep completion waiting unless a named, authorized waiver clears that seat. Each required seat needs a ready vote or a named, authorized waiver for the exact turn version. Core checks must still hold before the core alone commits completion. This is not a majority vote. No partner plugin is implemented in this phase.</desc>
+<defs><marker id="arp-plugins-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="var(--diagram-line,var(--arp-line,#A1A1AA))" stroke-width="1.5" stroke-linejoin="round"/></marker></defs>
+<style>
+#arp-plugins{--arp-bg:#09090B;--arp-panel:#18181B;--arp-text:#FFFFFF;--arp-muted:#A1A1AA;--arp-line:#A1A1AA}
+@media(prefers-color-scheme:light){#arp-plugins{--arp-bg:#FFFFFF;--arp-panel:#FFFFFF;--arp-text:#09090B;--arp-muted:#71717A;--arp-line:#71717A}}
+#arp-plugins .box{fill:var(--diagram-panel,var(--arp-panel,#18181B));stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2}
+#arp-plugins .inner{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:1.5}
+#arp-plugins .edge{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2;stroke-linejoin:round;marker-end:url(#arp-plugins-arrow)}
+#arp-plugins .title{font-family:"Space Grotesk",sans-serif;font-size:32px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-plugins .label{font-family:Geist,sans-serif;font-size:24px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-plugins .body{font-family:Geist,sans-serif;font-size:22px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-plugins .note{font-family:Geist,sans-serif;font-size:20px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-plugins .number{font-family:"Monaspace Neon",monospace;font-size:26px;font-weight:500;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+</style>
+<rect width="1200" height="1120" fill="var(--diagram-bg,var(--arp-bg,#09090B))"/>
+
+<text x="40" y="52" class="title" text-anchor="start">A shared control seam for future plugins</text>
+<text x="40" y="88" class="note" text-anchor="start">Protocol seam only. No partner plugin is being built in this phase.</text>
+<rect x="40" y="140" width="310" height="225" rx="12" class="box"/>
+<text x="64" y="179" class="label" text-anchor="start">Future partner plugins</text>
+<text x="64" y="216" class="body" text-anchor="start">Write remote docs</text>
+<text x="64" y="246" class="body" text-anchor="start">Add allowed context</text>
+<text x="64" y="276" class="body" text-anchor="start">Send a Slack notice</text>
+<text x="64" y="306" class="body" text-anchor="start">Witness + oracle check</text>
+<rect x="430" y="140" width="350" height="225" rx="12" class="box"/>
+<text x="454" y="179" class="label" text-anchor="start">Core checks each request</text>
+<text x="454" y="216" class="body" text-anchor="start">Identity, rules, and budget</text>
+<text x="454" y="246" class="body" text-anchor="start">Pause proof when needed</text>
+<text x="454" y="276" class="body" text-anchor="start">Order and apply allowed</text>
+<text x="454" y="306" class="body" text-anchor="start">requests.</text>
+<rect x="860" y="140" width="300" height="225" rx="12" class="box"/>
+<text x="884" y="179" class="label" text-anchor="start">Supervisor and gates</text>
+<text x="884" y="216" class="body" text-anchor="start">Use the same shared</text>
+<text x="884" y="246" class="body" text-anchor="start">control interface.</text>
+<text x="884" y="276" class="body" text-anchor="start">No direct privileged code.</text>
+<path d="M 350 252 H 430" class="edge"/>
+<path d="M 780 252 H 860" class="edge"/>
+<text x="600" y="425" class="label" text-anchor="middle">Shared verbs: stop · pause · resume · force continue</text>
+<text x="600" y="460" class="note" text-anchor="middle">A plugin request cannot bypass access rules, money limits, or pause proof.</text>
+<text x="40" y="525" class="title" text-anchor="start">When a turn asks to end</text>
+<rect x="40" y="570" width="310" height="165" rx="12" class="box"/>
+<text x="64" y="609" class="label" text-anchor="start">Freeze the turn version</text>
+<text x="64" y="646" class="body" text-anchor="start">Files, context, and</text>
+<text x="64" y="676" class="body" text-anchor="start">work state stay linked</text>
+<text x="64" y="706" class="body" text-anchor="start">to this proposed ending.</text>
+<rect x="430" y="570" width="350" height="165" rx="12" class="box"/>
+<text x="454" y="609" class="label" text-anchor="start">Subscribed plugin seats</text>
+<text x="454" y="646" class="body" text-anchor="start">Vote on this exact version.</text>
+<text x="454" y="676" class="body" text-anchor="start">ready · hold</text>
+<text x="454" y="706" class="body" text-anchor="start">continue · abstain</text>
+<rect x="860" y="570" width="300" height="165" rx="12" class="box" stroke-dasharray="8 7"/>
+<text x="884" y="609" class="label" text-anchor="start">Hold or continue</text>
+<text x="884" y="646" class="body" text-anchor="start">Core checks the request.</text>
+<text x="884" y="676" class="body" text-anchor="start">It orders the next action.</text>
+<text x="884" y="706" class="body" text-anchor="start">The turn stays open.</text>
+<path d="M 350 652 H 430" class="edge"/>
+<path d="M 780 652 H 860" class="edge"/>
+<path d="M 605 735 V 780 H 290 V 835" class="edge"/>
+<path d="M 605 780 H 900 V 835" class="edge"/>
+<text x="290" y="812" class="note" text-anchor="middle">A required seat is not cleared</text>
+<text x="900" y="812" class="note" text-anchor="middle">All required seats are cleared</text>
+<rect x="40" y="835" width="500" height="155" rx="12" class="box" stroke-dasharray="8 7"/>
+<text x="64" y="874" class="label" text-anchor="start">Completion waits</text>
+<text x="64" y="911" class="body" text-anchor="start">A seat lacks both a ready vote</text>
+<text x="64" y="941" class="body" text-anchor="start">and a named allowed waiver.</text>
+<text x="64" y="971" class="body" text-anchor="start">The core cannot mark the turn done.</text>
+<rect x="640" y="835" width="520" height="155" rx="12" class="box"/>
+<rect x="646" y="841" width="508" height="143" rx="7" class="inner"/>
+<text x="664" y="874" class="label" text-anchor="start">The core alone commits completion</text>
+<text x="664" y="911" class="body" text-anchor="start">Each required seat has a ready vote</text>
+<text x="664" y="941" class="body" text-anchor="start">or a named allowed waiver.</text>
+<text x="664" y="971" class="body" text-anchor="start">Core checks still hold for this turn version.</text>
+<text x="40" y="1050" class="note" text-anchor="start">Votes and waivers apply to one fixed turn version. A changed turn needs new clearance.</text>
+<text x="40" y="1086" class="note" text-anchor="start">This is not a majority vote. Required seats and core checks must all clear.</text>
+</svg>

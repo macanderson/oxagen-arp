@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="arp-budget" class="arp-diagram" viewBox="0 0 1200 890" role="img" aria-labelledby="arp-budget-title arp-budget-desc">
+<title id="arp-budget-title">Reserve the most a request can cost</title><desc id="arp-budget-desc">With a 100 dollar limit, 60 dollars spent and 30 dollars held leave 10 dollars available. A request that may cost 15 dollars is denied because total exposure would reach 105. A request bounded at 5 dollars may be allowed because total exposure reaches 95. If its confirmed bill is 3 dollars, 3 dollars becomes spent and 2 dollars is freed. Every applicable budget must allow the request.</desc>
+<defs><marker id="arp-budget-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="var(--diagram-line,var(--arp-line,#A1A1AA))" stroke-width="1.5" stroke-linejoin="round"/></marker></defs>
+<style>
+#arp-budget{--arp-bg:#09090B;--arp-panel:#18181B;--arp-text:#FFFFFF;--arp-muted:#A1A1AA;--arp-line:#A1A1AA}
+@media(prefers-color-scheme:light){#arp-budget{--arp-bg:#FFFFFF;--arp-panel:#FFFFFF;--arp-text:#09090B;--arp-muted:#71717A;--arp-line:#71717A}}
+#arp-budget .box{fill:var(--diagram-panel,var(--arp-panel,#18181B));stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2}
+#arp-budget .inner{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:1.5}
+#arp-budget .edge{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2;stroke-linejoin:round;marker-end:url(#arp-budget-arrow)}
+#arp-budget .title{font-family:"Space Grotesk",sans-serif;font-size:32px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-budget .label{font-family:Geist,sans-serif;font-size:24px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-budget .body{font-family:Geist,sans-serif;font-size:22px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-budget .note{font-family:Geist,sans-serif;font-size:20px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-budget .number{font-family:"Monaspace Neon",monospace;font-size:26px;font-weight:500;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+</style>
+<rect width="1200" height="890" fill="var(--diagram-bg,var(--arp-bg,#09090B))"/>
+
+<text x="40" y="52" class="title" text-anchor="start">Reserve the most a request can cost</text>
+<rect x="40" y="115" width="1120" height="130" rx="12" class="box"/>
+<text x="64" y="154" class="label" text-anchor="start">A shared balance for each operator and agent</text>
+<text x="75" y="189" class="note" text-anchor="start">Limit</text>
+<text x="75" y="223" class="number" text-anchor="start">$100</text>
+<text x="350" y="189" class="note" text-anchor="start">Spent</text>
+<text x="350" y="223" class="number" text-anchor="start">$60</text>
+<text x="625" y="189" class="note" text-anchor="start">Held for open work</text>
+<text x="625" y="223" class="number" text-anchor="start">$30</text>
+<text x="960" y="189" class="note" text-anchor="start">Free</text>
+<text x="960" y="223" class="number" text-anchor="start">$10</text>
+<rect x="90" y="340" width="470" height="180" rx="12" class="box"/>
+<text x="114" y="379" class="label" text-anchor="start">New request may cost $15</text>
+<text x="114" y="416" class="body" text-anchor="start">$60 spent + $30 held + $15</text>
+<text x="114" y="446" class="body" text-anchor="start">Total would be $105.</text>
+<text x="114" y="476" class="body" text-anchor="start">Denied: the limit is $100.</text>
+<rect x="640" y="340" width="470" height="180" rx="12" class="box"/>
+<rect x="646" y="346" width="458" height="168" rx="7" class="inner"/>
+<text x="664" y="379" class="label" text-anchor="start">New request may cost $5</text>
+<text x="664" y="416" class="body" text-anchor="start">$60 spent + $30 held + $5</text>
+<text x="664" y="446" class="body" text-anchor="start">Total would be $95.</text>
+<text x="664" y="476" class="body" text-anchor="start">Allowed if every other check passes.</text>
+<path d="M 365 245 V 340" class="edge"/>
+<path d="M 865 245 V 340" class="edge"/>
+<rect x="640" y="620" width="470" height="150" rx="12" class="box"/>
+<text x="664" y="659" class="label" text-anchor="start">The confirmed bill is $3</text>
+<text x="664" y="696" class="body" text-anchor="start">Move $3 from held to spent.</text>
+<text x="664" y="726" class="body" text-anchor="start">Free the unused $2.</text>
+<text x="664" y="756" class="body" text-anchor="start">Keep other open holds.</text>
+<path d="M 875 520 V 620" class="edge"/>
+<rect x="90" y="620" width="470" height="150" rx="12" class="box" stroke-dasharray="8 7"/>
+<text x="114" y="659" class="label" text-anchor="start">A timeout is not a refund</text>
+<text x="114" y="696" class="body" text-anchor="start">Keep a hold while a charge is unclear.</text>
+<text x="114" y="726" class="body" text-anchor="start">If no firm maximum can be set,</text>
+<text x="114" y="756" class="body" text-anchor="start">deny strict-cap spending.</text>
+<text x="40" y="827" class="note" text-anchor="start">Reserve in all linked budgets as one step. Do not let two requests spend the same free money.</text>
+<text x="40" y="863" class="note" text-anchor="start">Example amounts are illustrative. The limit covers the stated billing scope.</text>
+</svg>

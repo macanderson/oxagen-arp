@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:oxagen:proposed:workspace-config:0.2",
+  "title": "Proposed Oxagen workspace-config",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "const": "./schemas/workspace.schema.json"
+    },
+    "format_version": {
+      "const": "arp.repo/0.2"
+    },
+    "authority": {
+      "const": "reference_only"
+    },
+    "tenant_id": {
+      "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+    },
+    "workspace_id": {
+      "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+    },
+    "repository_id": {
+      "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+    },
+    "source_workspace_settings_revision_id": {
+      "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+    },
+    "data_plane_binding_id": {
+      "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+    },
+    "requested_defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "agent_release_id": {
+          "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+        },
+        "mode_id": {
+          "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
+        },
+        "control_level": {
+          "const": "strict"
+        }
+      },
+      "required": [
+        "agent_release_id",
+        "mode_id",
+        "control_level"
+      ]
+    },
+    "context_file": {
+      "const": "context.json"
+    },
+    "steering_file": {
+      "const": "steering.json"
+    }
+  },
+  "required": [
+    "$schema",
+    "format_version",
+    "authority",
+    "tenant_id",
+    "workspace_id",
+    "repository_id",
+    "source_workspace_settings_revision_id",
+    "data_plane_binding_id",
+    "requested_defaults",
+    "context_file",
+    "steering_file"
+  ]
+}

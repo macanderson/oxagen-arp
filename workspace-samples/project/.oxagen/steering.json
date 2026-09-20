@@ -1,0 +1,17 @@
+{
+  "$schema": "./schemas/steering.schema.json",
+  "format_version": "arp.repo/0.2",
+  "priority": "task_guidance",
+  "delivery": "turn_start",
+  "entries": [
+    {
+      "key": "repo_guidance",
+      "source": {
+        "kind": "vcs_file",
+        "path": "docs/agent-guidance.md",
+        "version": "checkout"
+      },
+      "required": true
+    }
+  ]
+}

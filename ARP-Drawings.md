@@ -1,0 +1,99 @@
+# ARP process drawings
+
+Each drawing can be opened as an SVG. The HTML reader also offers full-screen viewing, zoom, and pan.
+
+## 1. One workspace to manage agent work
+
+![A human operator or human team lead uses the Oxagen web app to choose a workspace and approved targets, dispatch work, steer runs, track spend and progress, and set work orders and context access. Durable routing saves each request, checks the right to start or steer, and creates a distinct run for each selected target when starting new work. Registered Codex, Claude Code, and custom harness targets each have a protected run guard. A protected desktop gateway scans full outgoing requests under workspace rules before remote egress. All model, tool, and context requests pass through mandatory gates that check record access, policies, work orders, and budgets. Only cleaned results and evidence reach Oxagen records and the web app. Sending work to several targets does not mean sending every target the same write. Shared writes still need their own checks.](diagrams/overview.svg)
+
+*Proposed architecture. People set work orders and context access in the Oxagen web app, select approved workspace targets, and send each one its own work. Protected local gateways scan outgoing data before remote request gates. Only cleaned results and evidence reach the web app.*
+
+## 2. One message can steer many agents
+
+![A person submits a workspace message. Oxagen saves the target list and places it in each run inbox. Without interrupting, current admitted work ends and the message enters before the next step. With interruption, Oxagen first confirms a pause, then applies the message and resumes. The web app shows per-run receipts, including offline runs.](diagrams/steering.svg)
+
+*A workspace message targets a saved list of enrolled runs. Each run gets its own receipt. Offline runs stay visible as waiting.*
+
+## 3. A pause needs proof
+
+![A pause request holds new actions and late results. All workers must acknowledge the hold or be proved isolated. Local files and active context must stop changing. Unknown outside writes keep the run pausing. A confirmed saved boundary allows the paused state. Late replies go to evidence only and can enter a future run only through a separate checked adoption.](diagrams/pause.svg)
+
+*A pause request is only the start. Oxagen reports paused after it holds new work, confirms all workers are quiet, and saves a stable boundary.*
+
+## 4. One toolbelt, checked on every call
+
+![Oxagen stores a versioned agent definition with allowed and denied tool lists. The effective toolbelt keeps only tools allowed by that definition, the approved mode, workspace, operator rights, current policy, and current run grant. Deny wins and unknown tools are denied. One logical Oxagen MCP endpoint authenticates each request and returns this agent and workspace’s allowed managed catalog. In the support-agent example, lookup_customer is shown and process_refund is denied. Every tools/call is checked again for trusted identity, tool assignment, inputs, approvals, access to each record, current policy, run state, and budget. A protected run guard also checks registered native, shell, file, other MCP, and hosted tool paths. Only an exact governed action with a saved decision, reserved cost, and current authorization may run. A hidden or stale tool name does not grant permission. MCP alone cannot block other tool paths. Strict mode refuses a harness setup whose required tool paths cannot be guarded or disabled.](diagrams/authorization.svg)
+
+*The agent definition sets allowed and denied tools. The active mode and workspace can narrow that list. One authenticated Oxagen MCP endpoint shows allowed catalog tools. A separate protected guard also checks native tools and other MCP tools before they act.*
+
+## 5. A fork starts from a saved boundary
+
+![An enrolled source run reaches a confirmed safe boundary. Oxagen saves an allowed local snapshot, visible history, selected context, and work still pending. The local gateway scans every exported record and file view before it leaves the device. Only cleaned data may leave. A target adapter loads the allowed state into another harness and reports missing or redacted state and any limits on continuing the work. Current access and cost checks create a new run. Keys and private model state are not copied. A move also stops the old run before the new one starts.](diagrams/fork.svg)
+
+*ARP carries an allowed snapshot and cleaned records into another harness. Any exported data passes through the local scanner. The new run gets new access checks and its own branch.*
+
+## 6. A shared control seam for future plugins
+
+![Possible future plugins include remote documentation, allowed context, Slack notices, and a witness with an oracle. They send stop, pause, resume, or force continue requests to the same shared control interface used by the Supervisor. The core checks identity, permissions, policy, budgets, and pause proof, then orders allowed requests through the Supervisor and gates. When a turn asks to end, Oxagen freezes its version. Subscribed plugin seats vote ready, hold, continue, or abstain. Required seats that are missing, in error, or not ready keep completion waiting unless a named, authorized waiver clears that seat. Each required seat needs a ready vote or a named, authorized waiver for the exact turn version. Core checks must still hold before the core alone commits completion. This is not a majority vote. No partner plugin is implemented in this phase.](diagrams/plugins.svg)
+
+*Oxagen capability stub only. No partner plugin is being built in this phase. Future plugins use checked control requests and can hold turn completion when given a required seat.*
+
+## 7. Reserve the most a request can cost
+
+![With a 100 dollar limit, 60 dollars spent and 30 dollars held leave 10 dollars available. A request that may cost 15 dollars is denied because total exposure would reach 105. A request bounded at 5 dollars may be allowed because total exposure reaches 95. If its confirmed bill is 3 dollars, 3 dollars becomes spent and 2 dollars is freed. Every applicable budget must allow the request.](diagrams/budget.svg)
+
+*Oxagen checks spent money plus money held for unfinished requests. Concurrent requests share the same balance. A timeout does not refund a possible charge.*
+
+## 8. The same rules can live in three places
+
+![Three deployment options use the same architecture. Hosted Oxagen keeps management and request checks in its cloud with isolated customer data. In a split setup, hosted management sends commands to customer-local gates, keys, records, and approved models. Fully private Oxagen keeps both management and data services within the customer environment. Cloud commands cannot override local customer rules, and offline use needs prior allowed limits.](diagrams/deployments.svg)
+
+*Start with hosted Oxagen. Keep the same control boundaries for customer-local handling of data and for fully private installs.*
+
+## 9. Required reports link back to the work
+
+![The trusted run guard supplies the approved persona ID and name, run identity, and per-tool call counts. Version-control and pull-request connectors supply repository and workspace identity, the configured default branch and its exact base revision, the working branch and head commit, the changed-file list and diff, and any pull-request number and link. CI connectors supply every job status with the commit it checked. The protected local gateway scans report text, files, and references before any upload. Only cleaned report data is persisted through the tenant-selected data service into the same record store and file references used by the Oxagen web app. That data service may be SaaS or customer-private. It checks access to each record when writing and reading. The web app shows observation time, freshness, and field status. No PR, unknown PR state, missing or redacted data, running jobs, and failed jobs stay distinct. An old commit’s CI result does not prove the current head passed. Every required field has a value or an explicit status. A model summary does not replace these trusted records.](diagrams/reporting.svg)
+
+*Trusted run records and code, PR, and CI connectors supply the required report fields. Reports link branches, persona, tool counts, and each CI result to the exact work. The local gateway cleans report data before the tenant-selected data service saves it for the Oxagen web app. Record rights, freshness, and field status stay visible.*
+
+## 10. Model requests must pass through Oxagen
+
+![Oxagen prepares allowed run context and steering. A harness adapter or custom SDK puts them into the next supported step. Hooks report events and help with steering, but are not the security boundary. The harness sends model, tool, and context requests through a protected desktop gateway outside the agent process and separate from the app UI. The local gateway scans the full assembled request, history, tool data, and attachments under workspace rules. It blocks, redacts, or replaces sensitive content before remote egress and blocks a send if required content cannot be checked. It also prevents direct network and credential bypass. Only cleaned requests reach the tenant model proxy, which authorizes each call, holds provider keys, and sends approved requests to models. Each tenant gate checks the ScanReceipt that binds the exact cleaned request to the current workspace scan policy. A missing, stale, or mismatched receipt blocks the request. Remote tool and context gates also check operations and record rights. Only cleaned evidence enters Oxagen records. Strict mode refuses any required route that cannot be guarded or disabled. A removable hook alone cannot stop bypass.](diagrams/gateway.svg)
+
+*The protected desktop gateway is separate from the app UI. It scans the full outgoing request and applies workspace rules before data leaves the device. Only cleaned requests reach the tenant model proxy, tool and context gates, or Oxagen records. Adapters and hooks add context and steering but do not enforce this boundary.*
+
+## 11. People and agents use the same access checks
+
+![Human and agent identities are first-class principals in the same canonical IAM and RBAC system. They have distinct identities, roles, and record grants; an agent also has an accountable operator. One authorization service composes identity, role and record rights, workspace scope, and current policy into an allow, deny, or approval-required decision. A person is asked only when the rule requires it. Only allowed requests may proceed through tool, context, model, and web or API gates. Data queries also enforce tenant and workspace boundaries through SQL row-level security where SQL is used. Application-level record checks still apply. Object and file stores, search indexes, and their gateways separately enforce tenant and per-record rights. SQL row-level security does not cover non-SQL stores by itself.](diagrams/iam.svg)
+
+*People and agents have their own identities. One shared identity and access service checks their roles, record grants, and current policy. Its decision reaches each request gate. SQL row rules add tenant and workspace checks. File and search services enforce their own record checks.*
+
+## 12. A work order sets the task. Each call still gets checked.
+
+![A versioned work order assigns a task to an agent and records its owner and fixed revision. Reusable policies and the agent’s Permissions & limits separately govern access, tools, context, and shared budget limits. A work order cannot grant rights beyond the agent definition or workspace. Every proposed model, tool, or data call is checked against current identity and record access, policy, approval requirements, and the shared budget. Outgoing data is cleaned locally before remote disclosure, and checks bind the final cleaned request. Oxagen saves the decision and reserves the bounded cost. The resulting governed action is one exact checked call. Its internal one-use authorization binds the exact request, caller, run, current authority, and expiry. The protected gate rechecks current access and uses that authorization once. Changed inputs or reuse are denied. Oxagen records the order version, action ID, cleaned request and output, usage, cost, and outcome. Uncertain remote results remain explicit and need reconciliation before an unsafe retry. One-use internal authorization does not make a remote system exactly once. Human approval is needed only when current policy requires it.](diagrams/work_order.svg)
+
+*A work order records the task and who should do it. Reusable policies and the agent’s Permissions & limits govern access, tools, context, and spend. Each call must pass those current checks. A governed action is one exact checked call. Its gate uses internal authorization once. A rule may allow it without asking a person.*
+
+## 13. Clean data locally before anything leaves
+
+![Raw prompt text, full history, tool inputs and results, tool schemas, files, images, attachments, URLs, and request headers enter the protected local desktop gateway. The service is separate from the app UI and protected from the controlled agent. The workspace scanner checks the full assembled outgoing request and every required attachment. Workspace rules may block the send, redact content, or replace sensitive values. If required content cannot be checked, the send is blocked. The blocked path does not upload raw content or raw evidence. The allowed path carries only the cleaned full request and a minimal ScanReceipt without raw text. This receipt binds the exact cleaned request digest and workspace scan-policy version. The tenant gateway checks the receipt and blocks missing, stale, or mismatched receipts. Changed requests are rechecked under current access and policy. Only this cleaned form reaches the tenant gateway, approved model or tool, and sanitized Oxagen evidence records. The same path applies to outgoing reports and telemetry. No raw request, raw evidence, or replacement mapping may take a separate cloud path.](diagrams/data_protection.svg)
+
+*A protected desktop gateway scans the full assembled request under workspace rules. It may block, redact, or replace content. Only the cleaned form can reach tenant gateways, approved models, or Oxagen records. The app UI and harness cannot use a raw-to-cloud route.*
+
+## 14. Business rules must pass before a refund runs
+
+![A work order requests a task but grants no new rights. The agent’s Permissions & limits and reusable business policies separately govern the task. This example caps total refunds at 20 percent of the order amount, 100 USD per customer per day, and 5000 USD per workspace per day. These are sample policies, not defaults. Current tool and record access must pass. The shared limit service reserves the proposed amount atomically across every applicable scope, using a defined currency and day boundary. Concurrent agents share these totals. If any permission or limit fails, the refund does not run. A governed action binds the exact approved refund request. The protected tool gate and trusted refund connector enforce it; controlling model traffic alone is not enough. The connector returns an authoritative receipt. Known results settle the actual amount and release only confirmed unused reservations. Unknown results keep their reservations and require reconciliation before any retry that could duplicate a refund. Cleaned decisions and receipts are saved through the local scan path. A work order references work; it does not own or replace reusable business policies.](diagrams/business_policy.svg)
+
+*Example rules, not built-in defaults. Reusable policies and the agent’s Permissions & limits govern each refund. Oxagen checks all limits and reserves room across every shared total before the trusted tool can act. A model gateway alone cannot enforce a refund limit.*
+
+## 15. One linked map connects context, rules, and proof
+
+![Version-control, CRM, and other source systems remain authoritative for their own records. Oxagen keeps stable source and record IDs, versions, permission references, sanitized data, and provenance links in its shared context graph. Foundational IDs and provenance synchronization belong to the initial design. The Context Gateway is the shared route for context access. A common MCP catalog discovers allowed tools and context routes but grants no extra rights. Identity, per-record rights, policy, and local data scanning still apply. Code, tools, context, tests, and reusable policy versions can be linked through the graph. The future business-record section is explicitly not an implemented connector or ingestion feature in this phase. It shows a possible provenance chain from Run and ToolAction to PolicyVersion and Decision, to an optional approval if required, to ConnectorReceipt, to the external Refund record, then its Order and Customer records. Receipts point to exact external source versions when available. Unknown source versions remain marked unknown. An approval is optional only when the policy does not require it; missing required proof never counts as success. Source permissions and freshness remain attached to all links. The graph stores authorized links and sanitized fields, not a copy that overrides the source system or bypasses record access.](diagrams/knowledge_graph.svg)
+
+*The context graph is a shared foundation. It links allowed records, their source versions, policies, tools, code, and tests. The Context Gateway and common MCP catalog expose only what the caller may use. The lower section shows future business records; that business ingestion is not being built in this phase.*
+
+## 16. One set of records, with checked views of the same work
+
+![Tenant, workspace, and canonical IAM records identify people and agents and hold per-record permissions. Runs and governed actions reference these identities. Policy decisions and shared limits reference the exact action. These primary PostgreSQL records use tenant and workspace row-level security plus canonical record grants. Sanitized evidence and a transactional outbox are saved with the work. Large clean evidence files live in a separate encrypted object store through checked references; object storage is not a competing authority or an escape from record access. Outbox workers build graph and search projections from committed records. Source systems such as version control and business services keep authority over their own facts. Checked source bindings retain stable IDs, native versions, permissions, and cleaned data. These also feed the required context graph. A future business ingestion block joins the shared trusted connector receipt to external business records using exact source IDs and versions. The future join never uses a model guess or a fuzzy amount match. Every graph edge and search result still receives record access checks. This drawing groups schema domains rather than depicting each physical table.](diagrams/schema.svg)
+
+*Proposed data model. Tenant and identity records anchor runs, actions, policy decisions, and shared limits. PostgreSQL is the primary record store. Clean evidence uses checked file references. The outbox updates graph and search views. Exact receipt links to business records are a future ingestion feature.*

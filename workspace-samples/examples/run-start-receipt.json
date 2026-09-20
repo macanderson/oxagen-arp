@@ -1,0 +1,54 @@
+{
+  "$schema": "../project/.oxagen/schemas/run-start-receipt.schema.json",
+  "format_version": "arp.repo/0.2",
+  "record_type": "RunStartReceipt",
+  "status": "started",
+  "tenant_id": "799ea40b-e94e-5280-b8f8-b2cc69866950",
+  "workspace_id": "bb09fca7-c26f-56d3-9b74-37a0a7c0912b",
+  "repository_id": "84488469-4d99-5bbe-89f9-31904bfeaaa7",
+  "run_id": "861a1d59-2397-5144-9a0d-00ac51ebf235",
+  "work_request_id": "fe2d4c73-d9d6-5836-a1cd-afa39e1d53de",
+  "work_order_revision_id": "302d0617-5310-5924-81cd-d3f878ed3f23",
+  "target_id": "bc37533b-2426-52ec-b0ed-a69e32bba40b",
+  "checkout_binding_id": "f8fa0766-2c89-5126-a15d-60b2e952e441",
+  "agent_release_id": "ece53d40-54a6-5b8d-9f6b-f0b021fb650e",
+  "mode_id": "def2e48d-8426-5bf9-b793-a1644a45c5b4",
+  "sync_receipt_id": "a4704304-2cfe-5eb8-b994-aeba3e8afa09",
+  "start_event_id": "98468844-3bf4-5d30-8b42-0eb0dfe1239a",
+  "first_model_attempt_id": "cb933556-c144-580c-af92-25cbaeee3a7e",
+  "first_model_dispatch_event_id": "bcdca421-0ad0-5f0d-9006-0111bd172f42",
+  "scan_receipt_id": "e4f26af8-fe36-51b2-864f-ac925f70584c",
+  "config_files": [
+    {
+      "path": ".oxagen/workspace.json",
+      "source_commit_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "source_snapshot_id": "b07ed998-b115-5496-bc84-673e20b708e5",
+      "cleaned_sha256": "021e276a367a961adb425635fb45517977552de7a74b462feb690b8ccf9f9153"
+    },
+    {
+      "path": ".oxagen/context.json",
+      "source_commit_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "source_snapshot_id": "b07ed998-b115-5496-bc84-673e20b708e5",
+      "cleaned_sha256": "03a3a67a482d6a2f40ada29bdaf08483de5c9032e86c1066822415b9dccc7fcc"
+    },
+    {
+      "path": ".oxagen/steering.json",
+      "source_commit_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "source_snapshot_id": "b07ed998-b115-5496-bc84-673e20b708e5",
+      "cleaned_sha256": "e5ff5c25953ebce5bf77c6b4bb31ab27428ed658e958eabf90e741ad62ecbef8"
+    }
+  ],
+  "context_manifest_id": "9f949ad2-c4b4-52bb-aea4-26413ddf9742",
+  "steering_manifest_id": "bbcf54ef-29da-561d-a1be-fd8f2b52bab6",
+  "policy_revision_ids": [
+    "3044cde7-9937-5d0a-98cf-1fe0ba7fe173"
+  ],
+  "tool_belt_snapshot_id": "8006fa96-f3af-5ad2-a033-433760782422",
+  "started_at": "2026-09-20T17:01:00Z",
+  "issuer_key_id": "5d6c9d08-849a-51cf-9eb7-60033a015bab",
+  "signature": {
+    "algorithm": "Ed25519",
+    "value_base64": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+  },
+  "composition_receipt_id": "bc528a15-430a-5bb7-8075-ef592545cd08"
+}

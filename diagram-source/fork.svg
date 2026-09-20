@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="arp-fork" class="arp-diagram" viewBox="0 0 1200 800" role="img" aria-labelledby="arp-fork-title arp-fork-desc">
+<title id="arp-fork-title">A fork starts from a saved boundary</title><desc id="arp-fork-desc">An enrolled source run reaches a confirmed safe boundary. Oxagen saves an allowed local snapshot, visible history, selected context, and work still pending. The local gateway scans every exported record and file view before it leaves the device. Only cleaned data may leave. A target adapter loads the allowed state into another harness and reports missing or redacted state and any limits on continuing the work. Current access and cost checks create a new run. Keys and private model state are not copied. A move also stops the old run before the new one starts.</desc>
+<defs><marker id="arp-fork-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="var(--diagram-line,var(--arp-line,#A1A1AA))" stroke-width="1.5" stroke-linejoin="round"/></marker></defs>
+<style>
+#arp-fork{--arp-bg:#09090B;--arp-panel:#18181B;--arp-text:#FFFFFF;--arp-muted:#A1A1AA;--arp-line:#A1A1AA}
+@media(prefers-color-scheme:light){#arp-fork{--arp-bg:#FFFFFF;--arp-panel:#FFFFFF;--arp-text:#09090B;--arp-muted:#71717A;--arp-line:#71717A}}
+#arp-fork .box{fill:var(--diagram-panel,var(--arp-panel,#18181B));stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2}
+#arp-fork .inner{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:1.5}
+#arp-fork .edge{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2;stroke-linejoin:round;marker-end:url(#arp-fork-arrow)}
+#arp-fork .title{font-family:"Space Grotesk",sans-serif;font-size:32px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-fork .label{font-family:Geist,sans-serif;font-size:24px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-fork .body{font-family:Geist,sans-serif;font-size:22px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-fork .note{font-family:Geist,sans-serif;font-size:20px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-fork .number{font-family:"Monaspace Neon",monospace;font-size:26px;font-weight:500;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+</style>
+<rect width="1200" height="800" fill="var(--diagram-bg,var(--arp-bg,#09090B))"/>
+
+<text x="40" y="52" class="title" text-anchor="start">A fork starts from a saved boundary</text>
+<rect x="40" y="120" width="300" height="140" rx="12" class="box"/>
+<text x="64" y="159" class="label" text-anchor="start">Current run</text>
+<text x="64" y="196" class="body" text-anchor="start">Codex, Claude Code,</text>
+<text x="64" y="226" class="body" text-anchor="start">or a custom agent</text>
+<rect x="450" y="120" width="300" height="140" rx="12" class="box"/>
+<text x="474" y="159" class="label" text-anchor="start">Confirm a boundary</text>
+<text x="474" y="196" class="body" text-anchor="start">Resolve writes.</text>
+<text x="474" y="226" class="body" text-anchor="start">Save a stable point.</text>
+<rect x="860" y="120" width="300" height="140" rx="12" class="box"/>
+<text x="884" y="159" class="label" text-anchor="start">Save allowed state</text>
+<text x="884" y="196" class="body" text-anchor="start">Allowed files + history</text>
+<text x="884" y="226" class="body" text-anchor="start">Cleaned context</text>
+<path d="M 340 190 H 450" class="edge"/>
+<path d="M 750 190 H 860" class="edge"/>
+<rect x="860" y="380" width="300" height="140" rx="12" class="box"/>
+<text x="884" y="419" class="label" text-anchor="start">Load the next harness</text>
+<text x="884" y="456" class="body" text-anchor="start">Map what it can use.</text>
+<text x="884" y="486" class="body" text-anchor="start">Report what cannot fit.</text>
+<path d="M 1010 260 V 380" class="edge"/>
+<rect x="450" y="380" width="300" height="140" rx="12" class="box"/>
+<text x="474" y="419" class="label" text-anchor="start">Run fresh checks</text>
+<text x="474" y="456" class="body" text-anchor="start">Current rules and access</text>
+<text x="474" y="486" class="body" text-anchor="start">New budget and branch</text>
+<path d="M 860 450 H 750" class="edge"/>
+<rect x="40" y="380" width="300" height="140" rx="12" class="box"/>
+<rect x="46" y="386" width="288" height="128" rx="7" class="inner"/>
+<text x="64" y="419" class="label" text-anchor="start">New run may start</text>
+<text x="64" y="456" class="body" text-anchor="start">Answers may differ.</text>
+<text x="64" y="486" class="body" text-anchor="start">Check each new action.</text>
+<path d="M 450 450 H 340" class="edge"/>
+<rect x="40" y="625" width="530" height="110" rx="12" class="box"/>
+<text x="64" y="664" class="label" text-anchor="start">Not copied</text>
+<text x="64" y="701" class="body" text-anchor="start">Connection keys or private model state</text>
+<rect x="630" y="625" width="530" height="110" rx="12" class="box"/>
+<text x="654" y="664" class="label" text-anchor="start">Fork or move?</text>
+<text x="654" y="701" class="body" text-anchor="start">A move must stop the source first.</text>
+<text x="40" y="778" class="note" text-anchor="start">A point inside an unsafe action must wait for a supported boundary. A transcript alone is not enough.</text>
+</svg>

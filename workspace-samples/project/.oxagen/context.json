@@ -1,0 +1,28 @@
+{
+  "$schema": "./schemas/context.schema.json",
+  "format_version": "arp.repo/0.2",
+  "entries": [
+    {
+      "key": "project_start",
+      "source": {
+        "kind": "vcs_file",
+        "path": "docs/start.md",
+        "version": "checkout"
+      },
+      "required": true,
+      "purpose": "task_context",
+      "destination": "model_input"
+    },
+    {
+      "key": "support_rules",
+      "source": {
+        "kind": "oxagen_record",
+        "record_id": "757f4a25-f879-5251-a181-5132f566a54e",
+        "revision_id": "c063f6ac-147d-54fb-92bf-c78eb03fa5bd"
+      },
+      "required": true,
+      "purpose": "task_context",
+      "destination": "model_input"
+    }
+  ]
+}

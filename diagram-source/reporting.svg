@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="arp-reporting" class="arp-diagram" viewBox="0 0 1200 1100" role="img" aria-labelledby="arp-reporting-title arp-reporting-desc">
+<title id="arp-reporting-title">Required reports link back to the work</title><desc id="arp-reporting-desc">The trusted run guard supplies the approved persona ID and name, run identity, and per-tool call counts. Version-control and pull-request connectors supply repository and workspace identity, the configured default branch and its exact base revision, the working branch and head commit, the changed-file list and diff, and any pull-request number and link. CI connectors supply every job status with the commit it checked. The protected local gateway scans report text, files, and references before any upload. Only cleaned report data is persisted through the tenant-selected data service into the same record store and file references used by the Oxagen web app. That data service may be SaaS or customer-private. It checks access to each record when writing and reading. The web app shows observation time, freshness, and field status. No PR, unknown PR state, missing or redacted data, running jobs, and failed jobs stay distinct. An old commit’s CI result does not prove the current head passed. Every required field has a value or an explicit status. A model summary does not replace these trusted records.</desc>
+<defs><marker id="arp-reporting-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="var(--diagram-line,var(--arp-line,#A1A1AA))" stroke-width="1.5" stroke-linejoin="round"/></marker></defs>
+<style>
+#arp-reporting{--arp-bg:#09090B;--arp-panel:#18181B;--arp-text:#FFFFFF;--arp-muted:#A1A1AA;--arp-line:#A1A1AA}
+@media(prefers-color-scheme:light){#arp-reporting{--arp-bg:#FFFFFF;--arp-panel:#FFFFFF;--arp-text:#09090B;--arp-muted:#71717A;--arp-line:#71717A}}
+#arp-reporting .box{fill:var(--diagram-panel,var(--arp-panel,#18181B));stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2}
+#arp-reporting .inner{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:1.5}
+#arp-reporting .edge{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2;stroke-linejoin:round;marker-end:url(#arp-reporting-arrow)}
+#arp-reporting .title{font-family:"Space Grotesk",sans-serif;font-size:32px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-reporting .label{font-family:Geist,sans-serif;font-size:24px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-reporting .body{font-family:Geist,sans-serif;font-size:22px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-reporting .note{font-family:Geist,sans-serif;font-size:20px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-reporting .number{font-family:"Monaspace Neon",monospace;font-size:26px;font-weight:500;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+</style>
+<rect width="1200" height="1100" fill="var(--diagram-bg,var(--arp-bg,#09090B))"/>
+
+<text x="40" y="52" class="title" text-anchor="start">Required reports link back to the work</text>
+<text x="40" y="88" class="note" text-anchor="start">Trusted records supply each required report field.</text>
+<rect x="40" y="125" width="330" height="140" rx="12" class="box"/>
+<text x="64" y="164" class="label" text-anchor="start">Trusted run guard</text>
+<text x="64" y="201" class="body" text-anchor="start">Persona and tool calls</text>
+<text x="64" y="231" class="body" text-anchor="start">Run + workspace IDs</text>
+<rect x="435" y="125" width="330" height="140" rx="12" class="box"/>
+<text x="459" y="164" class="label" text-anchor="start">Code and PR connectors</text>
+<text x="459" y="201" class="body" text-anchor="start">Branch heads, files, and diff</text>
+<text x="459" y="231" class="body" text-anchor="start">PR number and link</text>
+<rect x="830" y="125" width="330" height="140" rx="12" class="box"/>
+<text x="854" y="164" class="label" text-anchor="start">CI connectors</text>
+<text x="854" y="201" class="body" text-anchor="start">Each job’s actual state</text>
+<text x="854" y="231" class="body" text-anchor="start">Commit checked by that job</text>
+<path d="M 205 265 V 315 H 600 V 365" class="edge"/>
+<path d="M 600 265 V 315" class="edge"/>
+<path d="M 995 265 V 315 H 600" class="edge"/>
+<rect x="40" y="365" width="1120" height="355" rx="12" class="box"/>
+<text x="64" y="404" class="label" text-anchor="start">Required report fields are prepared</text>
+<rect x="65" y="435" width="340" height="230" rx="12" class="box"/>
+<text x="89" y="474" class="label" text-anchor="start">Branch and diff</text>
+<text x="89" y="511" class="body" text-anchor="start">Repo + workspace</text>
+<text x="89" y="541" class="body" text-anchor="start">Configured default branch</text>
+<text x="89" y="571" class="body" text-anchor="start">Exact base revision</text>
+<text x="89" y="601" class="body" text-anchor="start">Working branch + head</text>
+<text x="89" y="631" class="body" text-anchor="start">Changed files + diff</text>
+<rect x="430" y="435" width="340" height="230" rx="12" class="box"/>
+<text x="454" y="474" class="label" text-anchor="start">Who did the work</text>
+<text x="454" y="511" class="body" text-anchor="start">Persona ID + name</text>
+<text x="454" y="541" class="body" text-anchor="start">Call count for each tool</text>
+<text x="454" y="571" class="body" text-anchor="start">Trusted source links</text>
+<text x="454" y="601" class="body" text-anchor="start">Time observed + recorded</text>
+<text x="454" y="631" class="body" text-anchor="start">Report state + field status</text>
+<rect x="795" y="435" width="340" height="230" rx="12" class="box"/>
+<text x="819" y="474" class="label" text-anchor="start">PR and checks</text>
+<text x="819" y="511" class="body" text-anchor="start">PR number + link</text>
+<text x="819" y="541" class="body" text-anchor="start">PR state: present, none,</text>
+<text x="819" y="571" class="body" text-anchor="start">or unknown</text>
+<text x="819" y="601" class="body" text-anchor="start">Each CI job + actual status</text>
+<text x="819" y="631" class="body" text-anchor="start">Exact commit checked</text>
+<text x="65" y="699" class="note" text-anchor="start">A result belongs to the exact code version it checked.</text>
+<rect x="40" y="830" width="330" height="155" rx="12" class="box"/>
+<text x="64" y="869" class="label" text-anchor="start">Same store and files</text>
+<text x="64" y="906" class="body" text-anchor="start">Report rows and file links</text>
+<text x="64" y="936" class="body" text-anchor="start">Used by this web app</text>
+<rect x="435" y="830" width="330" height="155" rx="12" class="box"/>
+<text x="459" y="869" class="label" text-anchor="start">Tenant’s data service</text>
+<text x="459" y="906" class="body" text-anchor="start">SaaS or customer-private</text>
+<text x="459" y="936" class="body" text-anchor="start">Check rights for each record</text>
+<text x="459" y="966" class="body" text-anchor="start">Write and read this report</text>
+<rect x="830" y="830" width="330" height="155" rx="12" class="box"/>
+<text x="854" y="869" class="label" text-anchor="start">Oxagen web app</text>
+<text x="854" y="906" class="body" text-anchor="start">Reads the report fields</text>
+<text x="854" y="936" class="body" text-anchor="start">Shows when each was seen</text>
+<text x="854" y="966" class="body" text-anchor="start">Marks old or unknown data</text>
+<rect x="320" y="750" width="560" height="60" rx="12" class="box"/>
+<text x="344" y="789" class="label" text-anchor="start">Local gateway: clean data before upload</text>
+<path d="M 600 720 V 750" class="edge"/>
+<path d="M 600 810 V 830" class="edge"/>
+<path d="M 435 895 H 370" class="edge"/>
+<path d="M 370 925 H 435" class="edge"/>
+<path d="M 830 895 H 765" class="edge"/>
+<path d="M 765 925 H 830" class="edge"/>
+<text x="40" y="1045" class="note" text-anchor="start">Save a value or an explicit missing, unknown, or not-applicable state for each required field.</text>
+<text x="40" y="1081" class="note" text-anchor="start">CI results name their commit. A result for an old commit cannot stand in for the current head.</text>
+</svg>

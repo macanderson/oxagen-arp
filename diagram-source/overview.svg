@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="arp-overview" class="arp-diagram" viewBox="0 0 1200 1100" role="img" aria-labelledby="arp-overview-title arp-overview-desc">
+<title id="arp-overview-title">One workspace to manage agent work</title><desc id="arp-overview-desc">A human operator or human team lead uses the Oxagen web app to choose a workspace and approved targets, dispatch work, steer runs, track spend and progress, and set work orders and context access. Durable routing saves each request, checks the right to start or steer, and creates a distinct run for each selected target when starting new work. Registered Codex, Claude Code, and custom harness targets each have a protected run guard. A protected desktop gateway scans full outgoing requests under workspace rules before remote egress. All model, tool, and context requests pass through mandatory gates that check record access, policies, work orders, and budgets. Only cleaned results and evidence reach Oxagen records and the web app. Sending work to several targets does not mean sending every target the same write. Shared writes still need their own checks.</desc>
+<defs><marker id="arp-overview-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="var(--diagram-line,var(--arp-line,#A1A1AA))" stroke-width="1.5" stroke-linejoin="round"/></marker></defs>
+<style>
+#arp-overview{--arp-bg:#09090B;--arp-panel:#18181B;--arp-text:#FFFFFF;--arp-muted:#A1A1AA;--arp-line:#A1A1AA}
+@media(prefers-color-scheme:light){#arp-overview{--arp-bg:#FFFFFF;--arp-panel:#FFFFFF;--arp-text:#09090B;--arp-muted:#71717A;--arp-line:#71717A}}
+#arp-overview .box{fill:var(--diagram-panel,var(--arp-panel,#18181B));stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2}
+#arp-overview .inner{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:1.5}
+#arp-overview .edge{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2;stroke-linejoin:round;marker-end:url(#arp-overview-arrow)}
+#arp-overview .title{font-family:"Space Grotesk",sans-serif;font-size:32px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-overview .label{font-family:Geist,sans-serif;font-size:24px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-overview .body{font-family:Geist,sans-serif;font-size:22px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-overview .note{font-family:Geist,sans-serif;font-size:20px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-overview .number{font-family:"Monaspace Neon",monospace;font-size:26px;font-weight:500;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+</style>
+<rect width="1200" height="1100" fill="var(--diagram-bg,var(--arp-bg,#09090B))"/>
+
+<text x="40" y="52" class="title" text-anchor="start">One workspace to manage agent work</text>
+<rect x="40" y="125" width="320" height="160" rx="12" class="box"/>
+<text x="64" y="164" class="label" text-anchor="start">People set the work</text>
+<text x="64" y="201" class="body" text-anchor="start">Operator</text>
+<text x="64" y="231" class="body" text-anchor="start">Human team lead</text>
+<rect x="440" y="125" width="580" height="160" rx="12" class="box"/>
+<text x="464" y="164" class="label" text-anchor="start">Oxagen web app</text>
+<text x="464" y="201" class="body" text-anchor="start">Choose a workspace and approved targets.</text>
+<text x="464" y="231" class="body" text-anchor="start">Send work, steer, check spend and progress.</text>
+<text x="464" y="261" class="body" text-anchor="start">Set work orders and context access.</text>
+<path d="M 360 205 H 440" class="edge"/>
+<rect x="320" y="360" width="640" height="145" rx="12" class="box"/>
+<text x="344" y="399" class="label" text-anchor="start">Saved requests and checked routing</text>
+<text x="344" y="436" class="body" text-anchor="start">Save each request. Check who may start or steer.</text>
+<text x="344" y="466" class="body" text-anchor="start">New work: one run per approved target.</text>
+<path d="M 730 285 V 325 H 640 V 360" class="edge"/>
+<rect x="40" y="565" width="330" height="150" rx="12" class="box"/>
+<text x="64" y="604" class="label" text-anchor="start">Codex target</text>
+<text x="64" y="641" class="body" text-anchor="start">Registered workspace target</text>
+<text x="64" y="671" class="body" text-anchor="start">Own run + protected guard</text>
+<rect x="435" y="565" width="330" height="150" rx="12" class="box"/>
+<text x="459" y="604" class="label" text-anchor="start">Claude Code target</text>
+<text x="459" y="641" class="body" text-anchor="start">Registered workspace target</text>
+<text x="459" y="671" class="body" text-anchor="start">Own run + protected guard</text>
+<rect x="830" y="565" width="330" height="150" rx="12" class="box"/>
+<text x="854" y="604" class="label" text-anchor="start">Custom harness target</text>
+<text x="854" y="641" class="body" text-anchor="start">Registered workspace target</text>
+<text x="854" y="671" class="body" text-anchor="start">Own run + protected guard</text>
+<path d="M 640 505 V 535 H 205 V 565" class="edge"/>
+<path d="M 640 535 H 600 V 565" class="edge"/>
+<path d="M 640 535 H 995 V 565" class="edge"/>
+<rect x="250" y="825" width="700" height="160" rx="12" class="box"/>
+<text x="274" y="864" class="label" text-anchor="start">Mandatory model, tool, and context gates</text>
+<text x="274" y="901" class="body" text-anchor="start">Scan outbound data locally first.</text>
+<text x="274" y="931" class="body" text-anchor="start">Check record access, policies, work orders, and budgets.</text>
+<text x="274" y="961" class="body" text-anchor="start">Use only allowed tools, data, and connections.</text>
+<path d="M 205 715 V 770 H 600 V 825" class="edge"/>
+<path d="M 600 715 V 770" class="edge"/>
+<path d="M 995 715 V 770 H 600" class="edge"/>
+<path d="M 950 905 H 1185 V 205 H 1020" class="edge"/>
+<text x="1100" y="152" class="note" text-anchor="middle">Results and</text>
+<text x="1100" y="181" class="note" text-anchor="middle">evidence</text>
+<text x="40" y="1048" class="note" text-anchor="start">Dispatch goes only to selected targets. Shared writes still need their own checks.</text>
+<text x="40" y="1084" class="note" text-anchor="start">The team lead is a person. Each protected run guard is a separate control process.</text>
+</svg>

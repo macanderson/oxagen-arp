@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="arp-knowledge_graph" class="arp-diagram" viewBox="0 0 1200 1470" role="img" aria-labelledby="arp-knowledge_graph-title arp-knowledge_graph-desc">
+<title id="arp-knowledge_graph-title">One linked map connects context, rules, and proof</title><desc id="arp-knowledge_graph-desc">Version-control, CRM, and other source systems remain authoritative for their own records. Oxagen keeps stable source and record IDs, versions, permission references, sanitized data, and provenance links in its shared context graph. Foundational IDs and provenance synchronization belong to the initial design. The Context Gateway is the shared route for context access. A common MCP catalog discovers allowed tools and context routes but grants no extra rights. Identity, per-record rights, policy, and local data scanning still apply. Code, tools, context, tests, and reusable policy versions can be linked through the graph. The future business-record section is explicitly not an implemented connector or ingestion feature in this phase. It shows a possible provenance chain from Run and ToolAction to PolicyVersion and Decision, to an optional approval if required, to ConnectorReceipt, to the external Refund record, then its Order and Customer records. Receipts point to exact external source versions when available. Unknown source versions remain marked unknown. An approval is optional only when the policy does not require it; missing required proof never counts as success. Source permissions and freshness remain attached to all links. The graph stores authorized links and sanitized fields, not a copy that overrides the source system or bypasses record access.</desc>
+<defs><marker id="arp-knowledge_graph-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="var(--diagram-line,var(--arp-line,#A1A1AA))" stroke-width="1.5" stroke-linejoin="round"/></marker></defs>
+<style>
+#arp-knowledge_graph{--arp-bg:#09090B;--arp-panel:#18181B;--arp-text:#FFFFFF;--arp-muted:#A1A1AA;--arp-line:#A1A1AA}
+@media(prefers-color-scheme:light){#arp-knowledge_graph{--arp-bg:#FFFFFF;--arp-panel:#FFFFFF;--arp-text:#09090B;--arp-muted:#71717A;--arp-line:#71717A}}
+#arp-knowledge_graph .box{fill:var(--diagram-panel,var(--arp-panel,#18181B));stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2}
+#arp-knowledge_graph .inner{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:1.5}
+#arp-knowledge_graph .edge{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2;stroke-linejoin:round;marker-end:url(#arp-knowledge_graph-arrow)}
+#arp-knowledge_graph .title{font-family:"Space Grotesk",sans-serif;font-size:32px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-knowledge_graph .label{font-family:Geist,sans-serif;font-size:24px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-knowledge_graph .body{font-family:Geist,sans-serif;font-size:22px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-knowledge_graph .note{font-family:Geist,sans-serif;font-size:20px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-knowledge_graph .number{font-family:"Monaspace Neon",monospace;font-size:26px;font-weight:500;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+</style>
+<rect width="1200" height="1470" fill="var(--diagram-bg,var(--arp-bg,#09090B))"/>
+
+<text x="40" y="52" class="title" text-anchor="start">One linked map connects context, rules, and proof</text>
+<text x="40" y="88" class="note" text-anchor="start">Shared IDs, source versions, and links are part of the foundation.</text>
+<rect x="40" y="125" width="330" height="185" rx="12" class="box"/>
+<text x="64" y="164" class="label" text-anchor="start">Source systems</text>
+<text x="64" y="201" class="body" text-anchor="start">Code repo, CRM, and more</text>
+<text x="64" y="231" class="body" text-anchor="start">Keep the source of truth.</text>
+<text x="64" y="261" class="body" text-anchor="start">Preserve IDs and versions.</text>
+<text x="64" y="291" class="body" text-anchor="start">Keep source access rules.</text>
+<rect x="435" y="125" width="330" height="185" rx="12" class="box"/>
+<text x="459" y="164" class="label" text-anchor="start">Oxagen context graph</text>
+<text x="459" y="201" class="body" text-anchor="start">Link allowed records.</text>
+<text x="459" y="231" class="body" text-anchor="start">Keep cleaned data + proof.</text>
+<text x="459" y="261" class="body" text-anchor="start">Keep versions and freshness.</text>
+<text x="459" y="291" class="body" text-anchor="start">Carry record access rules.</text>
+<rect x="830" y="125" width="330" height="185" rx="12" class="box"/>
+<text x="854" y="164" class="label" text-anchor="start">Context Gateway</text>
+<text x="854" y="201" class="body" text-anchor="start">Check access to each link.</text>
+<text x="854" y="231" class="body" text-anchor="start">Return allowed context.</text>
+<text x="854" y="261" class="body" text-anchor="start">Use the shared MCP catalog.</text>
+<text x="854" y="291" class="body" text-anchor="start">Scan outgoing data locally.</text>
+<path d="M 370 220 H 435" class="edge"/>
+<path d="M 765 220 H 830" class="edge"/>
+<rect x="40" y="405" width="725" height="160" rx="12" class="box"/>
+<text x="64" y="444" class="label" text-anchor="start">Policies connect the things a run uses</text>
+<text x="64" y="481" class="body" text-anchor="start">Code  ·  Tools  ·  Context  ·  Tests</text>
+<text x="64" y="511" class="body" text-anchor="start">Each link names its source and version.</text>
+<text x="64" y="541" class="body" text-anchor="start">The graph helps explain which rule shaped an action.</text>
+<path d="M 600 310 V 405" class="edge"/>
+<rect x="830" y="405" width="330" height="160" rx="12" class="box"/>
+<text x="854" y="444" class="label" text-anchor="start">Any approved harness</text>
+<text x="854" y="481" class="body" text-anchor="start">Discover allowed tools.</text>
+<text x="854" y="511" class="body" text-anchor="start">Read allowed context.</text>
+<text x="854" y="541" class="body" text-anchor="start">No extra rights from MCP.</text>
+<path d="M 995 310 V 405" class="edge"/>
+<rect x="40" y="650" width="1120" height="665" rx="12" class="box" stroke-dasharray="8 7"/>
+<text x="64" y="689" class="label" text-anchor="start">Future business records: an example, not a built connector</text>
+<text x="65" y="721" class="note" text-anchor="start">This chain ties an action to its rule, decision, receipt, and real business record.</text>
+<rect x="65" y="770" width="310" height="160" rx="12" class="box"/>
+<text x="89" y="809" class="label" text-anchor="start">Run + tool action</text>
+<text x="89" y="846" class="body" text-anchor="start">Which run asked?</text>
+<text x="89" y="876" class="body" text-anchor="start">Which exact call ran?</text>
+<rect x="445" y="770" width="310" height="160" rx="12" class="box"/>
+<text x="469" y="809" class="label" text-anchor="start">Rule version + decision</text>
+<text x="469" y="846" class="body" text-anchor="start">Which policy applied?</text>
+<text x="469" y="876" class="body" text-anchor="start">Why was the call allowed?</text>
+<rect x="825" y="770" width="310" height="160" rx="12" class="box"/>
+<text x="849" y="809" class="label" text-anchor="start">Approval, if needed</text>
+<text x="849" y="846" class="body" text-anchor="start">Who approved this action?</text>
+<text x="849" y="876" class="body" text-anchor="start">Only if the rule requires it.</text>
+<path d="M 375 850 H 445" class="edge"/>
+<path d="M 755 850 H 825" class="edge"/>
+<rect x="825" y="1060" width="310" height="160" rx="12" class="box"/>
+<text x="849" y="1099" class="label" text-anchor="start">Connector receipt</text>
+<text x="849" y="1136" class="body" text-anchor="start">Proof from the trusted tool</text>
+<text x="849" y="1166" class="body" text-anchor="start">Bind the request + result.</text>
+<rect x="445" y="1060" width="310" height="160" rx="12" class="box"/>
+<text x="469" y="1099" class="label" text-anchor="start">External refund</text>
+<text x="469" y="1136" class="body" text-anchor="start">External refund ID</text>
+<text x="469" y="1166" class="body" text-anchor="start">Source version, if known</text>
+<rect x="65" y="1060" width="310" height="160" rx="12" class="box"/>
+<text x="89" y="1099" class="label" text-anchor="start">Order + customer</text>
+<text x="89" y="1136" class="body" text-anchor="start">Linked source record IDs</text>
+<text x="89" y="1166" class="body" text-anchor="start">Their versions and rights</text>
+<path d="M 980 930 V 1060" class="edge"/>
+<path d="M 825 1140 H 755" class="edge"/>
+<path d="M 445 1140 H 375" class="edge"/>
+<text x="65" y="1277" class="note" text-anchor="start">Required proof must exist. Missing links and unknown versions stay marked as such.</text>
+<text x="40" y="1385" class="note" text-anchor="start">Source systems keep their authority. The graph does not grant access to a record.</text>
+<text x="40" y="1421" class="note" text-anchor="start">The same checked context path serves Codex, Claude Code, and custom agents.</text>
+<text x="40" y="1457" class="note" text-anchor="start">Initial scope: stable IDs and provenance sync. Business record ingestion comes later.</text>
+</svg>

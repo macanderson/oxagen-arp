@@ -1,0 +1,15 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {fileURLToPath} from 'node:url';import fs from 'node:fs';import path from 'node:path';import os from 'node:os';import {spawn,spawnSync} from 'node:child_process';
+import {Journal,digest,hashFile,installationDigest} from '../lib/core.mjs';
+test('mutating CLI commands load journal state only after exclusive lock acquisition',async()=>{
+const dir=fs.mkdtempSync(path.join(os.tmpdir(),'oxagen-review-lock-'));const control=path.join(dir,'control');fs.mkdirSync(control);fs.cpSync(fileURLToPath(new URL('..',import.meta.url)),path.join(control,'runner'),{recursive:true});
+const plan=JSON.parse(fs.readFileSync(path.join(control,'runner/examples/plan.json')));const batchId=plan.batches[0].id;const manifest=path.join(control,'plan.json');fs.writeFileSync(manifest,JSON.stringify(plan));
+const hook=path.join(control,'hook.sh');fs.writeFileSync(hook,'#!/bin/sh\nexit 1\n',{mode:0o700});
+const config={controlDir:control,manifest,phaseZeroCertificate:path.join(control,'cert.json'),certifierPublicKey:path.join(control,'key.pem'),hook:{command:hook},runnerDigest:installationDigest(path.join(control,'runner'))};const configPath=path.join(control,'config.json');fs.writeFileSync(configPath,JSON.stringify(config));
+const j=new Journal(path.join(control,'state'),digest(plan));j.record('seed',{...j.state,batches:{[batchId]:{attempt:1,stage:'review'}},blocked:{batchId,knownNoExternalEffect:true,reason:'Known review failure'}});
+const ready=path.join(dir,'ready'),resume=path.join(dir,'resume');const preload=path.join(dir,'pause-before-lock.mjs');fs.writeFileSync(preload,`import test from 'node:test';import assert from 'node:assert/strict';import {fileURLToPath} from 'node:url';import fs from 'node:fs'; const original=fs.realpathSync; let once=false;fs.realpathSync=function(p,...args){if(!once&&String(p)===${JSON.stringify(hook)}){once=true;fs.writeFileSync(${JSON.stringify(ready)},'ready');while(!fs.existsSync(${JSON.stringify(resume)}))Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,25);}return original.call(this,p,...args)};`);
+const runner=path.join(control,'runner/runner.mjs');const argv=[runner,'retry','--config',configPath,'--batch',batchId];const child=spawn(process.execPath,['--import',preload,...argv],{stdio:['ignore','pipe','pipe']});let stderr='';child.stderr.on('data',b=>stderr+=b);const done=new Promise(resolve=>child.on('close',code=>resolve(code)));
+const deadline=Date.now()+5000;while(!fs.existsSync(ready)){if(Date.now()>deadline){child.kill('SIGKILL');throw Error('Lock test setup timed out')}await new Promise(r=>setTimeout(r,10));}const first=spawnSync(process.execPath,argv,{encoding:'utf8',timeout:5000});fs.writeFileSync(resume,'resume');const second=await done;
+let reload;try{new Journal(path.join(control,'state'),digest(plan));reload='valid'}catch(error){reload=error.message}
+assert.equal(first.status,0,first.stderr);assert.equal(second,1,stderr);assert.match(stderr,/exact blocked review/);assert.equal(reload,'valid');fs.rmSync(dir,{recursive:true,force:true});
+
+});

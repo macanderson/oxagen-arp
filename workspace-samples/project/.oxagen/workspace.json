@@ -1,0 +1,17 @@
+{
+  "$schema": "./schemas/workspace.schema.json",
+  "format_version": "arp.repo/0.2",
+  "authority": "reference_only",
+  "tenant_id": "799ea40b-e94e-5280-b8f8-b2cc69866950",
+  "workspace_id": "bb09fca7-c26f-56d3-9b74-37a0a7c0912b",
+  "repository_id": "84488469-4d99-5bbe-89f9-31904bfeaaa7",
+  "source_workspace_settings_revision_id": "9c9e65db-bcd2-5300-a7eb-c15f1fd716f2",
+  "data_plane_binding_id": "c41bd831-ca5c-5019-9afb-cbb34af13ebd",
+  "requested_defaults": {
+    "agent_release_id": "ece53d40-54a6-5b8d-9f6b-f0b021fb650e",
+    "mode_id": "def2e48d-8426-5bf9-b793-a1644a45c5b4",
+    "control_level": "strict"
+  },
+  "context_file": "context.json",
+  "steering_file": "steering.json"
+}

@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="arp-business_policy" class="arp-diagram" viewBox="0 0 1200 1250" role="img" aria-labelledby="arp-business_policy-title arp-business_policy-desc">
+<title id="arp-business_policy-title">Business rules must pass before a refund runs</title><desc id="arp-business_policy-desc">A work order requests a task but grants no new rights. The agent’s Permissions &amp; limits and reusable business policies separately govern the task. This example caps total refunds at 20 percent of the order amount, 100 USD per customer per day, and 5000 USD per workspace per day. These are sample policies, not defaults. Current tool and record access must pass. The shared limit service reserves the proposed amount atomically across every applicable scope, using a defined currency and day boundary. Concurrent agents share these totals. If any permission or limit fails, the refund does not run. A governed action binds the exact approved refund request. The protected tool gate and trusted refund connector enforce it; controlling model traffic alone is not enough. The connector returns an authoritative receipt. Known results settle the actual amount and release only confirmed unused reservations. Unknown results keep their reservations and require reconciliation before any retry that could duplicate a refund. Cleaned decisions and receipts are saved through the local scan path. A work order references work; it does not own or replace reusable business policies.</desc>
+<defs><marker id="arp-business_policy-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="var(--diagram-line,var(--arp-line,#A1A1AA))" stroke-width="1.5" stroke-linejoin="round"/></marker></defs>
+<style>
+#arp-business_policy{--arp-bg:#09090B;--arp-panel:#18181B;--arp-text:#FFFFFF;--arp-muted:#A1A1AA;--arp-line:#A1A1AA}
+@media(prefers-color-scheme:light){#arp-business_policy{--arp-bg:#FFFFFF;--arp-panel:#FFFFFF;--arp-text:#09090B;--arp-muted:#71717A;--arp-line:#71717A}}
+#arp-business_policy .box{fill:var(--diagram-panel,var(--arp-panel,#18181B));stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2}
+#arp-business_policy .inner{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:1.5}
+#arp-business_policy .edge{fill:none;stroke:var(--diagram-line,var(--arp-line,#A1A1AA));stroke-width:2;stroke-linejoin:round;marker-end:url(#arp-business_policy-arrow)}
+#arp-business_policy .title{font-family:"Space Grotesk",sans-serif;font-size:32px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-business_policy .label{font-family:Geist,sans-serif;font-size:24px;font-weight:600;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+#arp-business_policy .body{font-family:Geist,sans-serif;font-size:22px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-business_policy .note{font-family:Geist,sans-serif;font-size:20px;font-weight:400;fill:var(--diagram-muted,var(--arp-muted,#A1A1AA))}
+#arp-business_policy .number{font-family:"Monaspace Neon",monospace;font-size:26px;font-weight:500;fill:var(--diagram-text,var(--arp-text,#FFFFFF))}
+</style>
+<rect width="1200" height="1250" fill="var(--diagram-bg,var(--arp-bg,#09090B))"/>
+
+<text x="40" y="52" class="title" text-anchor="start">Business rules must pass before a refund runs</text>
+<text x="40" y="88" class="note" text-anchor="start">Example limits. Each customer can set its own rules.</text>
+<rect x="40" y="125" width="480" height="135" rx="12" class="box"/>
+<text x="64" y="164" class="label" text-anchor="start">Work order: the task</text>
+<text x="64" y="201" class="body" text-anchor="start">Help with this customer’s refund.</text>
+<text x="64" y="231" class="body" text-anchor="start">The task grants no new access.</text>
+<rect x="680" y="125" width="480" height="135" rx="12" class="box"/>
+<text x="704" y="164" class="label" text-anchor="start">Agent Permissions &amp; limits</text>
+<text x="704" y="201" class="body" text-anchor="start">May this agent use the refund tool?</text>
+<text x="704" y="231" class="body" text-anchor="start">May it access this order and customer?</text>
+<rect x="40" y="330" width="1120" height="265" rx="12" class="box"/>
+<text x="64" y="369" class="label" text-anchor="start">Reusable policies: all applicable rules must pass</text>
+<rect x="65" y="415" width="340" height="135" rx="12" class="box"/>
+<text x="89" y="454" class="label" text-anchor="start">Order limit</text>
+<text x="89" y="491" class="body" text-anchor="start">At most 20% of the order</text>
+<text x="89" y="521" class="body" text-anchor="start">Share the order’s refund total.</text>
+<rect x="430" y="415" width="340" height="135" rx="12" class="box"/>
+<text x="454" y="454" class="label" text-anchor="start">Customer daily limit</text>
+<text x="454" y="491" class="body" text-anchor="start">At most $100 per day</text>
+<text x="454" y="521" class="body" text-anchor="start">All agents share this total.</text>
+<rect x="795" y="415" width="340" height="135" rx="12" class="box"/>
+<text x="819" y="454" class="label" text-anchor="start">Workspace daily limit</text>
+<text x="819" y="491" class="body" text-anchor="start">At most $5,000 per day</text>
+<text x="819" y="521" class="body" text-anchor="start">All agents share this total.</text>
+<text x="65" y="579" class="note" text-anchor="start">Each rule has a saved version, currency, and clear day boundary.</text>
+<path d="M 280 260 V 295 H 600 V 330" class="edge"/>
+<path d="M 920 260 V 295 H 600" class="edge"/>
+<rect x="40" y="685" width="330" height="190" rx="12" class="box"/>
+<text x="64" y="724" class="label" text-anchor="start">Check the exact request</text>
+<text x="64" y="761" class="body" text-anchor="start">Current tool + record rights</text>
+<text x="64" y="791" class="body" text-anchor="start">Amount, order, and customer</text>
+<text x="64" y="821" class="body" text-anchor="start">Every required rule</text>
+<rect x="435" y="685" width="330" height="190" rx="12" class="box"/>
+<text x="459" y="724" class="label" text-anchor="start">Reserve all shared limits</text>
+<text x="459" y="761" class="body" text-anchor="start">One all-or-nothing check</text>
+<text x="459" y="791" class="body" text-anchor="start">Count money already held.</text>
+<text x="459" y="821" class="body" text-anchor="start">Any failed limit blocks it.</text>
+<rect x="830" y="685" width="330" height="190" rx="12" class="box"/>
+<text x="854" y="724" class="label" text-anchor="start">Run the governed action</text>
+<text x="854" y="761" class="body" text-anchor="start">Protected refund tool gate</text>
+<text x="854" y="791" class="body" text-anchor="start">Trusted refund connector</text>
+<text x="854" y="821" class="body" text-anchor="start">Exact checked request only</text>
+<path d="M 600 595 V 635 H 205 V 685" class="edge"/>
+<path d="M 370 780 H 435" class="edge"/>
+<path d="M 765 780 H 830" class="edge"/>
+<rect x="680" y="970" width="480" height="155" rx="12" class="box"/>
+<rect x="686" y="976" width="468" height="143" rx="7" class="inner"/>
+<text x="704" y="1009" class="label" text-anchor="start">Confirmed connector receipt</text>
+<text x="704" y="1046" class="body" text-anchor="start">Settle the actual refund amount.</text>
+<text x="704" y="1076" class="body" text-anchor="start">Free only confirmed unused room.</text>
+<text x="704" y="1106" class="body" text-anchor="start">Save cleaned proof of the result.</text>
+<rect x="40" y="970" width="480" height="155" rx="12" class="box" stroke-dasharray="8 7"/>
+<text x="64" y="1009" class="label" text-anchor="start">Unknown result: hold the room</text>
+<text x="64" y="1046" class="body" text-anchor="start">Do not guess or retry the refund.</text>
+<text x="64" y="1076" class="body" text-anchor="start">Check with the source system first.</text>
+<text x="64" y="1106" class="body" text-anchor="start">Keep the shared reservation.</text>
+<path d="M 995 875 V 920 H 920 V 970" class="edge"/>
+<path d="M 995 920 H 280 V 970" class="edge"/>
+<text x="40" y="1190" class="note" text-anchor="start">A model gateway alone cannot stop a refund. The tool gate and connector must enforce these rules.</text>
+<text x="40" y="1226" class="note" text-anchor="start">Permissions, policies, and shared limits must all pass. A task or an approval cannot bypass them.</text>
+</svg>

@@ -1,0 +1,24 @@
+{
+  "status": "passed_structural_checks_not_certified",
+  "operations": 369,
+  "paths": 288,
+  "schemas": 342,
+  "checks": {
+    "local_references": "passed",
+    "component_json_schemas": "passed",
+    "operations_parameters_auth_idempotency": "passed",
+    "official_openapi_structural_schema": "passed",
+    "representative_payloads": "passed",
+    "negative_payloads": "passed"
+  },
+  "issues": [],
+  "not_tested": [
+    "No implementation or live endpoint exists in this task.",
+    "Dedicated openapi_spec_validator package unavailable; official OpenAPI structural schema and JSON Schema checks used where available.",
+    "No generated SDK compile, provider compatibility, signature vector, concurrency, security, RLS, egress or state-machine conformance tests executed."
+  ],
+  "sources": [
+    "https://spec.openapis.org/oas/v3.1.1.html",
+    "https://spec.openapis.org/oas/3.1/schema/2022-10-07"
+  ]
+}

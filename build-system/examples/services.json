@@ -1,0 +1,29 @@
+{
+  "controlDir": "/srv/oxagen-control",
+  "services": {
+    "execution": {
+      "url": "https://CONFIGURE_SERVICE/v1/controller-operations",
+      "caFile": "/srv/oxagen-control/trust/service-ca.pem",
+      "clientCertFile": "/srv/oxagen-control/trust/controller-client.pem",
+      "clientKeyFile": "/srv/oxagen-control/trust/controller-client.key",
+      "serverSpkiSha256": "REPLACE_WITH_BASE64_SHA256_OF_SERVER_SPKI",
+      "receiptPublicKeyFile": "/srv/oxagen-control/trust/service-receipts.pem"
+    },
+    "git": {
+      "url": "https://CONFIGURE_SERVICE/v1/controller-operations",
+      "caFile": "/srv/oxagen-control/trust/service-ca.pem",
+      "clientCertFile": "/srv/oxagen-control/trust/controller-client.pem",
+      "clientKeyFile": "/srv/oxagen-control/trust/controller-client.key",
+      "serverSpkiSha256": "REPLACE_WITH_BASE64_SHA256_OF_SERVER_SPKI",
+      "receiptPublicKeyFile": "/srv/oxagen-control/trust/service-receipts.pem"
+    },
+    "release": {
+      "url": "https://CONFIGURE_SERVICE/v1/controller-operations",
+      "caFile": "/srv/oxagen-control/trust/service-ca.pem",
+      "clientCertFile": "/srv/oxagen-control/trust/controller-client.pem",
+      "clientKeyFile": "/srv/oxagen-control/trust/controller-client.key",
+      "serverSpkiSha256": "REPLACE_WITH_BASE64_SHA256_OF_SERVER_SPKI",
+      "receiptPublicKeyFile": "/srv/oxagen-control/trust/service-receipts.pem"
+    }
+  }
+}

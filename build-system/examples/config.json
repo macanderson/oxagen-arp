@@ -1,0 +1,399 @@
+{
+  "version": 1,
+  "controlDir": "/srv/oxagen-control",
+  "workRoot": "/srv/oxagen-agent-work",
+  "manifest": "/srv/oxagen-control/plan.json",
+  "runnerDigest": "REPLACE_WITH_INSTALL_DIGEST",
+  "phaseZeroCertificate": "/srv/oxagen-control/phase-zero.cert.json",
+  "certifierPublicKey": "/srv/oxagen-control/certifier-public.pem",
+  "runBudgetCents": 0,
+  "maxRunSeconds": 604800,
+  "models": {
+    "implement": {
+      "codex": "gpt-5.3-codex",
+      "claude": "claude-sonnet-4-6"
+    },
+    "review": {
+      "codex": "gpt-5.3-codex",
+      "claude": "claude-sonnet-4-6"
+    }
+  },
+  "targets": {
+    "repository": "CONFIGURE_OWNER/CONFIGURE_REPOSITORY",
+    "staging": null,
+    "production": null
+  },
+  "hook": {
+    "command": "/srv/oxagen-control/runner/adapters/local-host.sh",
+    "args": [
+      "/srv/oxagen-control/config.json"
+    ],
+    "maxSeconds": 14400,
+    "env": {
+      "PATH": "/usr/local/bin:/usr/bin:/bin"
+    }
+  },
+  "inputManifest": "/srv/oxagen-control/source-inputs.json",
+  "inputRoot": "/srv/oxagen-readonly-inputs",
+  "adapter": "local",
+  "local": {
+    "execution": {
+      "image": "CONFIGURE_REVIEWED_IMAGE@sha256:CONFIGURE_64_HEX_DIGEST",
+      "dockerCommand": "/usr/bin/docker",
+      "dockerHost": "unix:///var/run/docker.sock",
+      "uid": 1000,
+      "gid": 1000,
+      "memoryMb": 4096,
+      "cpus": 2,
+      "pidsLimit": 256,
+      "maxOutputTokens": 8192,
+      "cli": {
+        "codex": {
+          "path": "/usr/local/bin/codex",
+          "version": "codex-cli 0.155.1"
+        },
+        "claude": {
+          "path": "/usr/local/bin/claude",
+          "version": "2.1.278 (Claude Code)"
+        }
+      },
+      "credentials": {
+        "openai": {
+          "file": "/srv/oxagen-control/secrets/openai.key"
+        },
+        "anthropic": {
+          "file": "/srv/oxagen-control/secrets/anthropic.key"
+        }
+      },
+      "pricingApproval": {
+        "profileDigest": "2491406cf7d6a3cd0a37640678e573c27a950e3edbaf6c2db6bed5a2e9b8acaa",
+        "expiresAt": "SET_AFTER_REVIEW_AT_MOST_31_DAYS_AHEAD"
+      },
+      "scanPolicy": {
+        "version": "REPLACE_WITH_WORKSPACE_POLICY_REVISION",
+        "rules": [
+          {
+            "match": "REPLACE_WITH_BLOCKED_LITERAL",
+            "action": "block"
+          },
+          {
+            "match": "REPLACE_WITH_SENSITIVE_LITERAL",
+            "action": "redact"
+          },
+          {
+            "match": "REPLACE_WITH_LOCAL_NAME",
+            "action": "replace",
+            "replacement": "allowed-name"
+          }
+        ]
+      }
+    },
+    "github": {
+      "repository": "CONFIGURE_OWNER/CONFIGURE_REPOSITORY",
+      "repositoryId": 0,
+      "hostname": "github.com",
+      "defaultBranch": "main",
+      "mergeMethod": "squash",
+      "ghPath": "/usr/bin/gh",
+      "gitPath": "/usr/bin/git",
+      "authConfigDir": "/srv/oxagen-control/gh-auth",
+      "requiredChecks": [
+        {
+          "kind": "check_run",
+          "name": "CONFIGURE_REQUIRED_JOB",
+          "appId": 0
+        }
+      ],
+      "postMergeRequiredChecks": [
+        {
+          "kind": "check_run",
+          "name": "CONFIGURE_DEFAULT_BRANCH_JOB",
+          "appId": 0
+        }
+      ],
+      "commandTimeoutSeconds": 30,
+      "ciWaitSeconds": 30,
+      "tokenFile": "/srv/oxagen-control/secrets/github-writer.key",
+      "policyTokenFile": "/srv/oxagen-control/secrets/github-policy-reader.key"
+    },
+    "quality": {
+      "image": "CONFIGURE_QUALITY_IMAGE@sha256:CONFIGURE_64_HEX_DIGEST",
+      "dockerCommand": "/usr/bin/docker",
+      "dockerHost": "unix:///var/run/docker.sock",
+      "uid": 1000,
+      "gid": 1000,
+      "memoryMb": 4096,
+      "cpus": 2,
+      "pidsLimit": 256,
+      "commandsByBatch": {
+        "desktop-mockups": [
+          {
+            "id": "batch-check",
+            "command": "/usr/local/bin/node",
+            "args": [
+              "phase0/check.mjs",
+              "desktop-mockups"
+            ],
+            "timeoutSeconds": 600,
+            "workspaceMode": "scratch-copy"
+          }
+        ],
+        "web-mockups": [
+          {
+            "id": "batch-check",
+            "command": "/usr/local/bin/node",
+            "args": [
+              "phase0/check.mjs",
+              "web-mockups"
+            ],
+            "timeoutSeconds": 600,
+            "workspaceMode": "scratch-copy"
+          }
+        ],
+        "api-contracts": [
+          {
+            "id": "batch-check",
+            "command": "/usr/local/bin/node",
+            "args": [
+              "phase0/check.mjs",
+              "api-contracts"
+            ],
+            "timeoutSeconds": 600,
+            "workspaceMode": "scratch-copy"
+          }
+        ],
+        "design-certification-pack": [
+          {
+            "id": "batch-check",
+            "command": "/usr/local/bin/node",
+            "args": [
+              "phase0/check.mjs",
+              "design-certification-pack"
+            ],
+            "timeoutSeconds": 600,
+            "workspaceMode": "scratch-copy"
+          }
+        ],
+        "storage-iam": [
+          {
+            "id": "batch-check",
+            "command": "/usr/local/bin/node",
+            "args": [
+              "tests/batch-check.mjs",
+              "storage-iam"
+            ],
+            "timeoutSeconds": 600,
+            "workspaceMode": "scratch-copy"
+          }
+        ],
+        "control-records": [
+          {
+            "id": "batch-check",
+            "command": "/usr/local/bin/node",
+            "args": [
+              "tests/batch-check.mjs",
+              "control-records"
+            ],
+            "timeoutSeconds": 600,
+            "workspaceMode": "scratch-copy"
+          }
+        ],
+        "desktop-enrollment": [
+          {
+            "id": "batch-check",
+            "command": "/usr/local/bin/node",
+            "args": [
+              "tests/batch-check.mjs",
+              "desktop-enrollment"
+            ],
+            "timeoutSeconds": 600,
+            "workspaceMode": "scratch-copy"
+          }
+        ],
+        "local-data-gateway": [
+          {
+            "id": "batch-check",
+            "command": "/usr/local/bin/node",
+            "args": [
+              "tests/batch-check.mjs",
+              "local-data-gateway"
+            ],
+            "timeoutSeconds": 600,
+            "workspaceMode": "scratch-copy"
+          }
+        ],
+        "model-gateway": [
+          {
+            "id": "batch-check",
+            "command": "/usr/local/bin/node",
+            "args": [
+              "tests/batch-check.mjs",
+              "model-gateway"
+            ],
+            "timeoutSeconds": 600,
+            "workspaceMode": "scratch-copy"
+          }
+        ],
+        "tools-business-policies": [
+          {
+            "id": "batch-check",
+            "command": "/usr/local/bin/node",
+            "args": [
+              "tests/batch-check.mjs",
+              "tools-business-policies"
+            ],
+            "timeoutSeconds": 600,
+            "workspaceMode": "scratch-copy"
+          }
+        ],
+        "context-graph": [
+          {
+            "id": "batch-check",
+            "command": "/usr/local/bin/node",
+            "args": [
+              "tests/batch-check.mjs",
+              "context-graph"
+            ],
+            "timeoutSeconds": 600,
+            "workspaceMode": "scratch-copy"
+          }
+        ],
+        "steering-pause": [
+          {
+            "id": "batch-check",
+            "command": "/usr/local/bin/node",
+            "args": [
+              "tests/batch-check.mjs",
+              "steering-pause"
+            ],
+            "timeoutSeconds": 600,
+            "workspaceMode": "scratch-copy"
+          }
+        ],
+        "fork-portability": [
+          {
+            "id": "batch-check",
+            "command": "/usr/local/bin/node",
+            "args": [
+              "tests/batch-check.mjs",
+              "fork-portability"
+            ],
+            "timeoutSeconds": 600,
+            "workspaceMode": "scratch-copy"
+          }
+        ],
+        "required-reporting": [
+          {
+            "id": "batch-check",
+            "command": "/usr/local/bin/node",
+            "args": [
+              "tests/batch-check.mjs",
+              "required-reporting"
+            ],
+            "timeoutSeconds": 600,
+            "workspaceMode": "scratch-copy"
+          }
+        ],
+        "agent-adapters-sdks": [
+          {
+            "id": "batch-check",
+            "command": "/usr/local/bin/node",
+            "args": [
+              "tests/batch-check.mjs",
+              "agent-adapters-sdks"
+            ],
+            "timeoutSeconds": 600,
+            "workspaceMode": "scratch-copy"
+          }
+        ],
+        "web-product": [
+          {
+            "id": "batch-check",
+            "command": "/usr/local/bin/node",
+            "args": [
+              "tests/batch-check.mjs",
+              "web-product"
+            ],
+            "timeoutSeconds": 600,
+            "workspaceMode": "scratch-copy"
+          }
+        ],
+        "desktop-product": [
+          {
+            "id": "batch-check",
+            "command": "/usr/local/bin/node",
+            "args": [
+              "tests/batch-check.mjs",
+              "desktop-product"
+            ],
+            "timeoutSeconds": 600,
+            "workspaceMode": "scratch-copy"
+          }
+        ],
+        "cli-administration": [
+          {
+            "id": "batch-check",
+            "command": "/usr/local/bin/node",
+            "args": [
+              "tests/batch-check.mjs",
+              "cli-administration"
+            ],
+            "timeoutSeconds": 600,
+            "workspaceMode": "scratch-copy"
+          }
+        ],
+        "plugin-capability-stub": [
+          {
+            "id": "batch-check",
+            "command": "/usr/local/bin/node",
+            "args": [
+              "tests/batch-check.mjs",
+              "plugin-capability-stub"
+            ],
+            "timeoutSeconds": 600,
+            "workspaceMode": "scratch-copy"
+          }
+        ],
+        "private-deployment": [
+          {
+            "id": "batch-check",
+            "command": "/usr/local/bin/node",
+            "args": [
+              "tests/batch-check.mjs",
+              "private-deployment"
+            ],
+            "timeoutSeconds": 600,
+            "workspaceMode": "scratch-copy"
+          }
+        ],
+        "system-qualification": [
+          {
+            "id": "batch-check",
+            "command": "/usr/local/bin/node",
+            "args": [
+              "tests/batch-check.mjs",
+              "system-qualification"
+            ],
+            "timeoutSeconds": 600,
+            "workspaceMode": "scratch-copy"
+          }
+        ],
+        "staging-release": [
+          {
+            "id": "batch-check",
+            "command": "/usr/local/bin/node",
+            "args": [
+              "tests/batch-check.mjs",
+              "staging-release"
+            ],
+            "timeoutSeconds": 600,
+            "workspaceMode": "scratch-copy"
+          }
+        ]
+      }
+    },
+    "deployment": {
+      "status": "hosting_target_required"
+    }
+  }
+}

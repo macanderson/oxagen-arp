@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:oxagen:proposed:context-config:0.2",
+  "title": "Proposed Oxagen context-config",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "const": "./schemas/context.schema.json"
+    },
+    "format_version": {
+      "const": "arp.repo/0.2"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+          },
+          "source": {
+            "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/source"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "purpose": {
+            "const": "task_context"
+          },
+          "destination": {
+            "const": "model_input"
+          }
+        },
+        "required": [
+          "key",
+          "source",
+          "required",
+          "purpose",
+          "destination"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 256
+    }
+  },
+  "required": [
+    "$schema",
+    "format_version",
+    "entries"
+  ]
+}
