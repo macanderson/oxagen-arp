@@ -35,7 +35,7 @@ This file records what was checked, what was found, and what changed. Every chan
 | Two concurrent holds for the last 100 minor units across two buckets | One `COMMIT`, one `LIMIT_EXCEEDED`; both periods consistent, one hold |
 | `build-system` test suite on Node 24, before and after changes | 79 pass; 81 pass, 0 fail |
 | Brand status colors, WCAG contrast on canvas, panel, and raised row | Three dark values and one light value below 4.5:1; corrected |
-| 50 context records in `.oxagen/rules/` | TOML parses; `record_id` and `record_hash` recompute; stamping reproduces a published product record exactly |
+| 60 context records in `.oxagen/rules/` | TOML parses; `record_id` and `record_hash` recompute; stamping reproduces a published product record exactly |
 
 ## Findings and changes
 
@@ -111,9 +111,17 @@ This file records what was checked, what was found, and what changed. Every chan
 
 ## Context records for builders
 
-`.oxagen/` holds 50 context records in `context-record/v0.1`, the format the current Oxagen product reads from a linked repository. Each file is one lineage under `.oxagen/rules/`, with `record_id` and `record_hash` stamped the way the product's `context.steering.file.ts` and Stella stamp them; the stamper reproduced a published record from the main product repository byte for byte. `workspace.toml` binds this repository to the `oxagen/product` workspace as a linked repo, so records carry `sharing_scope = "repository"`. `governance.toml` is `solo`.
+`.oxagen/` holds 60 context records in `context-record/v0.1`, the format the current Oxagen product reads from a linked repository. Each file is one lineage under `.oxagen/rules/`, with `record_id` and `record_hash` stamped the way the product's `context.steering.file.ts` and Stella stamp them; the stamper reproduced a published record from the main product repository byte for byte. `workspace.toml` binds this repository to the `oxagen/product` workspace as a linked repo, so records carry `sharing_scope = "repository"`. `governance.toml` is `solo`.
 
 The records carry every rule above that a builder must not lose while turning these plans into code, plus the housekeeping rules of this repository.
+
+## Added after the review, at the owner's request
+
+- **Org everywhere.** The previous word for the customer account is gone from every file, including identifiers, SVG text, and the HTML readers.
+- **Uncapped, dependency-ordered plan.** `build-system/examples/plan.json` is a graph of 13 waves; every batch sits at the ledger's arithmetic cost ceiling with the four-hour stage maximum. The controller still walks the list in order; concurrent wave execution with a serialized merge lane is filed as issue #2.
+- **Sibling snapshot absorbed.** The `oxagen-arp 2` directory was a later generator snapshot. It was merged three-way against the original import: 35 new files (artifact and release adapters, release approval tool, AWS ECS Fargate and local compose infrastructure, independent review, release setup, a release drawing, five test files) plus its document edits, with the review's changes kept on every conflict. The build-system suite is now 127 tests.
+- **Mockups as a working app.** The static HTML mockups are retired in favor of `apps/web`: Next.js App Router, base-ui, Tailwind 4, a shadcn-style kit, and Storybook, with eight routes and stories for the states the specs name. Fixtures live only in `packages/fixtures` and validate against the contracts; `apps/web/src/data` is the seam that swaps fixtures for live endpoints by one environment variable.
+- **Kernel and invoke with parity.** `packages/kernel` follows the macanderson/oxagen pattern: one `CapabilityDeclaration` per capability with its `surfaces`, one registry, one `invoke()`. `apps/api`, `apps/mcp`, and `apps/cli` are binders derived from the registry with no per-capability files. `tools/check-surface-parity.mjs --strict` and the `Surfaces` workflow enforce it. Thirteen ARP capabilities are registered; tests cover the kernel, fixtures, each binder, and the data seam.
 
 ## Left open
 

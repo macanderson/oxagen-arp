@@ -14,7 +14,7 @@
       "phase": "design",
       "depends": [],
       "implementer": "codex",
-      "goal": "Produce complete clickable desktop-app mockups covering enrollment, workspace/repo binding, gateway health, local scan block/redact/replace, offline limits, steering, pause proof, credential requests, policy explanations, and errors. Include light/dark states, accessibility notes, and review evidence. Only phase0 design artifacts.",
+      "goal": "Produce the desktop-app mockups as Storybook stories in apps/web on the shared Next.js App Router, base-ui, Tailwind 4 and shadcn-style kit, covering enrollment, workspace/repo binding, gateway health, local scan block/redact/replace, offline limits, steering, pause proof, credential requests, policy explanations and errors. Every story reads @oxagen-arp/fixtures. phase0/desktop.html is the built Storybook.",
       "allowedPaths": [
         "phase0/"
       ],
@@ -33,7 +33,7 @@
       "phase": "design",
       "depends": [],
       "implementer": "claude",
-      "goal": "Produce complete clickable web-app mockups for organization/workspace setup, identities and RBAC, agent Permissions & limits, policies and business-rule forms, work orders, dispatch, steering, cost reports, records, graph search, and private deployment setup. Include all empty/error/loading and narrow-screen states. Only phase0 design artifacts.",
+      "goal": "Extend the working Next.js App Router mockup app in apps/web to every web screen. Every page reads only through the DataSource port in apps/web/src/data/ports.ts backed by @oxagen-arp/fixtures; every screen has a story per named state including empty, error, loading, denied, unpaired and narrow-screen. phase0/web.html is the built app; tools/check-surface-parity.mjs --strict must pass.",
       "allowedPaths": [
         "phase0/"
       ],
@@ -55,7 +55,7 @@
         "web-mockups"
       ],
       "implementer": "codex",
-      "goal": "Write the full OpenAPI 3.1 API contract and JSON Schemas for every proposed web, desktop, CLI, MCP control, ARP event, run action, policy, context, report, IAM, and plugin-stub operation. Define request/response/error/security/idempotency/cursor/version fields and cross-surface traceability. Validate all references and examples; no placeholder paths.",
+      "goal": "Write every capability as a kernel contract in packages/kernel/src/contracts (registerCapability with Zod input, output and surfaces) following the macanderson/oxagen kernel-and-invoke pattern, and generate the OpenAPI 3.1 document, MCP tool list and CLI command table from the registry. No per-capability wrapper file on any surface; the parity gate must pass in strict mode. Validate all references and examples.",
       "allowedPaths": [
         "phase0/"
       ],
@@ -491,7 +491,7 @@
         "required-reporting"
       ],
       "implementer": "claude",
-      "goal": "Implement the certified web screens against real gated APIs, accessible controls, agent administration, policy editing, dispatch/steer, report inspection, graph views, and complete failure states.",
+      "goal": "Wire the certified apps/web mockup to the live kernel: implement live handlers and switch OXAGEN_DATA_SOURCE to live, leaving every page, story and port unchanged. A page that needs a new read adds a port and a story first. The parity gate stays strict.",
       "allowedPaths": [
         "apps/",
         "services/",
@@ -503,7 +503,8 @@
         "package.json",
         "pnpm-lock.yaml",
         "pnpm-workspace.yaml",
-        "README.md"
+        "README.md",
+        "tools/"
       ],
       "maxCostCents": 900000000,
       "timeoutSeconds": 14400,
@@ -551,7 +552,7 @@
         "agent-adapters-sdks"
       ],
       "implementer": "claude",
-      "goal": "Build the operator CLI with consistent IAM, dry-run modes, stable machine output, per-workspace targeting, credentials through approved broker, and predictable errors.",
+      "goal": "Complete the operator CLI as a binder over the kernel registry in apps/cli, never as per-command files, with consistent IAM, dry-run modes, stable machine output, per-workspace targeting, credentials through the approved broker, the spec exit codes, quickstart and doctor. The same batch completes the MCP binder in apps/mcp and the REST binder in apps/api; the parity gate proves coverage.",
       "allowedPaths": [
         "apps/",
         "services/",
@@ -563,7 +564,8 @@
         "package.json",
         "pnpm-lock.yaml",
         "pnpm-workspace.yaml",
-        "README.md"
+        "README.md",
+        "tools/"
       ],
       "maxCostCents": 900000000,
       "timeoutSeconds": 14400,

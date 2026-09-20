@@ -1,0 +1,19 @@
+schema = "context-record/v0.1"
+set_id = "macanderson.oxagen-arp"
+
+[[record]]
+lineage_id = "ctx.arp.one-contract-per-capability"
+record_id = "rec_arp_one_contract_per_capability_f93f28309a2e"
+record_hash = "sha256:f65e0a7d5cebddeb09359feb88f7a8b8b0a0df48155a94ecfa298849369a2332"
+kind = "rule"
+statement = "Every capability is one registerCapability declaration in packages/kernel/src/contracts with Zod input and output and its surfaces, following the macanderson/oxagen kernel-and-invoke pattern; there is no other place a capability is defined."
+origin = "user"
+sharing_scope = "repository"
+status = "active"
+
+[record.provenance]
+source_kind = "document"
+source_uri = "packages/kernel/src/contracts/index.ts"
+
+[record.steering]
+force = "must"

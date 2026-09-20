@@ -579,6 +579,10 @@ Verify both complete happy paths and denied/unknown recovery: workspace → enro
 
 Only a complete, explicitly reviewed manifest may be certified. The manifest must include these HTML files, this full screen description, OpenAPI, data schemas, the architecture, brand guidance and acceptance criteria. A later material change invalidates that approval.
 
+## Retired
+
+The static HTML mockups in this folder are retired as of 2026-09-20. The mockups are now the working Next.js App Router app in `apps/web`, with a Storybook story per named state reading the shared fixtures. This inventory stays as the screen and flow description the app implements; the gap list below is the backlog for that app.
+
 ## Gaps the 2026-09-20 review found in these mockups
 
 The current HTML fixtures do not yet meet the specs on these points. The next design batch must close them before certification.

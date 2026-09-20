@@ -131,19 +131,19 @@ A partial or unreviewed result still cannot become another batch's base, because
 
 Phase: **design**. Depends on `approved source pack and configured phase-zero execution`. Implementer: **Codex**. Fresh reviewer: **Claude Code**.
 
-Produce complete clickable desktop-app mockups covering enrollment, workspace/repo binding, gateway health, local scan block/redact/replace, offline limits, steering, pause proof, credential requests, policy explanations, and errors. Include light/dark states, accessibility notes, and review evidence. Only phase0 design artifacts.
+Produce the desktop-app mockups as Storybook stories in `apps/web` (the same Next.js App Router, base-ui, Tailwind 4 and shadcn-style kit the web app uses), covering enrollment, workspace/repo binding, gateway health, local scan block/redact/replace, offline limits, steering, pause proof, credential requests, policy explanations, and errors. Every story reads `@oxagen-arp/fixtures`; no story carries its own data. Include light/dark states, accessibility notes, and review evidence. The static HTML mockups under `certification/` are retired; `phase0/desktop.html` is the built Storybook.
 
 ### 2. web-mockups
 
 Phase: **design**. Depends on `desktop-mockups`. Implementer: **Claude Code**. Fresh reviewer: **Codex**.
 
-Produce complete clickable web-app mockups for organization/workspace setup, identities and RBAC, agent Permissions & limits, policies and business-rule forms, work orders, dispatch, steering, cost reports, records, graph search, and private deployment setup. Include all empty/error/loading and narrow-screen states. Only phase0 design artifacts.
+Extend the working Next.js App Router mockup app in `apps/web` to every web screen: org/workspace setup, identities and RBAC, agent Permissions & limits, policies and business-rule forms, work orders, dispatch, steering, cost reports, records, graph search, and private deployment setup. Every page reads only through the `DataSource` port in `apps/web/src/data/ports.ts`, backed by `@oxagen-arp/fixtures` in this phase, so wiring the product is switching `OXAGEN_DATA_SOURCE` to `live`. Every screen has a story per named state, including empty, error, loading, denied, unpaired, and narrow-screen. `phase0/web.html` is the built app; the parity gate must pass in strict mode.
 
 ### 3. api-contracts
 
 Phase: **design**. Depends on `web-mockups`. Implementer: **Codex**. Fresh reviewer: **Claude Code**.
 
-Write the full OpenAPI 3.1 API contract and JSON Schemas for every proposed web, desktop, CLI, MCP control, ARP event, run action, policy, context, report, IAM, and plugin-stub operation. Define request/response/error/security/idempotency/cursor/version fields and cross-surface traceability. Validate all references and examples; no placeholder paths.
+Write every capability as a kernel contract in `packages/kernel/src/contracts` (one `registerCapability` declaration with Zod input and output and its `surfaces`), following the macanderson/oxagen kernel-and-invoke pattern, and generate the OpenAPI 3.1 document, the MCP tool list, and the CLI command table from the registry. No surface may carry a per-capability wrapper file; `tools/check-surface-parity.mjs --strict` must pass. Cover every web, desktop, CLI, MCP control, ARP event, run action, policy, context, report, IAM, and plugin-stub operation, with request/response/error/security/idempotency/cursor/version fields. Validate all references and examples; no placeholder paths.
 
 ### 4. design-certification-pack
 
@@ -221,7 +221,7 @@ Build and certify Codex and Claude Code adapters plus custom-agent SDK contracts
 
 Phase: **product**. Depends on `agent-adapters-sdks`. Implementer: **Claude Code**. Fresh reviewer: **Codex**.
 
-Implement the certified web screens against real gated APIs, accessible controls, agent administration, policy editing, dispatch/steer, report inspection, graph views, and complete failure states.
+Wire the certified `apps/web` mockup to the live kernel: implement the live handlers and switch `OXAGEN_DATA_SOURCE` to `live`, leaving every page, story, and port unchanged. Accessible controls, agent administration, policy editing, dispatch/steer, report inspection, graph views, and complete failure states come from the certified screens; a page that needs a new read adds a port and a story first. The parity gate stays strict.
 
 ### 17. desktop-product
 
@@ -233,7 +233,7 @@ Implement the certified desktop screens against the protected service, with clea
 
 Phase: **product**. Depends on `desktop-product`. Implementer: **Claude Code**. Fresh reviewer: **Codex**.
 
-Build the operator CLI with consistent IAM, dry-run modes, stable machine output, per-workspace targeting, credentials through approved broker, and predictable errors.
+Complete the operator CLI as a binder over the kernel registry (`apps/cli`), never as per-command files: consistent IAM, dry-run modes, stable machine output, per-workspace targeting, credentials through the approved broker, the spec's exit codes, `quickstart` and `doctor`, and predictable errors. The same batch completes the MCP binder (`apps/mcp`) and the REST binder (`apps/api`) for every capability the registry declares; the parity gate proves coverage.
 
 ### 19. plugin-capability-stub
 

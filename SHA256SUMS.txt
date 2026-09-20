@@ -1,5 +1,6 @@
 8ec7852ecf38aec7f3b60aaa4de5551191802e4f587cba3909ba0e1209a637f2  .github/workflows/parity.yml
 be3acd396f76986710ec59570ccd88ba1ce851c23cc18d2fbeca593ebcc7e491  .oxagen/rules/ctx.arp.abandon-stuck-pause.toml
+56de058beb4716ba185b3abfd60311e64e268b6481e16d0ea80bc5d1a9f83938  .oxagen/rules/ctx.arp.app-capability-needs-ui-map.toml
 87fa367b1b57fd6d305cd84bfdc3a20e6a394db32d12dd1d2809a39de66e4021  .oxagen/rules/ctx.arp.budget-hold-before-spend.toml
 3fd1dee6eef753cef86f112ea746c4ed2aec2a55115b64fd86fb8ca3369846c3  .oxagen/rules/ctx.arp.budget-leases-not-one-row.toml
 e1a3d3b65923a2f28ad4f32f21b70db687c2eba2a2c9f7d5b2a98bd64f47fcd5  .oxagen/rules/ctx.arp.budget-shrink-to-fit.toml
@@ -12,6 +13,7 @@ f6d7ccf1748157918a35501f61660e2feff12d656b7b845e641d459378f40e6a  .oxagen/rules/
 d0afd7c72315b62cce8f19b21fd37a3030de2446c39c87e924afd4658fea79e8  .oxagen/rules/ctx.arp.enrollment-order.toml
 b9331eb43dd1be8407a9e83b6bd20d5cb77eba7352719d2f2528070c5c96771d  .oxagen/rules/ctx.arp.first-owner-holds-all-roles.toml
 aee4d1a97d84c0569ee341cf0642eb3267de6d800ba9d3d55a41061b89399ee8  .oxagen/rules/ctx.arp.first-run-without-graph.toml
+ac939423b42c17c086bf6cdcaeecfd17e4dc9ac213d9a174bd79c9d246cb3900  .oxagen/rules/ctx.arp.fixtures-live-in-one-package.toml
 0d203d23992cc9d832fe1956f409f7364b4752e4137f8113f3a138fc72270d60  .oxagen/rules/ctx.arp.governed-action-single-use.toml
 c9ed8de1d22bea1e7848c050e5d24a7105513fea671741450d6f3736c13e8dfb  .oxagen/rules/ctx.arp.html-readers-regenerate.toml
 ccee001c90a0f84b3601cb0fa7e195e8cd732a50a85193088454b55f6b5e649b  .oxagen/rules/ctx.arp.keys-outside-agent-process.toml
@@ -21,13 +23,18 @@ fc451453192b5762ace69c16c6c528dfe766739b07c87ca3750ef03ae94fe84d  .oxagen/rules/
 c92d2baae658d35ca931f2b6d369da7080eea9c60355e145f1dd80f8797ce9bf  .oxagen/rules/ctx.arp.local-peer-auth.toml
 90e35b7cc08f91004383e68bf74e20fa80c867b0db82cbad487e715081e41b9d  .oxagen/rules/ctx.arp.local-scan-before-egress.toml
 d2b6692a6aab7c16cd79d3d2681227350f554ccc9375dc58499bcb51c225f7b1  .oxagen/rules/ctx.arp.markdown-is-source-of-truth.toml
+b6a257c711accacbaae1c350ee8111326402c6098bf6cdb7f63be548e2bff812  .oxagen/rules/ctx.arp.mockups-are-the-app.toml
 9dbe3b2ae50b646e6c08f9d09138ac6ac84a0c0a7b3a3e42fb43a4697c1249ca  .oxagen/rules/ctx.arp.model-route-first.toml
 8fd28aedecd276e2121c818737d44018a617e029a0ba97c2147cdf8ae2b9ef22  .oxagen/rules/ctx.arp.money-lock-order.toml
 672099d26ca91960018e6e568cff3dab402216929540c7400e17777226264a9f  .oxagen/rules/ctx.arp.no-full-table-update-grants.toml
 7aa5a74d867dedaac99d8720defba8eba2f8ddd7ceafb6d66d315468ab7a8ced  .oxagen/rules/ctx.arp.no-global-cross-org-poller.toml
 f9fac23abe68724e03e6f252312e71b054faa9e14969c0167726b1d525bae3e1  .oxagen/rules/ctx.arp.no-shipped-feature-claims.toml
+c0423363d9f85666e364ca7e141689ac7474cc168fee795422d05eb405764a2d  .oxagen/rules/ctx.arp.node-env-for-builds.toml
+2806b9ee85d50fd739d5c3c376e9e42926cbaa8eea7c1b1489c479b04643a6f4  .oxagen/rules/ctx.arp.one-contract-per-capability.toml
 33c74ddfa58e0b0cf0065b2dd862fdffe00de0bb844643be2cebc5b29d7f3899  .oxagen/rules/ctx.arp.org-naming.toml
 2c5340437294fad355ffc9bfa9126f39ff6423be6e55689dadbb4a23fc67d80c  .oxagen/rules/ctx.arp.outcome-unknown-not-retry.toml
+e77f07b337a2b31be3b54adb07c437b940344e6f86b1850480397b108ca1b981  .oxagen/rules/ctx.arp.pages-read-through-ports.toml
+c7bf204ec50b852f3899460df2384ce03260bdc833f5ad25054a47d74a6eadb4  .oxagen/rules/ctx.arp.parity-gate-strict-in-ci.toml
 b4e13f53f9c45c3c24a3e3b06c1cfcd62b7dd3cca22f3b7daf36833d3d9c1087  .oxagen/rules/ctx.arp.partition-by-org-hash.toml
 cfab57f4354c7bea8f9cffaedad6492683f4440746609fb78ec8b994f3f2fb66  .oxagen/rules/ctx.arp.pause-needs-proof.toml
 c57c7fa4f7b9faf58000c32db484bc080c42a040982f9c5aea0fee08523cdda2  .oxagen/rules/ctx.arp.pin-external-spec-versions.toml
@@ -35,6 +42,7 @@ c57c7fa4f7b9faf58000c32db484bc080c42a040982f9c5aea0fee08523cdda2  .oxagen/rules/
 6c26466b5e57221436709accac6ab40e44fa3b0d0527307711dc52c1f0ac37d0  .oxagen/rules/ctx.arp.quickstart-same-gates.toml
 119b4f5335bbab9486b88b293120c7e98a6dc53834b8c743d8a30a356eb3285c  .oxagen/rules/ctx.arp.read-audit-first.toml
 061b90ed04ffc2c146a61126d27f6884392ec5e6821c9d84b577f61bdad7a925  .oxagen/rules/ctx.arp.receipt-identity-from-mtls.toml
+27e21de4011213abceda522083c285f7f2eeff767fa64fec115acfa13bd006b6  .oxagen/rules/ctx.arp.release-target-is-ecs-fargate.toml
 d6ad1950fe27a9039e58c851a6683447e78ee8afb4d2486c384ee279226c6125  .oxagen/rules/ctx.arp.repo-files-grant-nothing.toml
 d9d204813c8292a1f02c46e48527fcf54371c22211ea28fd65339519cfb62620  .oxagen/rules/ctx.arp.rls-is-a-floor.toml
 a8a7eebb00be09eba7f94f1ed02b15fc7f83c8517a7b9293a3db09c7a366d264  .oxagen/rules/ctx.arp.rls-not-injection-defense.toml
@@ -45,7 +53,9 @@ e49a8d480e416e98c9122905b8fe8bfb7a9a69a76d6f73668e588b8b3b67c3e4  .oxagen/rules/
 40f3ce3a9cb4bb4afaa63ffde76adcb6c4e05985ead67f55099979f99e9d6a38  .oxagen/rules/ctx.arp.state-names-shared.toml
 3d47e17798d1fbcd5b1fcdb6b43119bc50d8390174a4803e77140e5bd816403b  .oxagen/rules/ctx.arp.status-colors-on-raised-rows.toml
 10cd5c932ed8388d35e1229fec91a5a15968aafa58d877401b9ff90d6f7bdd15  .oxagen/rules/ctx.arp.stop-is-a-control.toml
+1dd2efb9c596c0a2d8070bf88ce0f09f7b026f368a66c7cf9b0b05c0ecf32475  .oxagen/rules/ctx.arp.story-per-named-state.toml
 45b121762b73832d78d66da6fe3c09ace25389e794246302dfa6b390eee68c07  .oxagen/rules/ctx.arp.stream-chunks-append.toml
+105a7e8d8d7ca78d53425026dd573eb34bce1410fb640d9f9fe474b2fac6a640  .oxagen/rules/ctx.arp.surfaces-are-binders.toml
 a8c14ca6694282a408dfad818e1144363093b56819c428ee9ec5f04dd6b79e6c  .oxagen/rules/ctx.arp.tamper-evidence-needs-tables.toml
 36175747771ba7793500c21d8baf7d0edcf220327f3053cdcc0f432440025a99  .oxagen/rules/ctx.arp.trust-label-reaches-model.toml
 41e88d2f7a3387ba569b85cb2620c13deb7504fe2f0a1dfbc060e51392dc378d  .oxagen/rules/ctx.arp.work-pull-contract.toml
@@ -122,7 +132,7 @@ f353a7d7c5e1b1b98d1e756efe0f4a43e067f6faf47d5ebfafc7d763a29395d1  apps/web/src/f
 b098457ff3473a4fd7e9ea869e15ab629743a5e60778bbd13441b5d6d410a85a  apps/web/tsconfig.json
 4ac9c751025752086d5e9b92662187fd91ac187465934c7d1b85e95f91a06841  ARP-API-spec.md
 b7f1ef63e9f8ca881923348eca0bc289f9ffd1f4afd9547e8761beb3c01674e9  ARP-Brand-spec.md
-518177890b158f9f6ab25a252ae5cd932fa7f202c92ee2369dff3336a2ae5234  ARP-Build-plan.md
+7a48039c6062318435dce25114dcc6ffbe15213050ccec077c84f561dfec4fc6  ARP-Build-plan.md
 0010deaf3162747c25bd14bddfb8aec72f2fac7755e07bfa957b4b8ba0542361  ARP-CLI-spec.md
 00952f78e2c41d7a963d626508667d854685bb0ec8d0e61d276da653f849e966  ARP-core-schema.sql
 c09853ef288162911f2e80be7744149d77364995013e10b25d0da5c3487c01a5  ARP-design.md
@@ -132,7 +142,7 @@ bddfc93e3682a2b15689630853c7247a83899aa05cde91a53dc4c3dd7fed4336  ARP-Drawings.m
 92ff8c89b4935415a634b5376afbaa8a5c9fccc8960a0fde3a926d8a0b3db3cd  ARP-Schema-spec.md
 145532fa152a681198338bd2a60f4584d0510cbb20d522a61cf0cab96bc6abf4  ARP-short-guide.md
 839e7dabfaa0fcfc9c08432ebf96dbfa48f703339306b0d90d7443f0c62e88e0  ARP-Web-app-spec.md
-70e5d3f95001b94bad5131406309f190cf67121dccf420f90892d55af7032c00  AUDIT.md
+2b981e6af0cb239e105e57fd995aa2a13d71ae72e57c0f0c20ad86cffec688e5  AUDIT.md
 4f49922215d0b1ad64ce377b9444114680d7abe46a7a683394c4c5111064c632  build-system/adapters/local-artifacts.md
 d69579394978225ffa63cf5b779906680a6e73968c5f5710bd4830d76b64341d  build-system/adapters/local-artifacts.mjs
 11ca4f3f211838664155dc24307ffcdb12287bac0bf3c15a811c3b24af931d94  build-system/adapters/local-execution-broker.mjs
@@ -158,7 +168,7 @@ d83c44a42285d9b110a880621e07b5ee27334546badaed8b9b885ea4dd4e1c8c  build-system/b
 b7b5b8889c34f78eee3cb5fb7bd536fa6e0f6b82aa1b3fbdf11fdd4331836f8f  build-system/examples/local-artifacts.json
 5032089b7fd2545761a779ca120d9f7f3be03a72070e950de97cb8c400ac7170  build-system/examples/local-execution.json
 9b50760e9146d9355c20914a0f44a6b3d40116784c84aa6591c5461c3c3828b7  build-system/examples/local-release.json
-c48c599bb5e017f2e4f812d519a92a175a7fdee28fd732447d083f256b044d10  build-system/examples/plan.json
+257f973458faf9c7d43de05318b966aa3f4a1030a1fcc67c7b0fef867d977348  build-system/examples/plan.json
 de1946399f913af19ecdd18d14736f753a512e75222b94d6059bfd49ad472831  build-system/examples/remote-config.json
 f94ed04cbc8d595993dbf5c1ec84c1d243f7408b4991ff19513f44bcf7f8230b  build-system/examples/services.json
 bac95bd5bccd85a204d0f93510871000a4960f3d49b2ad5164730ed78ddaabc6  build-system/images/quality/.dockerignore
@@ -207,7 +217,7 @@ c07709cfaa61be2e71dd86a0c78fca3829a75b1f38875cbb519cdd075a827f05  build-system/t
 8f7d7df6404106cadbb1c03d8002e18c6a611a8fdaaa8d667fa622d0e334fdb6  build-system/test/release-approval.test.mjs
 dcb14886f44eeef6a1d526d2d626c3beedea891e059159d4a85471b63b430ebc  build-system/VALIDATION.md
 61c33fd2124beb0d42cc4b2300e6ce49a1e9e54f9fbb433c48c8fae779d0741c  certification/manifest.json
-aae23b34a8ccf764cb504ffb69ee70b766c9561a82cff11a7b9992ffd6a384d8  certification/Mockups.md
+f3d5b1d0789cc460a23fb3cfafabe4a22ff6b27386774f4854378ca5c4f09cc4  certification/Mockups.md
 2e8801066090de4575e60ee54d71af446c01c1374bd829d39f67855ed0438970  certification/Oxagen-desktop-mockups.html
 95454a10b20403bd8d8b894d57c844a51ba5b20b116ec0396c3638030e92e8af  certification/Oxagen-web-mockups.html
 cec97c7ca740eb6b64792a802823bbc87c810a5efa3a488b91503325b41870fc  certification/REVIEW-PACKET.md
@@ -266,7 +276,7 @@ be0f7bf11e429285f1cbc5194cd2b201fa3e02c7d233da6a711852d4aefeb2ef  packages/kerne
 e40461c803103f38c40e3e550d0cd1a4bc73b2c6602213ab5de40812ee24814c  packages/kernel/src/types.ts
 fda4e7562bd17c9f1c97559bcb95a5ae8dbe5b52cca893413b118f2c45f28d76  packages/kernel/tsconfig.json
 21417825f8ee4ea58653e65ffb9149afd6c2c1d3cf197eb09e9a275c20200250  pnpm-workspace.yaml
-023aee133bdc59e5d63bc65bcc851a7642ed10d3e888b997e6598310fd30b5df  README.md
+c6cada9266ebdf06fd20f1bf55976749257d939f5723fdc0871a40060b614f76  README.md
 2c3bb6b1133b49a720a48cab6e322b82d18b8aaab7c52992385c7e5b9e526ab8  reference/ARP-0.2-technical-reference.md
 bf1d4cadfe8ef6ce39552cee7fbb13bee8df8812375c97de5f5082adfe9bf702  tools/check-surface-parity.mjs
 43f39480ec237a3b454a0a56806f170c6be90b7ec832cebfb9bbbc1acf012974  tsconfig.base.json
