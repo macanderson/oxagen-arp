@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cancelWork } from "@/actions";
 import { Button } from "@/components/ui/button";
 import { ReadFailure } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
@@ -11,7 +12,7 @@ export default async function RunsPage() {
   return (
     <>
       <PageHeader title="Runs" deck="One row per run on one target. Held money is released only when a trusted receipt settles it." actions={<Link href="/send"><Button variant="primary">Send work</Button></Link>} />
-      <RunsTable runs={runs.value.items} checkedAt={new Date().toISOString()} />
+      <RunsTable runs={runs.value.items} checkedAt={new Date().toISOString()} cancel={cancelWork} />
     </>
   );
 }

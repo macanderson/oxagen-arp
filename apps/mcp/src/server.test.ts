@@ -22,3 +22,15 @@ test("tools/call goes through the kernel with the mcp surface", async () => {
   const unknown = await handle({ jsonrpc: "2.0", id: 3, method: "nope" }, scope) as { error: { code: number } };
   assert.equal(unknown.error.code, -32601);
 });
+
+test("no notification receives a response", async () => {
+  registerFixtureHandlers();
+  assert.equal(await handle({ jsonrpc: "2.0", method: "notifications/initialized" }, scope), null);
+  assert.equal(await handle({ jsonrpc: "2.0", method: "notifications/cancelled", params: { requestId: 1 } }, scope), null);
+  assert.equal(await handle({ jsonrpc: "2.0", method: "nope" }, scope), null);
+  // The work still runs; only the reply is dropped.
+  assert.equal(await handle({ jsonrpc: "2.0", method: "tools/call", params: { name: "run_list", arguments: {} } }, scope), null);
+  // A request, which carries an id, still gets its error.
+  const answered = await handle({ jsonrpc: "2.0", id: 9, method: "nope" }, scope) as { error: { code: number } };
+  assert.equal(answered.error.code, -32601);
+});

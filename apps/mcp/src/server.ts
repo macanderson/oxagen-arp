@@ -37,7 +37,9 @@ export async function callTool(name: string, args: unknown, scope: { orgId: stri
 type Rpc = { jsonrpc: "2.0"; id?: number | string; method: string; params?: Record<string, unknown> };
 
 export async function handle(msg: Rpc, scope: { orgId: string; workspaceId: string; principalId: string }) {
-  const reply = (result: unknown) => ({ jsonrpc: "2.0", id: msg.id, result });
+  // A JSON-RPC notification carries no id and must never receive a response. The method still runs;
+  // only the reply is dropped, so a notification that asks for work still gets the work done.
+  const reply = (result: unknown) => (msg.id === undefined ? null : { jsonrpc: "2.0", id: msg.id, result });
   switch (msg.method) {
     case "initialize":
       return reply({ protocolVersion: PROTOCOL_VERSION, capabilities: { tools: { listChanged: true } }, serverInfo: { name: "oxagen-arp", version: "0.1.0" } });
@@ -50,6 +52,9 @@ export async function handle(msg: Rpc, scope: { orgId: string; workspaceId: stri
     case "notifications/initialized":
       return null;
     default:
+      // An unknown notification, such as notifications/cancelled, is dropped rather than answered
+      // with an idless "method not found", which a client may read as a malformed response.
+      if (msg.id === undefined) return null;
       return { jsonrpc: "2.0", id: msg.id, error: { code: -32601, message: `method not found: ${msg.method}` } };
   }
 }

@@ -36,6 +36,11 @@ export async function submitWork(formData: FormData) {
   revalidatePath("/runs");
   return r;
 }
+export async function cancelWork(workRequestId: string) {
+  const r = await dataSource().cancelWork(viewer(), { workRequestId, idempotencyKey: randomUUID() });
+  revalidatePath("/runs");
+  return r;
+}
 export async function revokeDevice(deviceId: string) {
   const r = await dataSource().revokeDevice(viewer(), { deviceId, idempotencyKey: randomUUID() });
   revalidatePath("/devices");
