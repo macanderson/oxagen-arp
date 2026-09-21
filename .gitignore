@@ -29,9 +29,10 @@ yarn-error.log*
 pnpm-debug.log*
 .pnpm-store/
 .npm/
+# Foreign lockfiles only. pnpm-lock.yaml is committed: CI installs with
+# --frozen-lockfile, which fails without it.
 package-lock.json
 yarn.lock
-pnpm-lock.yaml
 
 # Python
 __pycache__/
