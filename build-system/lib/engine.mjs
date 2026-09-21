@@ -67,7 +67,7 @@ export class Engine{
   if(resuming&&previous.worktree===worktree&&fs.existsSync(worktree)){try{git(['--git-dir',this.repo,'worktree','remove','--force',worktree])}catch{fs.rmSync(worktree,{recursive:true,force:true});git(['--git-dir',this.repo,'worktree','prune'])}}
   assert(!fs.existsSync(worktree),'Worktree exists; reconcile before reuse');fs.mkdirSync(this.config.workRoot,{recursive:true});
   const checkout=(previous?.stage==='retry'||resuming&&previous.checkout)&&previous.head?(previous.mergedHead||previous.head):localBase;if(this.local&&b.phase!=='design')git(['--git-dir',this.repo,'merge-base','--is-ancestor',base,checkout]);
-  this.batchSave(b.id,{...(previous||{}),attempt,worktree,stage:'preparing'});git(['--git-dir',this.repo,'worktree','add','--detach',worktree,checkout]);
+  this.batchSave(b.id,{...(previous||{}),attempt,worktree,checkout,stage:'preparing'});git(['--git-dir',this.repo,'worktree','add','--detach',worktree,checkout]);
   const gitDir=git(['-C',worktree,'rev-parse','--absolute-git-dir']);assert(within(this.config.controlDir,gitDir),'Git metadata outside control root');
   this.batchSave(b.id,{attempt,base,localBase,worktree,gitDir,gitPointerHash:hashFile(path.join(worktree,'.git')),stage:'implement',reviewFeedback:previous?.lastReceipt?.review?.findings||previous?.lastReceipt?.checks||[],spentCents:previous?.spentCents||0});
  }

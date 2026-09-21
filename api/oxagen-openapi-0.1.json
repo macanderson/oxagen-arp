@@ -852,7 +852,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Org"
+                  "$ref": "#/components/schemas/Organization"
                 }
               }
             }
@@ -1205,7 +1205,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Org"
+                  "$ref": "#/components/schemas/Organization"
                 }
               }
             }

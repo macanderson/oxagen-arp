@@ -59,8 +59,8 @@ Raw third-party webhook signatures and body formats belong to versioned connecto
 |---|---|---|---|
 | `capabilities.negotiate` | `POST /v0.1/organizations/{org_id}/capabilities/negotiate` | CapabilitiesRequest → Capabilities (200) | `capabilities.negotiate` |
 | `identity.get` | `GET /v0.1/identity` | none → Identity (200) | `identity.read` |
-| `organization.get` | `GET /v0.1/organizations/{org_id}` | none → Org (200) | `organization.get` |
-| `organization.configure` | `PATCH /v0.1/organizations/{org_id}` | OrganizationPatch → Org (200) | `organization.configure` |
+| `organization.get` | `GET /v0.1/organizations/{org_id}` | none → Organization (200) | `organization.get` |
+| `organization.configure` | `PATCH /v0.1/organizations/{org_id}` | OrganizationPatch → Organization (200) | `organization.configure` |
 | `workspaces.list` | `GET /v0.1/organizations/{org_id}/workspaces` | none → WorkspacePage (200) | `workspaces.list` |
 | `workspaces.get` | `GET /v0.1/organizations/{org_id}/workspaces/{workspace_id}` | none → Workspace (200) | `workspaces.get` |
 | `workspaces.create` | `POST /v0.1/organizations/{org_id}/workspaces` | WorkspaceCreate → Workspace (201) | `workspaces.create` |
@@ -591,7 +591,7 @@ Request: **none**. Result: **Identity**, HTTP **200**. Permission: `identity.rea
 
 Read org settings.
 
-Request: **none**. Result: **Org**, HTTP **200**. Permission: `organization.get`. Expected version: **not a changing existing aggregate**. Local scan: **no content body or narrow bootstrap/receipt registration**. Caller: **authorized principal**.
+Request: **none**. Result: **Organization**, HTTP **200**. Permission: `organization.get`. Expected version: **not a changing existing aggregate**. Local scan: **no content body or narrow bootstrap/receipt registration**. Caller: **authorized principal**.
 
 ### organization.configure
 
@@ -599,7 +599,7 @@ Request: **none**. Result: **Org**, HTTP **200**. Permission: `organization.get`
 
 Configure org settings. Idempotency is scoped to org, caller, operation and key. A retry cannot duplicate an external effect; unknown effects require reconciliation. Require complete local inspection before remote upload. The receipt and sender-bound gateway identity must match the exact cleaned payload.
 
-Request: **OrganizationPatch**. Result: **Org**, HTTP **200**. Permission: `organization.configure`. Expected version: **required**. Local scan: **required**. Caller: **authorized principal**.
+Request: **OrganizationPatch**. Result: **Organization**, HTTP **200**. Permission: `organization.configure`. Expected version: **required**. Local scan: **required**. Caller: **authorized principal**.
 
 ### workspaces.list
 
@@ -3690,7 +3690,7 @@ Signed by the enrolled protected gateway, not the client. Digest binds canonical
 | `principal_kind` | `human`, `agent`, `service`, `plugin` | yes |
 | `session_expires_at` | date-time | yes |
 
-### Org
+### Organization
 
 | Field | Type | Required |
 |---|---|---|
