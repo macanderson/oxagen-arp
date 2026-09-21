@@ -1,4 +1,4 @@
-import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import os from 'node:os';import path from 'node:path';import crypto from 'node:crypto';
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import os from 'node:os';import path from 'node:path';import crypto from 'node:crypto';import {execFileSync} from 'node:child_process';
 import {Engine} from '../lib/engine.mjs';import {Journal,digest,canonical,fileSnapshot,hashFile} from '../lib/core.mjs';
 function fixture(){const dir=fs.mkdtempSync(path.join(os.tmpdir(),'oxagen-engine-'));const control=path.join(dir,'control');fs.mkdirSync(control);const plan={version:1,certificationFiles:['phase0/desktop.html','phase0/web.html','phase0/openapi.json'],batches:[{id:'design',phase:'design',depends:[],implementer:'codex',allowedPaths:['phase0/'],maxCostCents:100,timeoutSeconds:5,maxAttempts:2,goal:'Make three design artifacts.',acceptance:['All design flows are covered.','All examples pass required checks.']},{id:'product',phase:'product',depends:['design'],implementer:'claude',allowedPaths:['apps/'],maxCostCents:100,timeoutSeconds:5,maxAttempts:2,goal:'Build the certified example.',acceptance:['Honor all certified contracts.','Pass isolation and recovery checks.']}]};const {privateKey,publicKey}=crypto.generateKeyPairSync('ed25519');const source=path.join(control,'Design.md');fs.writeFileSync(source,'Approved design input');const inputManifest=path.join(control,'source-inputs.json');fs.writeFileSync(inputManifest,JSON.stringify({version:1,files:[{path:'Design.md',source,sha256:hashFile(source)}]}));const config={version:1,inputManifest,inputRoot:path.join(dir,'inputs'),controlDir:control,workRoot:path.join(dir,'work'),runBudgetCents:1000,maxRunSeconds:120,targets:{repository:'test-repo',staging:'test-stage',production:'test-prod'},phaseZeroCertificate:path.join(control,'cert.json'),certifierPublicKey:path.join(control,'public.pem')};fs.writeFileSync(config.certifierPublicKey,publicKey.export({type:'spki',format:'pem'}));return {dir,plan,config,privateKey}}
 function adapter(f,{certify=true,stale=false}={}){let session=0;return async q=>{if(q.kind==='preflight')return {status:'succeeded',controlProtected:true,gitMetadataProtected:true,agentEgressControlled:true,credentialsOutsideAgents:true,hardBudgetEnforced:true,scannerEnforced:true,reviewIsolation:true,hookTargetsPinned:true,inputsReadOnly:true,modelsSupported:true};const p=q.payload,r={status:'succeeded',operationId:q.id,costCents:0,head:p.head};if(q.kind==='agent'){r.budgetReceipt='fake-budget';r.isolationReceipt='fake-isolation';r.allChildrenStopped=true;if(p.role==='implement'){if(q.batchId==='design'){fs.mkdirSync(path.join(p.worktree,'phase0'));for(const file of f.plan.certificationFiles)fs.writeFileSync(path.join(p.worktree,file),'design-only')}else{fs.mkdirSync(path.join(p.worktree,'apps'));fs.writeFileSync(path.join(p.worktree,'apps','hello.txt'),'product')}}else r.review={head:stale?'stale':p.head,harness:p.harness,sessionId:'fresh-'+(++session),verdict:'pass',findings:[]}}
@@ -18,3 +18,34 @@ test('certificate expiry during implementation prevents review and merge',async(
 test('a changed valid certificate cannot replace the certificate pinned to a running batch',async()=>{const f=fixture();try{const j=new Journal(path.join(f.config.controlDir,'state'),digest(f.plan));const base=adapter(f);const hook=async op=>{const r=await base(op);if(op.batchId==='product'&&op.kind==='agent'&&op.payload.role==='implement'){const cert=JSON.parse(fs.readFileSync(f.config.phaseZeroCertificate));cert.payload.expiresAt=new Date(Date.now()+90000).toISOString();cert.signature=crypto.sign(null,Buffer.from(canonical(cert.payload)),f.privateKey).toString('base64');fs.writeFileSync(f.config.phaseZeroCertificate,JSON.stringify(cert))}return r};await assert.rejects(new Engine({...f,journal:j,hook}).run(),/certificate changed during/);assert.equal(j.state.batches.product.stage,'implement')}finally{fs.rmSync(f.dir,{recursive:true,force:true})}});
 
 test('certificate expiry during a quality gate prevents the next remote action',async()=>{const f=fixture(),now=Date.now;let advance=0;Date.now=()=>now()+advance;try{const j=new Journal(path.join(f.config.controlDir,'state'),digest(f.plan));const base=adapter(f);const calls=[];const hook=async op=>{if(op.batchId==='product')calls.push(op.kind);const r=await base(op);if(op.batchId==='product'&&op.kind==='quality')advance=61000;return r};await assert.rejects(new Engine({...f,journal:j,hook}).run(),/expired/);assert.deepEqual(calls,['agent','agent','quality']);assert.equal(j.state.pendingReceipt.kind,'quality')}finally{Date.now=now;fs.rmSync(f.dir,{recursive:true,force:true})}});
+
+// Regression: the 'preparing' checkpoint must carry the checkout it selected. A retry picks the prior
+// failed head, and a crash between that checkpoint and the worktree add used to resume from the branch
+// base instead, silently discarding the implementation being retried.
+test('a crash after the preparing checkpoint still recreates the retried implementation',async()=>{const f=fixture();try{
+ const statePath=path.join(f.config.controlDir,'state');
+ const j=new Journal(statePath,digest(f.plan)),b=f.plan.batches[0];
+ await new Engine({...f,journal:j,hook:adapter(f)}).preflight();
+ const first=new Engine({...f,journal:j,hook:adapter(f)});
+ const base=first.head();
+ first.prepare(b);
+ const r=j.state.batches[b.id];
+ fs.mkdirSync(path.join(r.worktree,'phase0'));
+ for(const file of f.plan.certificationFiles)fs.writeFileSync(path.join(r.worktree,file),'retried work');
+ const retriedHead=first.commit(b,r);
+ assert.notEqual(retriedHead,base);
+ // core.retry() records the failed attempt exactly this way.
+ j.record('batch.retry',{...j.state,batches:{...j.state.batches,[b.id]:{...j.state.batches[b.id],head:retriedHead,stage:'retry'}}});
+ // Crash immediately after the 'preparing' checkpoint, before `git worktree add`.
+ class Crashing extends Engine{batchSave(id,value,changes){super.batchSave(id,value,changes);if(value.stage==='preparing')throw new Error('simulated controller crash')}}
+ assert.throws(()=>new Crashing({...f,journal:j,hook:adapter(f)}).prepare(b),/simulated controller crash/);
+ // Resume from the journal on disk, as a restarted controller does.
+ const resumed=new Journal(statePath,digest(f.plan));
+ assert.equal(resumed.state.batches[b.id].stage,'preparing');
+ const engine=new Engine({...f,journal:resumed,hook:adapter(f)});
+ engine.prepare(b);
+ const after=resumed.state.batches[b.id];
+ const head=execFileSync('/usr/bin/git',['-C',after.worktree,'rev-parse','HEAD'],{encoding:'utf8'}).trim();
+ assert.equal(head,retriedHead,'resume must recreate the retried implementation, not the branch base');
+ assert.equal(fs.readFileSync(path.join(after.worktree,'phase0/openapi.json'),'utf8'),'retried work');
+}finally{fs.rmSync(f.dir,{recursive:true,force:true})}});

@@ -6,7 +6,8 @@
 //      a binder that serves it (api, mcp, cli) or a page binding (app).
 //   2. No surface carries a per-capability wrapper file. A file named after a capability under a
 //      surface's routes/, tools/, or commands/ is duplicate code the kernel already provides.
-//   3. Every `app` capability has a page in apps/web/capability-ui-map.json and that page exists.
+//   3. Every `app` capability has a page in apps/web/capability-ui-map.json, that page exists, and
+//      the page reaches the capability's DataSource port. A binding nobody calls is not parity.
 // Default: warn. --strict: exit 1 on any failure.
 import fs from "node:fs";
 import path from "node:path";
@@ -30,6 +31,42 @@ for (const [surface, file] of Object.entries(binders)) {
   if (!fs.existsSync(path.join(root, file))) failures.push(`binder missing for ${surface}: ${file}`);
 }
 
+const webRoot = path.join(root, "apps/web");
+const { portCapabilities } = await import(path.join(webRoot, "src/data/ports.ts"));
+// The data layer implements every port, so finding a call there proves nothing.
+const dataLayer = ["src/data/ports.ts", "src/data/fixtures.ts", "src/data/live.ts", "src/data/source.ts"]
+  .map((f) => path.join(webRoot, f));
+
+function resolveImport(spec, fromFile) {
+  const base = spec.startsWith("@/") ? path.join(webRoot, "src", spec.slice(2))
+    : spec.startsWith(".") ? path.resolve(path.dirname(fromFile), spec)
+    : null;
+  if (base === null) return null;
+  for (const c of [base, `${base}.ts`, `${base}.tsx`, path.join(base, "index.ts"), path.join(base, "index.tsx")]) {
+    if (fs.existsSync(c) && fs.statSync(c).isFile()) return c;
+  }
+  return null;
+}
+
+/** True when `entry`, or anything it imports, calls `DataSource.<method>()` outside the data layer. */
+function reachesPort(entry, method) {
+  const call = new RegExp(`\\.${method}\\s*\\(`);
+  const seen = new Set();
+  const stack = [entry];
+  while (stack.length > 0) {
+    const file = stack.pop();
+    if (seen.has(file) || !fs.existsSync(file)) continue;
+    seen.add(file);
+    const text = fs.readFileSync(file, "utf8");
+    if (!dataLayer.includes(file) && call.test(text)) return true;
+    for (const m of text.matchAll(/from\s+"([^"]+)"/g)) {
+      const next = resolveImport(m[1], file);
+      if (next !== null) stack.push(next);
+    }
+  }
+  return false;
+}
+
 const uiMapPath = path.join(root, "apps/web/capability-ui-map.json");
 const uiMap = fs.existsSync(uiMapPath) ? JSON.parse(fs.readFileSync(uiMapPath, "utf8")) : {};
 for (const cap of caps) {
@@ -37,8 +74,16 @@ for (const cap of caps) {
   if (cap.surfaces.includes("app")) {
     const binding = uiMap[cap.name];
     if (!binding) failures.push(`${cap.name} declares app but has no binding in apps/web/capability-ui-map.json`);
-    else for (const page of [binding.page, ...(binding.also ?? [])]) {
-      if (!fs.existsSync(path.join(root, "apps/web", page))) failures.push(`${cap.name}: page ${page} does not exist`);
+    else {
+      const pages = [binding.page, ...(binding.also ?? [])];
+      for (const page of pages) {
+        if (!fs.existsSync(path.join(webRoot, page))) failures.push(`${cap.name}: page ${page} does not exist`);
+      }
+      const method = Object.keys(portCapabilities).find((k) => portCapabilities[k] === cap.name);
+      if (method === undefined) failures.push(`${cap.name} declares app but apps/web/src/data/ports.ts has no port for it`);
+      else if (!pages.some((page) => reachesPort(path.join(webRoot, page), method))) {
+        failures.push(`${cap.name}: no bound page reaches DataSource.${method}(); the capability-ui-map.json binding is a claim nothing backs`);
+      }
     }
   }
 }
