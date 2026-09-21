@@ -4,7 +4,7 @@ import path from 'node:path';
 import os from 'node:os';
 import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
-import {assert,canonical,digest,hashFile,within,validatePlan,Journal,processJSON,certificationSnapshot,invokeRollbackStage,requestRetry,reconcileNoEffect,adoptLocalReceipt,completeRollback,installationDigest,executionProfileDigest} from './lib/core.mjs';
+import {assert,canonical,digest,hashFile,within,validatePlan,Journal,processJSON,certificationSnapshot,invokeRollbackStage,requestRetry,reconcileNoEffect,adoptLocalReceipt,completeRollback,installationDigest,executionProfileDigest,activeOperations} from './lib/core.mjs';
 import {Engine} from './lib/engine.mjs';
 const [command='help',...args]=process.argv.slice(2);
 function option(name){const at=args.indexOf('--'+name);return at<0?null:args[at+1]}
@@ -35,9 +35,10 @@ try{
   // Mutating commands must read durable state only after taking the exclusive lock.
   journal=new Journal(path.join(root,'state'),digest(plan));
   if(command==='reconcile'){
-   const active=journal.state.active;assert(active,'No uncertain in-flight operation');const r=await hook({id:crypto.randomUUID(),kind:'reconcile',operation:active,timeoutSeconds:Math.min(config.local?.deployment?.timeoutSeconds||300,14400)});if(config.adapter==='local'&&r.completedReceipt){adoptLocalReceipt(journal,r.completedReceipt);console.log('Adopted the protected adapter’s saved result. Run resumes at its original transition.');}else{reconcileNoEffect(journal,r);console.log('Confirmed no effect and no charge. Any prior rollback requirement remains in force.');}
+   const inFlight=activeOperations(journal.state);assert(inFlight.length>0,'No uncertain in-flight operation');
+   for(const active of inFlight){const r=await hook({id:crypto.randomUUID(),kind:'reconcile',operation:active,timeoutSeconds:Math.min(config.local?.deployment?.timeoutSeconds||300,14400)});if(config.adapter==='local'&&r.completedReceipt){adoptLocalReceipt(journal,r.completedReceipt);console.log('Adopted the protected adapter’s saved result. Run resumes at its original transition.');}else{reconcileNoEffect(journal,r);console.log('Confirmed no effect and no charge. Any prior rollback requirement remains in force.');}}
   }else if(command==='rollback'){
-   assert(!journal.state.active&&journal.state.blocked?.rollbackRequired,'Rollback requires a known failed health gate, not an unknown deployment');const batchId=journal.state.blocked.batchId;const record=journal.state.batches[batchId];const operation={id:crypto.randomUUID(),kind:'rollback',batchId,maxCostCents:0,timeoutSeconds:Math.min(config.local?.deployment?.timeoutSeconds||3600,14400),payload:{head:record.head,executionHead:record.mergedHead||record.head,certificateDigest:record.certificateDigest,targets:config.targets,receipts:record.receipts,failedHealth:journal.state.pendingReceipt?.result}};const r=await invokeRollbackStage(journal,operation,()=>hook(operation));completeRollback(journal,r);console.log('Rollback confirmed. Release remains stopped.');
+   assert(activeOperations(journal.state).length===0&&journal.state.blocked?.rollbackRequired,'Rollback requires a known failed health gate, not an unknown deployment');const batchId=journal.state.blocked.batchId;const record=journal.state.batches[batchId];const operation={id:crypto.randomUUID(),kind:'rollback',batchId,maxCostCents:0,timeoutSeconds:Math.min(config.local?.deployment?.timeoutSeconds||3600,14400),payload:{head:record.head,executionHead:record.mergedHead||record.head,certificateDigest:record.certificateDigest,targets:config.targets,receipts:record.receipts,failedHealth:journal.state.pendingReceipt?.result}};const r=await invokeRollbackStage(journal,operation,()=>hook(operation));completeRollback(journal,r);console.log('Rollback confirmed. Release remains stopped.');
   }else if(command==='retry'){
    requestRetry(journal,plan,option('batch'));
   }else if(command==='preflight'){

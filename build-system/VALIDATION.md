@@ -4,7 +4,7 @@ Checked on 20 September 2026 using Node v24.21.0, local Git, real local Unix soc
 
 ## Results
 
-The complete `node --test test/*.test.mjs` suite passes **127 tests, 0 failures** after merging the AWS release modules and the 2026-09-20 review fixes (a split invocation test and a ledger-liability test). The 22-batch plan passes dry-run validation. A temporary bootstrap installed the AWS modules and templates, left money and release disabled, and produced the correct installation digest; the `local-host.mjs` entry point, the mTLS client call, and the runner commands other than `retry` still have no automated test.
+The complete `node --test test/*.test.mjs` suite passes **131 tests, 0 failures** after the concurrent wave scheduler landed (three concurrency tests) and after merging the AWS release modules and the 2026-09-20 review fixes (a split invocation test and a ledger-liability test). The 22-batch plan passes dry-run validation. A temporary bootstrap installed the AWS modules and templates, left money and release disabled, and produced the correct installation digest; the `local-host.mjs` entry point, the mTLS client call, and the runner commands other than `retry` still have no automated test.
 
 | Area | Tests | Evidence |
 |---|---:|---|
