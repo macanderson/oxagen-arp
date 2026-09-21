@@ -231,6 +231,104 @@ export const modelRouteList = registerCapability({
   output: z.object({ items: z.array(modelRoute) }),
 });
 
+// Usage, coaching, and cost savings (ARP-Performance-spec.md, ARP-SDK-spec.md). Counts are integers or
+// null: unknown is not zero. Every finding carries its basis, coverage, and a savings range that may be
+// negative, and a finding never grants a right or changes a policy on its own.
+const tokenCount = z.number().int().nonnegative().nullable();
+export const usageBasis = z.enum(["provider_reported", "gateway_measured", "client_reported", "estimated"]);
+
+export const usageBucket = z.object({
+  key: z.string(),
+  label: z.string(),
+  requests: z.number().int().nonnegative(),
+  requestsWithUnknownUsage: z.number().int().nonnegative(),
+  inputTokens: tokenCount,
+  cacheReadTokens: tokenCount,
+  cacheWriteTokens: tokenCount,
+  outputTokens: tokenCount,
+  /** Known cache-read tokens over matching known total-input tokens; null when the denominator is zero. */
+  tokenReuseRate: z.number().min(0).max(1).nullable(),
+  settled: money,
+  held: money,
+  estimated: money,
+  basis: usageBasis,
+  asOf: instant,
+});
+
+export const usageQuery = registerCapability({
+  name: "usage.query",
+  domain: "usage",
+  description: "Token, cache, and cost usage grouped by operator, agent, harness, model, run, or turn. Unknown counts stay unknown.",
+  mode: "sync",
+  surfaces: ["api", "mcp", "cli", "app"],
+  mutates: false,
+  input: z.object({
+    groupBy: z.enum(["operator", "agent", "harness", "model", "run", "turn"]).default("agent"),
+    from: instant.optional(),
+    to: instant.optional(),
+    basis: z.array(usageBasis).optional(),
+  }),
+  output: z.object({ buckets: z.array(usageBucket), excludedRequests: z.number().int().nonnegative(), asOf: instant }),
+});
+
+export const findingKind = z.enum([
+  "repeated_file_read", "full_log_every_turn", "unstable_prefix", "unused_tool_schema", "oversized_output",
+  "duplicate_paid_retry", "call_after_stop", "tool_result_never_consumed", "wrong_call_id", "result_consumed_twice",
+  "retry_of_unknown_write", "stale_context", "batch_closed_early", "no_progress",
+]);
+
+export const finding = z.object({
+  id: publicId("fnd"),
+  runId: publicId("run"),
+  kind: findingKind,
+  classification: z.enum(["observed", "inferred", "incomplete"]),
+  severity: z.enum(["info", "advice", "warning", "violation"]),
+  title: z.string(),
+  observed: z.string(),
+  proposedChange: z.string(),
+  tradeoff: z.string().nullable(),
+  evidence: z.array(z.object({ kind: z.enum(["model_request", "tool_call", "tool_result", "composition"]), ref: z.string(), readable: z.boolean() })),
+  detectorVersion: z.string(),
+  coverage: z.enum(["complete", "partial", "unsupported"]),
+  confidence: z.number().min(0).max(1).nullable(),
+  /** Estimated saving for the affected calls, in minor units; either bound may be negative. Null when there is too little evidence. */
+  estimatedSavingMinor: z.object({ low: z.number().int(), high: z.number().int(), currency: z.literal("USD") }).nullable(),
+  priceBasis: z.string(),
+  assumptions: z.array(z.string()),
+  /** Findings that remove the same tokens or calls; their savings are never summed. */
+  overlapGroup: z.string().nullable(),
+  status: z.enum(["open", "accepted", "dismissed", "proposed_change"]),
+});
+
+export const findingList = registerCapability({
+  name: "finding.list",
+  domain: "coaching",
+  description: "Operator coaching findings with their evidence, coverage, and an estimated savings range that stays separate from measured savings.",
+  mode: "sync",
+  surfaces: ["api", "mcp", "cli", "app"],
+  mutates: false,
+  input: z.object({ runId: publicId("run").optional(), status: z.enum(["open", "accepted", "dismissed", "proposed_change"]).optional() }),
+  output: z.object({ items: z.array(finding), measuredReductions: z.array(z.object({ comparisonId: publicId("cmp"), label: z.string(), sampleSize: z.number().int(), reduction: money })) }),
+});
+
+export const findingRespond = registerCapability({
+  name: "finding.respond",
+  domain: "coaching",
+  description: "Accept advice, dismiss it with a reason, or propose a change for review. Grants no tool, policy, or run permission.",
+  mode: "sync",
+  surfaces: ["api", "cli", "app"],
+  mutates: true,
+  input: z.object({
+    findingId: publicId("fnd"),
+    disposition: z.enum(["accepted", "dismissed", "proposed_change"]),
+    reason: z.string().max(2000).optional(),
+    idempotencyKey: z.string().min(1).max(200),
+  }),
+  output: z.object({ finding, responseId: publicId("fnr") }),
+});
+
+export type UsageBucket = z.infer<typeof usageBucket>;
+export type Finding = z.infer<typeof finding>;
 export type WorkspaceSummary = z.infer<typeof workspaceSummary>;
 export type RunSummary = z.infer<typeof runSummary>;
 export type RunEvent = z.infer<typeof runEvent>;

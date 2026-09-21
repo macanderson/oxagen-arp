@@ -195,6 +195,16 @@ The CLI links the checkout and creates `.oxagen` files. These files ask for a wo
 
 Setup is complete only when a trusted start record shows which config, context, steering, and agent version the first model call used. Making files is not enough. Follow the [full first-workspace walkthrough](ARP-design.md#first-workspace-and-first-run), with [sample files and exact schemas](workspace-samples/README.md).
 
+## See where time and money go
+
+A **token** is a small piece of text a model reads or writes. Oxagen shows tokens, dollars, and wait time as separate measures. You can follow them from a person or agent down to one call. A **cache** can let a model reuse earlier input. Show what was read from it or saved to it, without counting the same tokens twice. Unknown use stays unknown. Totals include retries, helpers, and any paid Oxagen coaching.
+
+The coaching view suggests changes based on recorded calls. It might suggest a short error excerpt and a local file read instead of pasting a long trace each time. That works only if the file exists and the agent can safely read it. A file path alone is not the file, and reading it still has a cost.
+
+Show possible savings as a range, with the evidence and assumptions. Do not promise a cache hit or count the same saving twice. Comparing saved records makes no new calls. A live test needs an explicit choice and a budget; advice never reruns a task on its own.
+
+Teams that build their own agents get these views too. An **SDK** is a code library that connects them to Oxagen. The run view can show repeated calls, missing tool results, bad retries, or a late reply used without the required check. It separates known facts from guesses about wasted work. These clues help people fix their agent's loop. They do not certify that a job is done.
+
 ## Find the right spec
 
 The **Design** tab holds the shared rules. Open **Specs** for the separate product documents:
@@ -209,3 +219,5 @@ The **Design** tab holds the shared rules. Open **Specs** for the separate produ
 | [Brand](ARP-Brand-spec.md) | Product words, fonts, colors, and states. |
 | [Schema](ARP-Schema-spec.md) | Records, keys, shared limits, and data protection. |
 | [Build plan](ARP-Build-plan.md) | Design certification, build batches, and independent checks. |
+| [SDK](ARP-SDK-spec.md) | Register and run custom agents. |
+| [Usage & performance](ARP-Performance-spec.md) | Tokens, cache use, costs, and ways to improve. |

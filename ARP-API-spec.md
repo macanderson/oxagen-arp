@@ -7456,3 +7456,26 @@ Read [validation-report.json](api/validation-report.json) for the actual checks.
 The first hosted target is AWS ECS with Fargate. The app/API, gateway and workers remain separate services behind checked entry points. This hosting choice does not change the API's IAM, org scope, scan rules or completion rules. AWS service roles are infrastructure access; they do not replace human and agent identities in Oxagen.
 
 The [release setup](build-system/RELEASE-SETUP.md) binds the exact checked merge commit and immutable image bundle to staging tests and signed production approval. The [release adapter](build-system/adapters/local-release.md) checks ECS task definitions, image digests, task health, load balancer health and configured HTTPS readiness routes. The source and image proof comes from the bound release and task records; an HTTP 200 response alone does not identify a release. That operational health proof is separate from a claim that all product API behavior is correct. Live API, org-isolation and budget tests remain required after explicit contract certification.
+
+## Usage and SDK contract additions
+
+Custom agents use the proposed [SDK](ARP-SDK-spec.md), whose main entry point is `oxagen.register({your_agent}).run("prompt")`. Registration wraps a tested adapter, resolves trusted identity and workspace bindings, and checks the protected host gateway. It does not upload the agent's source or grant access to an arbitrary callable. `run()` returns a handle for acceptance, safe events, status, steering, pause, resume, cancellation, and a terminal result.
+
+The [performance requirements](ARP-Performance-spec.md) add the following logical operations. Their final HTTP/IPC schemas and operation IDs must be added to the generated contract before implementation; the existing generated OpenAPI is not evidence that these additions are already complete. Use the current enrollment, work submission, run control, and governed-action paths where they fit.
+
+| Logical operation | Request and result requirements |
+| --- | --- |
+| `sdk.register` / `sdk.ready` | Adapter identity/version, required capability profile, and approved binding references. Return checked target and registration references or a typed unsupported-control error. Enrollment rights are separate from permission to start work. |
+| `sdk.run` | Cleaned prompt/artifact references, optional work order, exact registered target, and stable idempotency key. The local SDK accepts local inputs; the remote API accepts only scanned views. Return the saved work operation. |
+| `usage.record` | Trusted producer submits a source receipt, exchange/attempt link, mapping version, field coverage, stream-total semantics, and source revision. Client estimates cannot overwrite trusted usage or settle funds. |
+| `usage.query` | Allowed scope, time range, group-by fields, and basis filters. Return input/output/cache counts, charged units, cost basis, counts of missing data, and an as-of point. Enforce metric and content rights separately. |
+| `loop.record` | Cleaned event references and declared causal links, deduplicated by producer/event key. Server sets trusted actor, scope, and ingest order. Return accepted IDs and any coverage gaps. |
+| `finding.list` / `finding.read` | Return findings with evidence references, detector version, observed/inferred status, coverage, estimated savings range, assumptions, and overlapping opportunities. Filter both records and aggregates by current access. |
+| `finding.respond` | Record dismissal, accepted advice, or a proposed change with expected revision and idempotency. It grants no new tool, policy, or run permission. |
+| `comparison.plan` / `comparison.start` | Name baseline, proposed change, allowed test mode, budget, and effect policy. Planning performs no paid or external work. Starting a live comparison needs explicit opt-in and normal gates. Return linked runs and measured outcomes, including comparison cost. |
+
+Usage queries must not add provider input subsets twice, average cache percentages across unequal calls, or present unknown spend as zero. Streaming totals replace earlier snapshots; repeated receipts do not add charges. Settled financial facts stay in the existing usage and budget ledger. Analytics projections may lag but may not authorize spending.
+
+Findings inherit the access needed for their evidence. A count, snippet, saved query, or export may not disclose a hidden run or operator. Recheck access when opening evidence. No raw bodies or source secrets belong in metrics labels. Use the org's configured data plane for all records and analysis.
+
+Before release, define and test exact payloads, pagination, authorization errors, safe error strings, correction rules, and schema version negotiation for these extensions. Include denied enrollment, unknown capabilities, duplicate streams, missing usage, conflicting receipts, redacted fields, parallel loops, and advice that costs more than it saves. This is a requirements addition, not a shipped SDK or completed API implementation.

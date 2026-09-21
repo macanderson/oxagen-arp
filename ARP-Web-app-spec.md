@@ -64,6 +64,37 @@ Each work report must include the repo, changed files, work branch, configured d
 
 Approvals show safe reasons, scope, evidence, expiry, and the exact action. Record decisions and recheck before execution. Future plugins may share scoped run controls and completion checks. Only the capability stub is in scope; no plugin marketplace is built here.
 
+## Tokens, cache use, and speed
+
+Let people drill from operator, agent, harness, or model into a run, turn, and call. Include custom agents built with an Oxagen SDK, which is a code library for connecting an agent. They use the same views and checks as Codex and Claude Code. Show the app or SDK version and which parts of the run were captured.
+
+Show input tokens, output tokens, cached input read, and cache writes. Tokens are the small pieces a model reads or writes. Use the provider's stated counting rules: cached input may already be part of total input. Never add a subset twice. Explain whether a cache-hit rate measures requests or tokens, and show the count it divides by. Missing or unsupported counts stay unknown, not zero. Mark values as provider-reported, gateway-measured, client-reported, or estimated.
+
+Keep token use and USD cost separate. Fewer tokens do not always mean a lower bill. Show known paid extras, such as reasoning use, server tools, and cache storage or writes, under the provider's pricing rules. Include retries, child agents, and Oxagen's own paid coaching or analysis. Split work cost from Oxagen assistance cost while counting each charge once in the full total. Show coverage gaps, pending charges, price versions, and estimates clearly.
+
+Show how long a call took, how long the user waited for its first token, and time spent waiting in a queue or on tools. A missing time stays unknown. A fast first token does not mean the whole task finished faster. Compare similar work and show the time window and sample size. Token counts, cache rates, and lines changed are not scores for useful work.
+
+## Coaching from recorded work
+
+Keep Operator coaching linked to Spend and the run trace. Each suggestion names the observed pattern, the calls behind it, a change to try, and any risk to the result. Only show evidence the viewer may read. Use cleaned records; coaching must not recover or expose removed data.
+
+For example, a person may paste a whole error trace on each turn. Suggest a short error excerpt and a targeted local file read only when the file exists, the agent has a suitable tool, access is allowed, and the content passes the local scan. A file path by itself does not give the model the file. Reading it can still use tokens and cost money. Do not promise savings from a path or a cache hit that has not happened.
+
+Show a possible USD saving as a range, with its price assumptions, sample, and confidence explained in plain words. Include the cost of extra reads, retries, and coaching. State when there is too little evidence to estimate savings. Suggestions may overlap; do not add both savings when they remove the same work. Separate an estimated opportunity from a saving measured in a later comparable run.
+
+Compare saved cleaned records without sending model or tool requests where possible. That comparison estimates an opportunity; it cannot prove a future answer or cache hit. A live trial needs an explicit opt-in to that trial, fresh access checks, local data checks, and its own budget. Opening a coaching card never reruns work or repeats an outside write.
+
+## Find problems in custom agent loops
+
+An agent loop asks a model for a next step, runs allowed tools, and sends their results back. Add a loop view to the same Run trace for SDK and custom agents. Link each model request, tool request, result, retry, and next model request by its recorded IDs.
+
+Flag duplicate dispatches, missing results, results tied to the wrong call, repeated steps with no observed change, and retries that used extra time or budget. Distinguish a result still being awaited from one missing at a point where it was needed. Show whether a late result stayed excluded or entered through a recorded adoption decision. Repeated event delivery is not another tool use. An intentional retry is not automatically a bug.
+
+Separate facts from advice. A missing matching result is a recorded gap; a claim that the agent is stuck is a guess with stated reasons. Let users inspect the relevant calls and dismiss an unhelpful suggestion. Any choice to steer, pause, or retry uses the usual checked control path. These diagnostics do not certify that a task is done. They add no built-in verifier or partner plugin to this phase.
+
+See [shared control rules](ARP-design.md#5-send-work-and-steer-it-from-one-place), [desktop](ARP-Desktop-app-spec.md), [API](ARP-API-spec.md), [MCP](ARP-MCP-spec.md), and [CLI](ARP-CLI-spec.md).
+
+
 See [shared control rules](ARP-design.md#5-send-work-and-steer-it-from-one-place), [desktop](ARP-Desktop-app-spec.md), [API](ARP-API-spec.md), [MCP](ARP-MCP-spec.md), and [CLI](ARP-CLI-spec.md).
 
 ## First-workspace contract

@@ -4,9 +4,9 @@
 // Every value validates against its contract's output schema (see index.test.ts), so a fixture can
 // never drift from the wire shape the live handler must return.
 import {
-  budgetStatus, deviceList, deviceRevoke, modelRouteList, runGet, runList, runPause, runResume,
-  runSteer, runStop, setHandler, workCancel, workSubmit, workspaceList,
-  type BudgetScope, type DeviceSummary, type ModelRoute, type RunEvent, type RunSummary, type WorkspaceSummary,
+  budgetStatus, deviceList, deviceRevoke, findingList, findingRespond, modelRouteList, runGet, runList, runPause, runResume,
+  runSteer, runStop, setHandler, usageQuery, workCancel, workSubmit, workspaceList,
+  type BudgetScope, type DeviceSummary, type Finding, type ModelRoute, type RunEvent, type RunSummary, type UsageBucket, type WorkspaceSummary,
 } from "@oxagen-arp/kernel";
 
 const usd = (minor: number) => ({ currency: "USD" as const, minor });
@@ -71,6 +71,44 @@ export const budgets: BudgetScope[] = [
   { scope: "agent", label: "Support builder", cap: usd(2000), settled: usd(1070), held: usd(610), remaining: usd(320), period: "Today" },
 ];
 
+// Usage buckets and coaching findings. The trace-file example follows ARP-Performance-spec.md: the
+// dollar range is for the affected calls at the stated price basis, and the two overlapping findings
+// share an overlap group so their savings are never summed.
+export const usageBuckets: UsageBucket[] = [
+  { key: "agp_supportbuilder", label: "Support builder", requests: 42, requestsWithUnknownUsage: 0, inputTokens: 1_840_000, cacheReadTokens: 1_210_000, cacheWriteTokens: 96_000, outputTokens: 61_000, tokenReuseRate: 0.66, settled: usd(1070), held: usd(610), estimated: usd(0), basis: "provider_reported", asOf: T0 },
+  { key: "agp_reviewer", label: "Reviewer", requests: 9, requestsWithUnknownUsage: 0, inputTokens: 310_000, cacheReadTokens: 40_000, cacheWriteTokens: 12_000, outputTokens: 8_400, tokenReuseRate: 0.13, settled: usd(210), held: usd(0), estimated: usd(0), basis: "provider_reported", asOf: T0 },
+  { key: "agp_docs", label: "Docs writer", requests: 17, requestsWithUnknownUsage: 3, inputTokens: 2_460_000, cacheReadTokens: null, cacheWriteTokens: null, outputTokens: 22_000, tokenReuseRate: null, settled: usd(1530), held: usd(0), estimated: usd(0), basis: "gateway_measured", asOf: T0 },
+];
+
+export const findings: Finding[] = [
+  { id: "fnd_tracepaste", runId: "run_budgetblock", kind: "full_log_every_turn", classification: "observed", severity: "advice",
+    title: "A 120,000-token trace was pasted on every turn",
+    observed: "Requests 12 to 19 each carried the same trace file as fresh input. The provider reported no cache read for those blocks.",
+    proposedChange: "Give the agent the local path to the trace and ask it to read the 2,000-token error section first. The file exists on the target and Read is in the agent's tool belt.",
+    tradeoff: "One extra tool call per turn. If the agent reads the whole file, the saving is zero or negative.",
+    evidence: [{ kind: "composition", ref: "compose_184", readable: true }, { kind: "model_request", ref: "req_12", readable: true }, { kind: "model_request", ref: "req_19", readable: true }],
+    detectorVersion: "repeat-block/2026.09", coverage: "complete", confidence: 0.8,
+    estimatedSavingMinor: { low: 4, high: 35, currency: "USD" }, priceBasis: "Fresh input at $3 per million tokens, price version 2026-09-01",
+    assumptions: ["The excerpt stays under 2,000 tokens", "Cache state of the remaining prefix does not change"], overlapGroup: "trace-input", status: "open" },
+  { id: "fnd_prefixchange", runId: "run_budgetblock", kind: "unstable_prefix", classification: "inferred", severity: "advice",
+    title: "The workspace instructions moved after the trace, breaking the cache prefix",
+    observed: "Block order changed between requests 11 and 12; cache reads dropped from 94,000 to 0 tokens.",
+    proposedChange: "Keep stable instructions before per-turn content so the prefix can be reused.",
+    tradeoff: null,
+    evidence: [{ kind: "composition", ref: "compose_183", readable: true }, { kind: "composition", ref: "compose_184", readable: true }],
+    detectorVersion: "prefix-diff/2026.09", coverage: "partial", confidence: 0.55,
+    estimatedSavingMinor: { low: -2, high: 28, currency: "USD" }, priceBasis: "Cache read at $0.30 per million tokens, price version 2026-09-01",
+    assumptions: ["The provider would have served the prefix from cache", "Cache had not expired"], overlapGroup: "trace-input", status: "open" },
+  { id: "fnd_resultunused", runId: "run_loginbug", kind: "tool_result_never_consumed", classification: "observed", severity: "warning",
+    title: "A tool result never reached the next request",
+    observed: "Tool call tc_41 returned 3.2 KB; the next composition contains no block from it and no redaction record.",
+    proposedChange: "Check the custom loop's consume step; the result may be dropped before the next model request.",
+    tradeoff: null,
+    evidence: [{ kind: "tool_result", ref: "tr_41", readable: true }, { kind: "composition", ref: "compose_203", readable: false }],
+    detectorVersion: "loop-pairing/2026.09", coverage: "complete", confidence: null,
+    estimatedSavingMinor: null, priceBasis: "n/a", assumptions: [], overlapGroup: null, status: "open" },
+];
+
 function run(id: string): RunSummary {
   const r = runs.find((x) => x.id === id);
   if (!r) throw new Error(`fixture run missing: ${id}`);
@@ -102,4 +140,14 @@ export function registerFixtureHandlers(): void {
   }));
   setHandler(workCancel, async ({ workRequestId }) => ({ workRequestId, cancelled: 1, stopRequested: 0 }));
   setHandler(budgetStatus, async () => ({ scopes: budgets, tightest: "agent" }));
+  setHandler(usageQuery, async () => ({ buckets: usageBuckets, excludedRequests: 3, asOf: T0 }));
+  setHandler(findingList, async ({ runId, status }) => ({
+    items: findings.filter((f) => (!runId || f.runId === runId) && (!status || f.status === status)),
+    measuredReductions: [{ comparisonId: "cmp_1", label: "Trace excerpt vs pasted trace, 6 matched runs", sampleSize: 6, reduction: usd(1260) }],
+  }));
+  setHandler(findingRespond, async ({ findingId, disposition }) => {
+    const f = findings.find((x) => x.id === findingId);
+    if (!f) throw new Error(`no finding ${findingId}`);
+    return { finding: { ...f, status: disposition }, responseId: "fnr_1" };
+  });
 }

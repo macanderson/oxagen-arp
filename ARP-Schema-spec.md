@@ -429,6 +429,27 @@ Use crash and race tests at every transaction boundary. Test a late response aft
 
 The following SQL is a representative subset for review. It does not create every catalog table, the whole policy service, production settlement procedures, or every integration FK. In particular, it omits stable limit-definition continuity, canonical financial-effect deduplication, S-scoped scanner/context records, and the repo-setup tables; the catalog rules remain mandatory. It must be assembled and tested with the full schema before deployment. These statements were executed on PostgreSQL 16 on 2026-09-20 with org, workspace, cross-org and concurrent-hold tests (see AUDIT.md). Loading cleanly is not the same as production qualification. The build plan makes real database tests a required gate.
 
+## Usage and performance records
+
+These proposed additions support the [SDK](ARP-SDK-spec.md) and [performance views](ARP-Performance-spec.md). They extend the catalog; they are not yet included in the representative SQL or generated OpenAPI. Add their migrations, exact schemas, permissions, and conformance tests before release. They reuse authoritative usage receipts and budget records instead of creating a second bill.
+
+Each record carries org and workspace keys, a protected-object link or protected parent, source/mapping version, observed and recorded times, and coverage. All references include matching org and workspace scope. Use RLS plus the same record and field checks for both people and agents. The org's configured data plane stores details and rollups.
+
+| Proposed record | Required fields and rules |
+| --- | --- |
+| `ModelUsageObservation` / `model_usage_observations` | Exchange and attempt references; safe receipt reference; provider/API/model mapping version; producer; source revision; basis (`provider_reported`, `gateway_measured`, `client_reported`, `estimated`); completeness; input/output totals; disjoint input cache-read/cache-write/fresh counts where known; other usage classes with units and subset relationships; stream semantics (`delta`, `cumulative`, `final`); superseded observation reference. Counts are nonnegative integers or null. An unknown is not zero. Unique producer/source receipt/revision within scope; conflicts are retained and flagged. |
+| `RequestCompositionBreakdown` / `request_compositions` and `request_composition_blocks` | Exact cleaned request/artifact and exchange; tokenizer/version; block ordinal and kind; cleaned source reference/version; origin event; estimated token count/byte count; repeated-from reference; unassigned overhead and coverage. Parent composition inherits request permissions. Any digest is of permitted cleaned content, scoped against cross-org correlation. No raw-content digest or replacement map. |
+| `LoopDependency` / `loop_dependencies` | Producer/event key; from/to run-event or action reference; typed relation (`requested_by`, `consumed_by`, `retry_of`, `member_of_batch`, `waits_for`); batch/context/access version; adapter contract version; source trust and missing-evidence state. Canonical parent/child and edge directions must be fixed in the versioned schema. Causal links must be acyclic; retries get distinct attempts. No dependency can grant access. |
+| `RunFinding` / `run_findings` | Run/scope, detector/version, finding kind, severity, `observed`/`inferred`/`incomplete` classification, evidence set, safe explanation and proposed change, applicable source versions, coverage, optional confidence, assumptions, price basis, estimated USD/token range, overlap group, and status. Negative or unknown estimated savings are allowed and labeled. Findings and evidence links cannot outlive their applicable read rights. |
+| `finding_responses` | Finding/version, actor, disposition, scanned reason, linked proposed action, and idempotency key. Keep history rather than overwriting who accepted or dismissed advice. |
+| `performance_comparisons` | Baseline and changed run sets, change/version, task-group criteria, mode (`estimate`, `recorded_replay`, `live_opt_in`), initiating approval/action, costs including the trial, metrics, acceptance-signal source, sample size, coverage and confounding limits. Computed reductions are separate from estimated opportunities. |
+
+Provider usage belongs to the exchange actually billed, even when its reply was excluded after a pause. A late receipt may settle that cost without adding its text to active context. Financial settlement still uses the existing receipt and posting rules; an analytics observation cannot independently debit or release money.
+
+Rollups use unique underlying exchange/attempt and cost facts. Count parent/child charges once. Save sums and their denominators, unknown counts, revisions, and an as-of point; never store an unexplained cache percentage. Rebuild rollups when a receipt is corrected. Do not treat a new stream snapshot as another model call.
+
+Metrics exports contain approved low-cardinality labels. Keep sensitive prompts, file paths, user text, and per-record detail in protected evidence, with safe references for drill-down. Retention and erasure apply to findings, manifests, and derived views too. There is no cross-company benchmark dataset in this scope.
+
 ## Additions from the 2026-09-20 review
 
 These rows and rules were missing from the catalog and are now required. The representative SQL below carries the ones that fit its subset; the rest are catalog rules for the full migration.
