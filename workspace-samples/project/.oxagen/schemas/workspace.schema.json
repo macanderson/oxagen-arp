@@ -14,7 +14,7 @@
     "authority": {
       "const": "reference_only"
     },
-    "tenant_id": {
+    "org_id": {
       "$ref": "urn:oxagen:proposed:repo-common:0.2#/$defs/uuid"
     },
     "workspace_id": {
@@ -60,7 +60,7 @@
     "$schema",
     "format_version",
     "authority",
-    "tenant_id",
+    "org_id",
     "workspace_id",
     "repository_id",
     "source_workspace_settings_revision_id",

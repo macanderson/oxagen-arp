@@ -1,0 +1,19 @@
+schema = "context-record/v0.1"
+set_id = "macanderson.oxagen-arp"
+
+[[record]]
+lineage_id = "ctx.arp.no-shipped-feature-claims"
+record_id = "rec_arp_no_shipped_feature_claims_1978d1a9a8a2"
+record_hash = "sha256:1c42ab010ed8aae63b876904dacdce06a8229e455346646975564a29f75e7ed5"
+kind = "rule"
+statement = "Describe every ARP capability as proposed until its adapter passes the tests named in ARP-design.md section 21; never write that a feature is built, shipped, or supported without a passing test to cite."
+origin = "user"
+sharing_scope = "repository"
+status = "active"
+
+[record.provenance]
+source_kind = "document"
+source_uri = "ARP-design.md"
+
+[record.steering]
+force = "must"

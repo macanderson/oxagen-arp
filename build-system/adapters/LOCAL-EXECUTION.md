@@ -20,7 +20,7 @@ Set `local.execution.image` to that exact `sha256:...` image ID, or a preloaded 
 
 `cli.codex.version` and `cli.claude.version` are the exact output of each pinned binary's `--version`. This profile was written against `codex-cli 0.155.1` and `2.1.278 (Claude Code)`. A different version must pass the same help and two-request fixture checks. The configured executable paths are inside the image.
 
-Provider keys stay on the host. A `credentials` entry names either a private file inside `controlDir`, or an environment variable explicitly available to the trusted controller. Agent containers receive neither. Do not put keys in `hook.args`, command arguments, workspace files, or the image.
+Provider keys stay on the host. A `credentials` entry names a private file inside `controlDir` (mode 0600, owned by the controller account). Environment-variable credentials are not supported: the runner starts this adapter with a PATH-only environment, so an `env` entry could never be read. Agent containers receive no credential. Do not put keys in `hook.args`, command arguments, workspace files, or the image.
 
 ## What preflight measures
 
@@ -79,7 +79,7 @@ The container also has an internal GNU timeout, so a controller process crash ca
 
 `recoverOperation(operationId,config)` discovers and stops that exact container. It returns either `{status:'completed',allChildrenStopped:true,receipt}` for a stored, hash-checked completed receipt, or `{status:'unknown',allChildrenStopped:true,reason,ledger}`. A stopped container alone does not prove that no files changed or no provider cost occurred.
 
-`reconcile(operation,config)` checks the original controller request and exact execution profile before it wraps a completed receipt as `{status:'succeeded',operationId,completedReceipt}`. If no operation metadata, budget ledger, or container ever exists, it can return a checked zero-cost no-effect result. Otherwise it returns `status:'unknown'`; it never converts held provider liability into a no-effect retry. The caller must adopt completed receipts through the controller's checked recovery path. Unknown work remains stopped.
+`reconcile(operation,config)` checks the original controller request and exact execution profile before it wraps a completed receipt as `{status:'succeeded',operationId,completedReceipt}`. If no operation metadata, budget ledger, or container ever exists, it can return a checked zero-cost no-effect result. If the container stopped and the broker ledger shows no reservation and no unknown outcome, it returns a `failed` receipt with zero cost and no external effect, which the controller records as a known check failure eligible for bounded retry. This covers a harness that crashed, was denied by the broker, or hit its timeout before any paid call. Otherwise it returns `status:'unknown'`; it never converts held or settled provider liability into a no-effect retry. A settled nonzero charge still needs receipt adoption by an operator. The caller must adopt completed receipts through the controller's checked recovery path. Unknown work remains stopped.
 
 ## Tests and remaining host qualification
 

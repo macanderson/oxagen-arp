@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+/* Brand tokens from ARP-Brand-spec.md. Status colors are the corrected values that clear 4.5:1 on
+   canvas, panel, and raised row in each theme. */
+@theme {
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", var(--font-sans);
+  --font-mono: "Monaspace Neon", ui-monospace, SFMono-Regular, monospace;
+  --color-canvas: #ffffff;
+  --color-panel: #ffffff;
+  --color-raised: #f4f4f5;
+  --color-ink: #09090b;
+  --color-body: #27272a;
+  --color-muted: #62626b;
+  --color-line: #e4e4e7;
+  --color-gold: #d4af37;
+  --color-gold-text: #8a7223;
+  --color-allowed: #2f7d52;
+  --color-approval: #2e6ba8;
+  --color-denied: #9b4526;
+  --color-failed: #992f28;
+  --color-urgent: #ae2540;
+  --color-verified: #1f7676;
+  --color-pending: #62626b;
+}
+
+:root {
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-canvas: #09090b;
+    --color-panel: #18181b;
+    --color-raised: #27272a;
+    --color-ink: #ffffff;
+    --color-body: #e4e4e7;
+    --color-muted: #a1a1aa;
+    --color-line: #27272a;
+    --color-gold-text: #f1ce65;
+    --color-allowed: #57a97c;
+    --color-approval: #5b93d6;
+    --color-denied: #d98a6c;
+    --color-failed: #e8776d;
+    --color-urgent: #e86a80;
+    --color-verified: #3fa2a2;
+    --color-pending: #a1a1aa;
+  }
+}
+:root[data-theme="dark"] {
+  --color-canvas: #09090b;
+  --color-panel: #18181b;
+  --color-raised: #27272a;
+  --color-ink: #ffffff;
+  --color-body: #e4e4e7;
+  --color-muted: #a1a1aa;
+  --color-line: #27272a;
+  --color-gold-text: #f1ce65;
+  --color-allowed: #57a97c;
+  --color-approval: #5b93d6;
+  --color-denied: #d98a6c;
+  --color-failed: #e8776d;
+  --color-urgent: #e86a80;
+  --color-verified: #3fa2a2;
+  --color-pending: #a1a1aa;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-body);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+h1, h2, h3 { font-family: var(--font-display); color: var(--color-ink); }
+.tabular { font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid var(--color-gold); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }

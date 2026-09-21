@@ -10,6 +10,6 @@ This bundle defines a **proposed API**, not a running service. It contains 369 o
 - [Certification blockers](CERTIFICATION-BLOCKERS.md): contracts and runtime tests still required before support can be claimed.
 - [Repo file schema](repo-schemas/workspace.schema.json), [context schema](repo-schemas/context.schema.json), [steering schema](repo-schemas/steering.schema.json), [sync receipt schema](repo-schemas/sync-lock.schema.json) and [run-start receipt schema](repo-schemas/run-start-receipt.schema.json): the separate `.oxagen` file contract.
 
-The HTTP control API, protected service envelopes and bootstrap operations are specified here. Provider-native model wires, MCP, CGP, native hooks and local IPC need their own pinned profiles. A successful API schema check does not prove tool interception, budget enforcement, local data protection, tenant isolation or safe interruption.
+The HTTP control API, protected service envelopes and bootstrap operations are specified here. Provider-native model wires, MCP, CGP, native hooks and local IPC need their own pinned profiles. A successful API schema check does not prove tool interception, budget enforcement, local data protection, org isolation or safe interruption.
 
 Count-account and counter-settlement fields are reserved and return `FEATURE_DISABLED` before any effect until their storage and evidence profile is certified. Monetary budgets use the current proposed contract.

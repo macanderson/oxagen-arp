@@ -1,0 +1,10 @@
+{
+  "contractVersion": "oxagen-local-runtime-v1",
+  "environment": "local",
+  "identity": { "allowAnonymous": false, "createDefaultOwner": false },
+  "dataProtection": { "requireScanReceipt": true, "rawLogging": false },
+  "models": { "enabled": false, "credentialSources": [] },
+  "connectors": { "enabled": false },
+  "storage": { "backend": "s3", "encryptedHostDiskRequired": true },
+  "telemetry": { "externalExportEnabled": false, "safeErrorsOnly": true }
+}

@@ -4,7 +4,7 @@ This is a proposed database design for a new product. It names the records, thei
 
 ## One store owns each fact
 
-The tenant's configured data plane owns its saved records. The web app, reports, API, and local services use that same placement. A private tenant does not quietly send a second copy to a public analytics store.
+The org's configured data plane owns its saved records. The web app, reports, API, and local services use that same placement. A private org does not quietly send a second copy to a public analytics store.
 
 | Store | What it owns | What it does not decide |
 |---|---|---|
@@ -18,21 +18,21 @@ The tenant's configured data plane owns its saved records. The web app, reports,
 
 Keep one writer for a set of shared limits. A workspace, operator, and agent can draw from the same account. Their reservations must commit together. If regions must work apart, assign disjoint prepaid shares. Never promise a global hard cap from eventually consistent totals.
 
-![Tenant, workspace, and canonical IAM records identify people and agents and hold per-record permissions. Runs and governed actions reference these identities. Policy decisions and shared limits reference the exact action. These primary PostgreSQL records use tenant and workspace row-level security plus canonical record grants. Sanitized evidence and a transactional outbox are saved with the work. Large clean evidence files live in a separate encrypted object store through checked references; object storage is not a competing authority or an escape from record access. Outbox workers build graph and search projections from committed records. Source systems such as version control and business services keep authority over their own facts. Checked source bindings retain stable IDs, native versions, permissions, and cleaned data. These also feed the required context graph. A future business ingestion block joins the shared trusted connector receipt to external business records using exact source IDs and versions. The future join never uses a model guess or a fuzzy amount match. Every graph edge and search result still receives record access checks. This drawing groups schema domains rather than depicting each physical table.](diagrams/schema.svg)
+![Org, workspace, and canonical IAM records identify people and agents and hold per-record permissions. Runs and governed actions reference these identities. Policy decisions and shared limits reference the exact action. These primary PostgreSQL records use org and workspace row-level security plus canonical record grants. Sanitized evidence and a transactional outbox are saved with the work. Large clean evidence files live in a separate encrypted object store through checked references; object storage is not a competing authority or an escape from record access. Outbox workers build graph and search projections from committed records. Source systems such as version control and business services keep authority over their own facts. Checked source bindings retain stable IDs, native versions, permissions, and cleaned data. These also feed the required context graph. A future business ingestion block joins the shared trusted connector receipt to external business records using exact source IDs and versions. The future join never uses a model guess or a fuzzy amount match. Every graph edge and search result still receives record access checks. This drawing groups schema domains rather than depicting each physical table.](diagrams/schema.svg)
 
-*Proposed data model. Tenant and identity records anchor runs, actions, policy decisions, and shared limits. PostgreSQL is the primary record store. Clean evidence uses checked file references. The outbox updates graph and search views. Exact receipt links to business records are a future ingestion feature.*
+*Proposed data model. Org and identity records anchor runs, actions, policy decisions, and shared limits. PostgreSQL is the primary record store. Clean evidence uses checked file references. The outbox updates graph and search views. Exact receipt links to business records are a future ingestion feature.*
 
 ## How to read this catalog
 
 A UUID identifies a row. A foreign key, written FK or an arrow, links it to another row. A unique key stops two rows from claiming the same identity. A check constraint rejects an invalid value. Names in code are exact implementation names; the surrounding prose explains why they exist.
 
-Tenant IDs form part of every private key and reference. Workspace links must match too. Human and agent records use the same permission system. Every independently permissioned record links to `protected_objects`; child rows inherit their protected parent's checks. SQL row-level security is an isolation floor. The API must still check the action, record, purpose, and fields.
+Org IDs form part of every private key and reference. Workspace links must match too. Human and agent records use the same permission system. Every independently permissioned record links to `protected_objects`; child rows inherit their protected parent's checks. SQL row-level security is an isolation floor. The API must still check the action, record, purpose, and fields.
 
-Database owners and migration accounts are separate from normal services. End users never receive arbitrary SQL access. A tenant field or database session setting is not a login proof. Only a trusted service sets transaction-local scope from a verified identity and a checked request. A missing scope blocks access.
+Database owners and migration accounts are separate from normal services. End users never receive arbitrary SQL access. An org field or database session setting is not a login proof. Only a trusted service sets transaction-local scope from a verified identity and a checked request. A missing scope blocks access.
 
-The catalog uses a few local markers. **B** gives common tenant, ID, and created-at columns. **W** means workspace scope, **T** tenant scope, and **S** explicitly permits either. **I** means immutable history, **P** a current projection, and **A** an independently protected graph/context record. Each section states any extra fields. NULL scope means deliberately tenant-wide; it never means “skip checks.”
+The catalog uses a few local markers. **B** gives common org, ID, and created-at columns. **W** means workspace scope, **T** org scope, and **S** explicitly permits either. **I** means immutable history, **P** a current projection, and **A** an independently protected graph/context record. Each section states any extra fields. NULL scope means deliberately org-wide; it never means “skip checks.”
 
-All published versions are fixed. Current pointers and projection rows use compare-and-swap versions. Uniqueness is tenant scoped. State words become closed CHECK sets in DDL, not unchecked free text. Large free text, JSON, filenames, and source metadata follow local data protection before they reach any remote store. No schema field is a hidden raw-data archive.
+All published versions are fixed. Current pointers and projection rows use compare-and-swap versions. Uniqueness is org scoped. State words become closed CHECK sets in DDL, not unchecked free text. Large free text, JSON, filenames, and source metadata follow local data protection before they reach any remote store. No schema field is a hidden raw-data archive.
 
 
 ## Authority, policy, and limit schema
@@ -41,95 +41,95 @@ This is a proposed greenfield schema. It does not describe the current app. Post
 
 ### Column rules
 
-`B` below means `tenant_id uuid NOT NULL`, `id uuid NOT NULL`, `created_at timestamptz NOT NULL DEFAULT now()`, and `PRIMARY KEY (tenant_id,id)`. The root `tenants` table instead uses `tenant_id uuid PRIMARY KEY`. Every private foreign key includes `tenant_id`. UUIDs are generated by the trusted caller; no database extension is assumed. A column is NOT NULL unless marked `?`. Required columns have no default unless stated. `?` means nullable, with no default unless stated. `ws?` means `workspace_id uuid? REFERENCES workspaces`; null explicitly means tenant-wide scope, not unknown scope.
+`B` below means `org_id uuid NOT NULL`, `id uuid NOT NULL`, `created_at timestamptz NOT NULL DEFAULT now()`, and `PRIMARY KEY (org_id,id)`. The root `org.organizations` table instead uses `org_id uuid PRIMARY KEY`. Every private foreign key includes `org_id`. UUIDs are generated by the trusted caller; no database extension is assumed. A column is NOT NULL unless marked `?`. Required columns have no default unless stated. `?` means nullable, with no default unless stated. `ws?` means `workspace_id uuid? REFERENCES workspaces`; null explicitly means org-wide scope, not unknown scope.
 
-Money uses `bigint` minor units, currency `char(3)`, and an explicit charge unit. Ratios use integers or `numeric`, never float. Timestamps use `timestamptz`. References to signed evidence point to `evidence_objects`; references to credentials are vault handles only. JSON is reserved for versioned rule ASTs or bounded provider facts, not identities, grants, balances, or relationship keys. Composite references below abbreviate the tenant column, never omit it in DDL. Every UNIQUE claim is tenant-prefixed unless it names the tenant root.
+Money uses `bigint` minor units, currency `char(3)`, and an explicit charge unit. Ratios use integers or `numeric`, never float. Timestamps use `timestamptz`. References to signed evidence point to `evidence_objects`; references to credentials are vault handles only. JSON is reserved for versioned rule ASTs or bounded provider facts, not identities, grants, balances, or relationship keys. Composite references below abbreviate the org column, never omit it in DDL. Every UNIQUE claim is org-prefixed unless it names the org root.
 
-Every permissioned domain record has `object_id uuid NOT NULL UNIQUE (tenant_id,object_id) REFERENCES protected_objects`. It may reuse its record ID. Graph nodes use this same protected-object ID. Shared forward references to `runs`, `scan_receipts`, `evidence_objects`, and connector tables are added when all schema parts are assembled.
+Every permissioned domain record has `object_id uuid NOT NULL UNIQUE (org_id,object_id) REFERENCES protected_objects`. It may reuse its record ID. Graph nodes use this same protected-object ID. Shared forward references to `runs`, `scan_receipts`, `evidence_objects`, and connector tables are added when all schema parts are assembled.
 
-### Tenant and IAM records
+### Org and IAM records
 
 | Table | Columns in addition to B; keys and constraints |
 |---|---|
-| `tenants` | Root: `tenant_id uuid PK`, `name text`, `state text CHECK IN ('provisioning','active','suspended','closing')`, `active_data_plane_binding_id uuid? FK data_plane_bindings`, `created_at timestamptz DEFAULT now()`; active tenants require a binding. |
-| `workspaces` | `object_id uuid`, `name text`, `slug text`, `state text`, `settings_revision bigint DEFAULT 1 CHECK >0`; UNIQUE tenant/slug. |
+| `org.organizations` | Root: `org_id uuid PK`, `name text`, `state text CHECK IN ('provisioning','active','suspended','closing')`, `active_data_plane_binding_id uuid? FK data_plane_bindings`, `created_at timestamptz DEFAULT now()`; active orgs require a binding. |
+| `workspaces` | `object_id uuid`, `name text`, `slug text`, `state text`, `settings_revision bigint DEFAULT 1 CHECK >0`; UNIQUE org/slug. |
 | `protected_objects` | `ws?`, `kind text`, `deleted_at timestamptz?`; kind is a controlled registry value. Parent workspace FK may be deferred for workspace creation. |
 | `data_plane_bindings` | `object_id uuid`, `name text`, `active_revision_id uuid?`, `state text`; the active pointer must reference this binding's revision. |
-| `data_plane_revisions` | `binding_id uuid FK`, `revision bigint CHECK >0`, `placement text CHECK IN ('saas','hybrid','private')`, `region text`, `namespace text`, `service_principal_id uuid FK`, `key_vault_ref text`, `endpoint_registry_ref text`, `activated_at timestamptz?`; UNIQUE tenant/binding/revision and tenant/binding/id. No embedded URL credentials. |
-| `principals` | `object_id uuid`, `kind text CHECK IN ('human','agent','service','plugin')`, `display_name text`, `state text`, `owner_principal_id uuid? FK self`, `revoked_at timestamptz?`; tenant-wide identities, scope comes from grants. |
-| `principal_auth_bindings` | `principal_id uuid FK`, `idp_connection_id uuid? FK idp_connections`, `auth_kind text`, `issuer text`, `subject text`, `credential_vault_ref text?`, `valid_from timestamptz`, `expires_at timestamptz?`, `revoked_at timestamptz?`; UNIQUE tenant/auth_kind/issuer/subject. No bearer tokens or provider keys. |
-| `idp_connections` | `object_id uuid`, `issuer text`, `protocol text CHECK IN ('oidc','saml')`, `directory_vault_ref text?`, `state text`; UNIQUE tenant/issuer. |
-| `groups` | `object_id uuid`, `name text`, `source_idp_id uuid? FK idp_connections`, `external_key text?`; external key requires IdP; UNIQUE tenant/IdP/external key when present. |
-| `group_memberships` | `group_id uuid FK`, `principal_id uuid FK`, `source_revision text`, `verified_at timestamptz`, `revoked_at timestamptz?`; UNIQUE tenant/group/principal. No nested groups in this profile. |
-| `permissions` | `name text`, `description text`; UNIQUE tenant/name. Examples: `tool.invoke`, `context.read`, `run.pause`. |
-| `roles` | `object_id uuid`, `name text`, `revision bigint DEFAULT 1 CHECK >0`; UNIQUE tenant/name. |
-| `role_permissions` | `role_id uuid FK`, `permission_id uuid FK`; UNIQUE tenant/role/permission. |
-| `role_grants` | `principal_id uuid? FK`, `group_id uuid? FK groups`, `role_id uuid FK`, `scope_object_id uuid FK`, `granted_by uuid FK principals`, `valid_from timestamptz`, `expires_at timestamptz?`, `revoked_at timestamptz?`; interval check. Exactly one principal/group is set. Scope is an explicit tenant/workspace/resource object; group members inherit this same IAM grant. |
+| `data_plane_revisions` | `binding_id uuid FK`, `revision bigint CHECK >0`, `placement text CHECK IN ('saas','hybrid','private')`, `region text`, `namespace text`, `service_principal_id uuid FK`, `key_vault_ref text`, `endpoint_registry_ref text`, `activated_at timestamptz?`; UNIQUE org/binding/revision and org/binding/id. No embedded URL credentials. |
+| `principals` | `object_id uuid`, `kind text CHECK IN ('human','agent','service','plugin')`, `display_name text`, `state text`, `owner_principal_id uuid? FK self`, `revoked_at timestamptz?`; org-wide identities, scope comes from grants. |
+| `principal_auth_bindings` | `principal_id uuid FK`, `idp_connection_id uuid? FK idp_connections`, `auth_kind text`, `issuer text`, `subject text`, `credential_vault_ref text?`, `valid_from timestamptz`, `expires_at timestamptz?`, `revoked_at timestamptz?`; UNIQUE org/auth_kind/issuer/subject. No bearer tokens or provider keys. |
+| `idp_connections` | `object_id uuid`, `issuer text`, `protocol text CHECK IN ('oidc','saml')`, `directory_vault_ref text?`, `state text`; UNIQUE org/issuer. |
+| `groups` | `object_id uuid`, `name text`, `source_idp_id uuid? FK idp_connections`, `external_key text?`; external key requires IdP; UNIQUE org/IdP/external key when present. |
+| `group_memberships` | `group_id uuid FK`, `principal_id uuid FK`, `source_revision text`, `verified_at timestamptz`, `revoked_at timestamptz?`; UNIQUE org/group/principal. No nested groups in this profile. |
+| `permissions` | `name text`, `description text`; UNIQUE org/name. Examples: `tool.invoke`, `context.read`, `run.pause`. |
+| `roles` | `object_id uuid`, `name text`, `revision bigint DEFAULT 1 CHECK >0`; UNIQUE org/name. |
+| `role_permissions` | `role_id uuid FK`, `permission_id uuid FK`; UNIQUE org/role/permission. |
+| `role_grants` | `principal_id uuid? FK`, `group_id uuid? FK groups`, `role_id uuid FK`, `scope_object_id uuid FK`, `granted_by uuid FK principals`, `valid_from timestamptz`, `expires_at timestamptz?`, `revoked_at timestamptz?`; interval check. Exactly one principal/group is set. Scope is an explicit org/workspace/resource object; group members inherit this same IAM grant. |
 | `record_grants` | `principal_id uuid FK`, `permission_id uuid FK`, `object_id uuid FK`, `granted_by uuid FK principals`, `valid_from timestamptz`, `expires_at timestamptz?`, `revoked_at timestamptz?`, `authority_epoch bigint CHECK >0`. |
 | `delegations` | `grantor_id uuid FK principals`, `grantee_id uuid FK principals`, `parent_delegation_id uuid? FK self`, `scope_object_id uuid FK`, `permission_id uuid FK`, `valid_from timestamptz`, `expires_at timestamptz`, `revoked_at timestamptz?`, `authority_epoch bigint`; expiry must exceed start. Validate acyclic, narrower delegation in the authority transaction. |
 | `authority_epochs` | `scope_object_id uuid FK UNIQUE`, `epoch bigint DEFAULT 1 CHECK >0`, `changed_at timestamptz DEFAULT now()`, `reason_code text`; every dispatch compares the relevant current epochs. |
 
-Index all grant lookups on `(tenant_id,principal_id,scope/object_id)`, active expiries, and reverse foreign keys. Expiry is evaluated with the clock, not a time-dependent partial-index predicate. Revocation and directory membership changes close admission and advance scope epochs before dependent projections update.
+Index all grant lookups on `(org_id,principal_id,scope/object_id)`, active expiries, and reverse foreign keys. Expiry is evaluated with the clock, not a time-dependent partial-index predicate. Revocation and directory membership changes close admission and advance scope epochs before dependent projections update.
 
 ### Definitions and policy records
 
 | Table | Columns in addition to B; keys and constraints |
 |---|---|
 | `persona_definitions` | `object_id uuid`, `name text`, `owner_id uuid FK principals`, `state text`. |
-| `persona_versions` | `persona_id uuid FK`, `version bigint`, `instruction_object_id uuid FK evidence_objects`, `published_by uuid FK principals`, `published_at timestamptz`; UNIQUE tenant/persona/version. Immutable. |
+| `persona_versions` | `persona_id uuid FK`, `version bigint`, `instruction_object_id uuid FK evidence_objects`, `published_by uuid FK principals`, `published_at timestamptz`; UNIQUE org/persona/version. Immutable. |
 | `agent_definitions` | `object_id uuid`, `name text`, `agent_principal_id uuid FK principals`, `owner_id uuid FK principals`, `state text`; agent principal kind must be checked on write. |
-| `agent_releases` | `agent_id uuid FK`, `version bigint`, `persona_version_id uuid FK`, `model_profile_id uuid FK protected_objects`, `instruction_object_id uuid FK evidence_objects`, `published_by uuid FK principals`; UNIQUE tenant/agent/version. Immutable. |
-| `agent_modes` | `release_id uuid FK`, `name text`, `persona_version_id uuid FK`, `context_view_id uuid? FK protected_objects`; UNIQUE tenant/release/name. Mode selection never creates a grant. |
+| `agent_releases` | `agent_id uuid FK`, `version bigint`, `persona_version_id uuid FK`, `model_profile_id uuid FK protected_objects`, `instruction_object_id uuid FK evidence_objects`, `published_by uuid FK principals`; UNIQUE org/agent/version. Immutable. |
+| `agent_modes` | `release_id uuid FK`, `name text`, `persona_version_id uuid FK`, `context_view_id uuid? FK protected_objects`; UNIQUE org/release/name. Mode selection never creates a grant. |
 | `skill_definitions` | `object_id uuid`, `name text`, `publisher_id uuid FK principals`, `state text`. |
-| `skill_versions` | `skill_id uuid FK`, `version bigint`, `artifact_id uuid FK evidence_objects`, `manifest_id uuid FK evidence_objects`; UNIQUE tenant/skill/version. |
-| `agent_release_skills` | `release_id uuid FK`, `skill_version_id uuid FK`, `ordinal integer CHECK >=0`; UNIQUE tenant/release/skill and tenant/release/ordinal. |
+| `skill_versions` | `skill_id uuid FK`, `version bigint`, `artifact_id uuid FK evidence_objects`, `manifest_id uuid FK evidence_objects`; UNIQUE org/skill/version. |
+| `agent_release_skills` | `release_id uuid FK`, `skill_version_id uuid FK`, `ordinal integer CHECK >=0`; UNIQUE org/release/skill and org/release/ordinal. |
 | `agent_tool_rules` | `release_id uuid FK`, `mode_id uuid? FK`, `tool_definition_id uuid FK tool_definitions`, `allowed_binding_id uuid? FK tool_bindings`, `effect text CHECK IN ('allow','deny')`; deny requires null binding and covers all versions. Allow requires an approved binding belonging to that definition. Partial unique indexes distinguish null/non-null mode; composite FK proves mode belongs to release. |
-| `policy_definitions` | `object_id uuid`, `name text`, `owner_id uuid FK principals`, `state text`; UNIQUE tenant/name. |
-| `policy_templates` | `object_id uuid`, `name text`, `version bigint`, `form_schema_id uuid FK evidence_objects`, `compiler_version text`; UNIQUE tenant/name/version. Simple forms need no Rego knowledge. |
-| `policy_revisions` | `object_id uuid`, `policy_id uuid FK policy_definitions`, `revision bigint`, `template_id uuid? FK`, `rule_ast jsonb`, `compiled_object_id uuid FK evidence_objects`, `author_id uuid FK principals`, `proof_object_id uuid FK evidence_objects`; UNIQUE tenant/policy_id/revision. Validate AST schema and limits. |
-| `policy_thresholds` | `object_id uuid`, `policy_revision_id uuid FK`, `key text`, `capability text`, `kind text CHECK IN ('absolute_deny','hard_cap','approval_threshold')`, `metric text? CHECK IN ('money','ratio','count')`, `limit_minor bigint?`, `currency char(3)?`, `ratio_numerator bigint?`, `ratio_denominator bigint?`, `count_limit bigint?`, `approver_permission_id uuid? FK permissions`; UNIQUE tenant/revision/key. Exactly one valid nonnegative metric form for a cap; absolute deny has none. Money requires currency; ratios require 0≤numerator≤denominator and denominator>0. Only approval thresholds name an approver permission. |
+| `policy_definitions` | `object_id uuid`, `name text`, `owner_id uuid FK principals`, `state text`; UNIQUE org/name. |
+| `policy_templates` | `object_id uuid`, `name text`, `version bigint`, `form_schema_id uuid FK evidence_objects`, `compiler_version text`; UNIQUE org/name/version. Simple forms need no Rego knowledge. |
+| `policy_revisions` | `object_id uuid`, `policy_id uuid FK policy_definitions`, `revision bigint`, `template_id uuid? FK`, `rule_ast jsonb`, `compiled_object_id uuid FK evidence_objects`, `author_id uuid FK principals`, `proof_object_id uuid FK evidence_objects`; UNIQUE org/policy_id/revision. Validate AST schema and limits. |
+| `policy_thresholds` | `object_id uuid`, `policy_revision_id uuid FK`, `key text`, `capability text`, `kind text CHECK IN ('absolute_deny','hard_cap','approval_threshold')`, `metric text? CHECK IN ('money','ratio','count')`, `limit_minor bigint?`, `currency char(3)?`, `ratio_numerator bigint?`, `ratio_denominator bigint?`, `count_limit bigint?`, `approver_permission_id uuid? FK permissions`; UNIQUE org/revision/key. Exactly one valid nonnegative metric form for a cap; absolute deny has none. Money requires currency; ratios require 0≤numerator≤denominator and denominator>0. Only approval thresholds name an approver permission. |
 | `policy_activations` | `policy_revision_id uuid FK`, `scope_object_id uuid FK`, `effective_at timestamptz`, `expires_at timestamptz?`, `revoked_at timestamptz?`, `activation_epoch bigint`; interval check. |
-| `policy_target_receipts` | `activation_id uuid FK`, `target_object_id uuid FK`, `installed_revision_id uuid FK policy_revisions`, `target_epoch bigint`, `status text`, `observed_at timestamptz`, `proof_object_id uuid FK evidence_objects`; UNIQUE tenant/activation/target/epoch. |
+| `policy_target_receipts` | `activation_id uuid FK`, `target_object_id uuid FK`, `installed_revision_id uuid FK policy_revisions`, `target_epoch bigint`, `status text`, `observed_at timestamptz`, `proof_object_id uuid FK evidence_objects`; UNIQUE org/activation/target/epoch. |
 | `approval_requests` | `object_id uuid`, `action_id uuid FK governed_actions`, `requester_id uuid FK principals`, `policy_revision_id uuid FK`, `facts_object_id uuid FK evidence_objects`, `state text`, `expires_at timestamptz`, `expected_action_version bigint`. |
 | `exception_grants` | `approval_request_id uuid FK`, `approver_id uuid FK principals`, `threshold_id uuid FK policy_thresholds`, `action_id uuid FK`, `max_amount_minor bigint CHECK >=0`, `currency char(3)`, `expires_at timestamptz`, `revoked_at timestamptz?`, `proof_object_id uuid FK evidence_objects`; only an explicitly overridable threshold qualifies. |
 
-Use normalized join rows for release dependencies and required permission sets. Decision/action/attempt and release/mode links use matching composite unique keys and foreign keys, not unrelated same-tenant IDs. Signed exception proofs bind the approved fact version and exact threshold. Published versions are append-only; a new version replaces editing. Policy activation and target receipt differ: publishing does not prove a device applied the rule.
+Use normalized join rows for release dependencies and required permission sets. Decision/action/attempt and release/mode links use matching composite unique keys and foreign keys, not unrelated same-org IDs. Signed exception proofs bind the approved fact version and exact threshold. Published versions are append-only; a new version replaces editing. Policy activation and target receipt differ: publishing does not prove a device applied the rule.
 
 ### Governed execution and accounting
 
 | Table | Columns in addition to B; keys and constraints |
 |---|---|
-| `governed_actions` | `object_id uuid`, `ws?`, `context_kind text CHECK IN ('run','workspace_admin','tenant_admin')`, `run_id uuid? FK runs`, `principal_id uuid FK`, `capability text`, `state text`, `version bigint DEFAULT 1 CHECK >0`, `input_object_id uuid FK evidence_objects`, `scan_receipt_id uuid FK scan_receipts`; state includes proposed, denied, approved, running, completed, failed, unknown. Run context requires workspace/run; workspace admin requires workspace and null run; tenant admin requires both null. Human/service authority is still checked. |
-| `action_attempts` | `action_id uuid FK`, `attempt_no integer CHECK >0`, `state text`, `provider_idempotency_key text?`, `started_at timestamptz?`, `finished_at timestamptz?`, `receipt_object_id uuid? FK evidence_objects`; UNIQUE tenant/action/attempt_no and tenant/action/id. |
+| `governed_actions` | `object_id uuid`, `ws?`, `context_kind text CHECK IN ('run','workspace_admin','org_admin')`, `run_id uuid? FK runs`, `principal_id uuid FK`, `capability text`, `state text`, `version bigint DEFAULT 1 CHECK >0`, `input_object_id uuid FK evidence_objects`, `scan_receipt_id uuid FK scan_receipts`; state includes proposed, denied, approved, running, completed, failed, unknown. Run context requires workspace/run; workspace admin requires workspace and null run; org admin requires both null. Human/service authority is still checked. |
+| `action_attempts` | `action_id uuid FK`, `attempt_no integer CHECK >0`, `state text`, `provider_idempotency_key text?`, `started_at timestamptz?`, `finished_at timestamptz?`, `receipt_object_id uuid? FK evidence_objects`; UNIQUE org/action/attempt_no and org/action/id. |
 | `execution_owners` | `run_id uuid FK UNIQUE`, `runtime_principal_id uuid FK`, `owner_epoch bigint CHECK >0`, `lease_expires_at timestamptz`, `version bigint`; takeover advances epoch before new dispatch. |
-| `authorization_decisions` | `action_id uuid FK`, `attempt_id uuid FK`, `caller_id uuid FK principals`, `outcome text CHECK IN ('allow','deny','approval_required')`, `entitlement_model_revision text`, `facts_object_id uuid FK evidence_objects`, `reason_code text`, `decided_at timestamptz`; UNIQUE tenant/action/attempt/id; append-only. |
-| `decision_policy_evaluations` | `decision_id uuid FK`, `activation_id uuid FK`, `policy_revision_id uuid FK`, `scope_object_id uuid FK`, `activation_epoch bigint`, `outcome text CHECK IN ('allow','deny','not_applicable','error')`, `reason_code text`; UNIQUE tenant/decision/activation. Composite activation/revision FK; retain every evaluated policy, not only the last one. |
-| `action_authorizations` | `action_id uuid`, `attempt_id uuid`, `decision_id uuid FK`, `audience_principal_id uuid FK`, `request_digest bytea CHECK length=32`, `scan_receipt_id uuid FK`, `run_control_epoch bigint? CHECK >=0`, `owner_epoch bigint? CHECK >0`, `scope_count integer CHECK >0`, `expires_at timestamptz`, `consumed_at timestamptz?`, `proof_object_id uuid FK evidence_objects`; UNIQUE tenant/attempt; composite FKs action/attempt and action/attempt/decision match the same decision. Run authorizations require both run/owner epochs; admin actions require neither. Only cleaned wire content is hashed. |
-| `authorization_scope_epochs` | `authorization_id uuid FK`, `scope_object_id uuid FK authority_epochs(scope_object_id)`, `observed_epoch bigint CHECK >0`; UNIQUE tenant/authorization/scope. The authority, never the client, resolves the complete scope set. |
-| `model_price_schedules` | `object_id uuid`, `model_release_id uuid FK model_releases`, `version text`, `currency char(3)`, `effective_from timestamptz`, `effective_until timestamptz?`, `source_evidence_id uuid FK evidence_objects`; UNIQUE tenant/model/version. |
-| `model_price_rates` | `schedule_id uuid FK`, `dimension text`, `price_numerator_minor bigint CHECK >=0`, `price_denominator_units bigint CHECK >0`, `rounding_mode text`; UNIQUE tenant/schedule/dimension. Dimensions distinguish input/output/cache and other charges. |
-| `model_usage_receipts` | `exchange_id uuid FK model_exchanges`, `schedule_id uuid FK`, `provider_receipt_key text`, `observed_at timestamptz`, `evidence_id uuid FK evidence_objects`, `actual_minor bigint? CHECK >=0`, `currency char(3)`; UNIQUE tenant/exchange/provider key. Null charge means unresolved, not free. |
-| `model_usage_lines` | `receipt_id uuid FK`, `rate_id uuid FK model_price_rates`, `quantity numeric(38,0) CHECK >=0`; UNIQUE tenant/receipt/rate. Rate must belong to receipt schedule. |
+| `authorization_decisions` | `action_id uuid FK`, `attempt_id uuid FK`, `caller_id uuid FK principals`, `outcome text CHECK IN ('allow','deny','approval_required')`, `entitlement_model_revision text`, `facts_object_id uuid FK evidence_objects`, `reason_code text`, `decided_at timestamptz`; UNIQUE org/action/attempt/id; append-only. |
+| `decision_policy_evaluations` | `decision_id uuid FK`, `activation_id uuid FK`, `policy_revision_id uuid FK`, `scope_object_id uuid FK`, `activation_epoch bigint`, `outcome text CHECK IN ('allow','deny','not_applicable','error')`, `reason_code text`; UNIQUE org/decision/activation. Composite activation/revision FK; retain every evaluated policy, not only the last one. |
+| `action_authorizations` | `action_id uuid`, `attempt_id uuid`, `decision_id uuid FK`, `audience_principal_id uuid FK`, `request_digest bytea CHECK length=32`, `scan_receipt_id uuid FK`, `run_control_epoch bigint? CHECK >=0`, `owner_epoch bigint? CHECK >0`, `scope_count integer CHECK >0`, `expires_at timestamptz`, `consumed_at timestamptz?`, `proof_object_id uuid FK evidence_objects`; UNIQUE org/attempt; composite FKs action/attempt and action/attempt/decision match the same decision. Run authorizations require both run/owner epochs; admin actions require neither. Only cleaned wire content is hashed. |
+| `authorization_scope_epochs` | `authorization_id uuid FK`, `scope_object_id uuid FK authority_epochs(scope_object_id)`, `observed_epoch bigint CHECK >0`; UNIQUE org/authorization/scope. The authority, never the client, resolves the complete scope set. |
+| `model_price_schedules` | `object_id uuid`, `model_release_id uuid FK model_releases`, `version text`, `currency char(3)`, `effective_from timestamptz`, `effective_until timestamptz?`, `source_evidence_id uuid FK evidence_objects`; UNIQUE org/model/version. |
+| `model_price_rates` | `schedule_id uuid FK`, `dimension text`, `price_numerator_minor bigint CHECK >=0`, `price_denominator_units bigint CHECK >0`, `rounding_mode text`; UNIQUE org/schedule/dimension. Dimensions distinguish input/output/cache and other charges. |
+| `model_usage_receipts` | `exchange_id uuid FK model_exchanges`, `schedule_id uuid FK`, `provider_receipt_key text`, `observed_at timestamptz`, `evidence_id uuid FK evidence_objects`, `actual_minor bigint? CHECK >=0`, `currency char(3)`; UNIQUE org/exchange/provider key. Null charge means unresolved, not free. |
+| `model_usage_lines` | `receipt_id uuid FK`, `rate_id uuid FK model_price_rates`, `quantity numeric(38,0) CHECK >=0`; UNIQUE org/receipt/rate. Rate must belong to receipt schedule. |
 | `fx_quotes` | `object_id uuid`, `base_currency char(3)`, `quote_currency char(3)`, `rate_numerator numeric(38,0) CHECK >0`, `rate_denominator numeric(38,0) CHECK >0`, `valid_until timestamptz`, `source_evidence_id uuid FK evidence_objects`; fixed, versioned quotes only. |
 | `settlement_sources` | `kind text CHECK IN ('model','connector','adjustment')`, `model_usage_receipt_id uuid? FK`, `connector_receipt_id uuid? FK`, `adjustment_action_id uuid? FK governed_actions`, `evidence_id uuid FK`; exactly one source matches kind; each nonnull source has a partial unique index. This identifies evidence, not the underlying charge. |
-| `financial_sources` | `object_id uuid`, `kind text CHECK IN ('model','connector')`, `provider_namespace text`, `canonical_account_key text`; UNIQUE tenant/kind/provider-namespace/account. This stable registry identity survives route, key, and deployment rotation. |
+| `financial_sources` | `object_id uuid`, `kind text CHECK IN ('model','connector')`, `provider_namespace text`, `canonical_account_key text`; UNIQUE org/kind/provider-namespace/account. This stable registry identity survives route, key, and deployment rotation. |
 | `financial_source_bindings` | `source_id uuid FK financial_sources`, `model_provider_id uuid? FK model_providers`, `connector_deployment_id uuid? FK connector_deployments`, `external_account_key text`, `valid_from timestamptz`, `revoked_at timestamptz?`; exactly one provider/deployment matches source kind. Partial UNIQUE provider/account or deployment/account while unrevoked. Authorized binding changes preserve historical links to the same source; late receipts resolve through their original binding. |
-| `financial_effects` | `object_id uuid`, `source_id uuid FK financial_sources`, `kind text CHECK IN ('model_charge','refund')`, `external_effect_id text`, `origin text CHECK IN ('oxagen','external','unknown')`, `action_id uuid? FK governed_actions`, `currency char(3)`; UNIQUE tenant/source/kind/external-effect. Oxagen origin requires a proved action; external/unknown origin requires NULL until an authorized correlation transition. Identity is source-confirmed; equal amounts or times cannot establish it. |
-| `financial_effect_revisions` | `effect_id uuid FK financial_effects`, `source_revision_key text`, `source_id uuid FK settlement_sources`, `total_minor bigint CHECK >=0`, `observed_at timestamptz`, `supersedes_id uuid? FK self`; UNIQUE tenant/effect/source-revision and tenant/effect/id. Immutable; prior revision must belong to this effect. Total is the confirmed cumulative value, not a second debit. |
-| `financial_effect_observations` | `effect_revision_id uuid FK financial_effect_revisions`, `source_id uuid FK settlement_sources`; UNIQUE tenant/effect-revision/source. Many receipts can prove one financial effect revision. |
-| `limit_definitions` | `object_id uuid`, `logical_key text`, `capability text`, `state text CHECK IN ('active','retired')`; UNIQUE tenant/logical-key. Stable identity survives policy revisions, renames, and agent release changes. |
-| `limit_definition_terms` | `definition_id uuid FK limit_definitions`, `policy_revision_id uuid FK policy_revisions`, `threshold_id uuid FK policy_thresholds`, `effective_at timestamptz`; UNIQUE tenant/definition/policy-revision/threshold. Prove threshold belongs to revision; immutable approved term history. |
-| `limit_accounts` | `object_id uuid`, `ws?`, `definition_id uuid FK limit_definitions`, `scope_object_id uuid FK`, `capability text`, `currency char(3)`, `charge_unit text`, `rule_revision_id uuid FK`, `threshold_id uuid? FK policy_thresholds`, `cap_kind text CHECK IN ('fixed','ratio')`, `cap_minor bigint?`, `ratio_numerator bigint?`, `ratio_denominator bigint?`, `period_kind text`, `timezone_name text`, `event_basis text`, `state text`; UNIQUE tenant/definition/workspace/scope/currency/charge-unit NULLS NOT DISTINCT. NULL workspace is an explicit tenant-wide allowance; a named workspace is a distinct narrowing account. Own protected-object scope must match. Exactly one valid cap form; current terms must belong to the definition. |
-| `limit_periods` | `account_id uuid FK`, `cap_fact_id uuid? FK limit_facts`, `period_start timestamptz`, `period_end timestamptz`, `effective_cap_minor bigint CHECK >=0`, `used_minor bigint DEFAULT 0 CHECK >=0`, `held_minor bigint DEFAULT 0 CHECK >=0`, `version bigint DEFAULT 1`, `frozen boolean DEFAULT false`; UNIQUE tenant/account/start, end>start. Ratio periods require a pinned fact for that account; cap creation verifies the exact calculation. |
-| `limit_facts` | `account_id uuid FK`, `source_connector_id uuid FK connectors`, `source_receipt_id uuid FK connector_receipts`, `subject_object_id uuid FK protected_objects`, `eligible_amount_minor bigint CHECK >=0`, `currency char(3)`, `source_version text`, `observed_at timestamptz`; UNIQUE tenant/account/id; append-only authoritative denominator/history evidence. |
-| `limit_holds` | `action_id uuid FK`, `attempt_id uuid FK`, `state text CHECK IN ('held','settled','released','unknown')`, `expires_at timestamptz?`; UNIQUE tenant/attempt. Expiry does not release unknown liability. |
-| `limit_reservations` | `hold_id uuid FK`, `period_id uuid FK`, `amount_minor bigint CHECK >0`, `currency char(3)`, `fx_quote_id uuid? FK fx_quotes`, `price_schedule_id uuid? FK model_price_schedules`; UNIQUE tenant/hold/period. Currency must match the period account. One hold spans all applicable buckets. |
-| `limit_ledger_entries` | `period_id uuid FK`, `hold_id uuid? FK`, `entry_kind text`, `held_delta bigint`, `used_delta bigint`, `source_event_id uuid`, `posted_at timestamptz DEFAULT now()`, `reason_object_id uuid? FK evidence_objects`; UNIQUE tenant/period/source_event. Append-only. |
+| `financial_effects` | `object_id uuid`, `source_id uuid FK financial_sources`, `kind text CHECK IN ('model_charge','refund')`, `external_effect_id text`, `origin text CHECK IN ('oxagen','external','unknown')`, `action_id uuid? FK governed_actions`, `currency char(3)`; UNIQUE org/source/kind/external-effect. Oxagen origin requires a proved action; external/unknown origin requires NULL until an authorized correlation transition. Identity is source-confirmed; equal amounts or times cannot establish it. |
+| `financial_effect_revisions` | `effect_id uuid FK financial_effects`, `source_revision_key text`, `source_id uuid FK settlement_sources`, `total_minor bigint CHECK >=0`, `observed_at timestamptz`, `supersedes_id uuid? FK self`; UNIQUE org/effect/source-revision and org/effect/id. Immutable; prior revision must belong to this effect. Total is the confirmed cumulative value, not a second debit. |
+| `financial_effect_observations` | `effect_revision_id uuid FK financial_effect_revisions`, `source_id uuid FK settlement_sources`; UNIQUE org/effect-revision/source. Many receipts can prove one financial effect revision. |
+| `limit_definitions` | `object_id uuid`, `logical_key text`, `capability text`, `state text CHECK IN ('active','retired')`; UNIQUE org/logical-key. Stable identity survives policy revisions, renames, and agent release changes. |
+| `limit_definition_terms` | `definition_id uuid FK limit_definitions`, `policy_revision_id uuid FK policy_revisions`, `threshold_id uuid FK policy_thresholds`, `effective_at timestamptz`; UNIQUE org/definition/policy-revision/threshold. Prove threshold belongs to revision; immutable approved term history. |
+| `limit_accounts` | `object_id uuid`, `ws?`, `definition_id uuid FK limit_definitions`, `scope_object_id uuid FK`, `capability text`, `currency char(3)`, `charge_unit text`, `rule_revision_id uuid FK`, `threshold_id uuid? FK policy_thresholds`, `cap_kind text CHECK IN ('fixed','ratio')`, `cap_minor bigint?`, `ratio_numerator bigint?`, `ratio_denominator bigint?`, `period_kind text`, `timezone_name text`, `event_basis text`, `state text`; UNIQUE org/definition/workspace/scope/currency/charge-unit NULLS NOT DISTINCT. NULL workspace is an explicit org-wide allowance; a named workspace is a distinct narrowing account. Own protected-object scope must match. Exactly one valid cap form; current terms must belong to the definition. |
+| `limit_periods` | `account_id uuid FK`, `cap_fact_id uuid? FK limit_facts`, `period_start timestamptz`, `period_end timestamptz`, `effective_cap_minor bigint CHECK >=0`, `used_minor bigint DEFAULT 0 CHECK >=0`, `held_minor bigint DEFAULT 0 CHECK >=0`, `version bigint DEFAULT 1`, `frozen boolean DEFAULT false`; UNIQUE org/account/start, end>start. Ratio periods require a pinned fact for that account; cap creation verifies the exact calculation. |
+| `limit_facts` | `account_id uuid FK`, `source_connector_id uuid FK connectors`, `source_receipt_id uuid FK connector_receipts`, `subject_object_id uuid FK protected_objects`, `eligible_amount_minor bigint CHECK >=0`, `currency char(3)`, `source_version text`, `observed_at timestamptz`; UNIQUE org/account/id; append-only authoritative denominator/history evidence. |
+| `limit_holds` | `action_id uuid FK`, `attempt_id uuid FK`, `state text CHECK IN ('held','settled','released','unknown')`, `expires_at timestamptz?`; UNIQUE org/attempt. Expiry does not release unknown liability. |
+| `limit_reservations` | `hold_id uuid FK`, `period_id uuid FK`, `amount_minor bigint CHECK >0`, `currency char(3)`, `fx_quote_id uuid? FK fx_quotes`, `price_schedule_id uuid? FK model_price_schedules`; UNIQUE org/hold/period. Currency must match the period account. One hold spans all applicable buckets. |
+| `limit_ledger_entries` | `period_id uuid FK`, `hold_id uuid? FK`, `entry_kind text`, `held_delta bigint`, `used_delta bigint`, `source_event_id uuid`, `posted_at timestamptz DEFAULT now()`, `reason_object_id uuid? FK evidence_objects`; UNIQUE org/period/source_event. Append-only. |
 | `limit_settlements` | `hold_id uuid FK UNIQUE`, `effect_revision_id uuid FK financial_effect_revisions`, `source_id uuid FK settlement_sources`, `source_actual_minor bigint CHECK >=0`, `source_currency char(3)`, `settled_at timestamptz`; hold/action must match the effect's nonnull action. Amount/currency and source observation must match the revision and its trusted evidence. Several reconciled retry holds may name the same effect, but debit deduplication occurs per account below. |
-| `financial_effect_account_states` | `effect_id uuid FK financial_effects`, `account_id uuid FK limit_accounts`, `period_id uuid FK limit_periods`, `last_revision_id uuid FK financial_effect_revisions`, `posted_minor bigint CHECK >=0`, `version bigint DEFAULT 1 CHECK >0`; UNIQUE tenant/effect/account. Lock with the account; revision must belong to effect and period to account. This projection records the charge already applied. |
-| `financial_effect_postings` | `effect_revision_id uuid FK financial_effect_revisions`, `account_id uuid FK limit_accounts`, `ledger_entry_id uuid FK limit_ledger_entries`, `fx_quote_id uuid? FK fx_quotes`, `used_delta bigint`; UNIQUE tenant/effect-revision/account and tenant/ledger-entry. Immutable; first debit or later correction only. Ledger period and currency must match the account state; the approved pinned FX/rounding rule computes the difference. |
-| `idempotency_keys` | `principal_id uuid FK`, `operation text`, `key text`, `request_digest bytea CHECK length=32`, `response_object_id uuid? FK protected_objects`, `state text`, `expires_at timestamptz`; UNIQUE tenant/principal/operation/key. Expiring an API key cannot discard live financial deduplication. |
-| `outbox_events` | `aggregate_object_id uuid FK protected_objects`, `aggregate_version bigint`, `event_type text`, `payload_object_id uuid FK evidence_objects`, `available_at timestamptz DEFAULT now()`, `published_at timestamptz?`, `attempt_count integer DEFAULT 0`; UNIQUE tenant/aggregate/version/event_type. |
+| `financial_effect_account_states` | `effect_id uuid FK financial_effects`, `account_id uuid FK limit_accounts`, `period_id uuid FK limit_periods`, `last_revision_id uuid FK financial_effect_revisions`, `posted_minor bigint CHECK >=0`, `version bigint DEFAULT 1 CHECK >0`; UNIQUE org/effect/account. Lock with the account; revision must belong to effect and period to account. This projection records the charge already applied. |
+| `financial_effect_postings` | `effect_revision_id uuid FK financial_effect_revisions`, `account_id uuid FK limit_accounts`, `ledger_entry_id uuid FK limit_ledger_entries`, `fx_quote_id uuid? FK fx_quotes`, `used_delta bigint`; UNIQUE org/effect-revision/account and org/ledger-entry. Immutable; first debit or later correction only. Ledger period and currency must match the account state; the approved pinned FX/rounding rule computes the difference. |
+| `idempotency_keys` | `principal_id uuid FK`, `operation text`, `key text`, `request_digest bytea CHECK length=32`, `response_object_id uuid? FK protected_objects`, `state text`, `expires_at timestamptz`; UNIQUE org/principal/operation/key. Expiring an API key cannot discard live financial deduplication. |
+| `outbox_events` | `aggregate_object_id uuid FK protected_objects`, `aggregate_version bigint`, `event_type text`, `payload_object_id uuid FK evidence_objects`, `available_at timestamptz DEFAULT now()`, `published_at timestamptz?`, `attempt_count integer DEFAULT 0`; UNIQUE org/aggregate/version/event_type. |
 
 Dispatch compares all recorded IAM scope epochs, the run control epoch (`runs.current_epoch`), and the owner fence (`execution_owners.owner_epoch`) independently. A newer owner does not erase a pause, and an unchanged run epoch does not preserve revoked grants. Validate scope completeness before single-use consumption.
 
@@ -147,24 +147,24 @@ One authority database transaction locks the action, then all applicable account
 
 Settlement locks the same rows, verifies a unique model/connector/adjustment source, replaces held exposure with actual usage, and writes ledger/outbox atomically. Unknown outcomes keep holds. Never let held/used balances become negative. Compare using `numeric` intermediates to avoid bigint addition overflow. A real upstream overcharge must be recorded, freeze further admission, and raise an incident; do not reject the fact merely because it breaches the cap. Exactly-once ledger postings do not promise exactly-once external effects.
 
-RLS is the tenant/workspace floor under the shared IAM service. Use non-owner roles without superuser/BYPASSRLS, ENABLE and FORCE RLS, explicit read and write predicates, and transaction-local verified scope. Trusted services alone get SQL access; arbitrary SQL can forge a session setting. Pool reuse without scope fails closed. Separate migrations, emergency access, backups, and scoped workers. [PostgreSQL RLS](https://www.postgresql.org/docs/current/ddl-rowsecurity.html), [policy read/write checks](https://www.postgresql.org/docs/current/sql-createpolicy.html), [transaction-local settings](https://www.postgresql.org/docs/current/sql-set.html)
+RLS is the org/workspace floor under the shared IAM service. Use non-owner roles without superuser/BYPASSRLS, ENABLE and FORCE RLS, explicit read and write predicates, and transaction-local verified scope. Trusted services alone get SQL access; arbitrary SQL can forge a session setting. Pool reuse without scope fails closed. Separate migrations, emergency access, backups, and scoped workers. [PostgreSQL RLS](https://www.postgresql.org/docs/current/ddl-rowsecurity.html), [policy read/write checks](https://www.postgresql.org/docs/current/sql-createpolicy.html), [transaction-local settings](https://www.postgresql.org/docs/current/sql-set.html)
 
 ## Runtime, evidence, tools, and work-report tables
 
-This is a proposed PostgreSQL schema, not an implemented database. PostgreSQL owns transactional metadata, action state, and durable evidence references. Large cleaned payloads live in the tenant's configured object store.
+This is a proposed PostgreSQL schema, not an implemented database. PostgreSQL owns transactional metadata, action state, and durable evidence references. Large cleaned payloads live in the org's configured object store.
 
 ### Column and key rules
 
-Every table below has `tenant_id uuid NOT NULL`, `id uuid NOT NULL`, `created_at timestamptz NOT NULL DEFAULT now()`, and `PRIMARY KEY (tenant_id,id)`. **W** adds required `workspace_id uuid`, an FK to `workspaces`, and `UNIQUE (tenant_id,workspace_id,id)`. **T** is tenant-wide. **S** permits an explicit tenant-wide NULL workspace or a named workspace; it must match the protected object. S references require a tenant FK plus a checked scope relation because NULL cannot enforce a workspace FK. UUIDs come from the trusted caller. Unmarked columns are `NOT NULL` with no default; `?` means nullable. `→table` denotes an FK to that table's ID with `ON DELETE RESTRICT`. All FKs include `tenant_id`; W-to-W links also include `workspace_id`. Shared-table references must enforce their declared workspace scope. No cross-tenant links are valid. Every independently permissioned record also has `object_id uuid NOT NULL`, `UNIQUE (tenant_id,object_id)`, and an FK to `protected_objects`; the row ID may equal its object ID. Scope must match the protected object. Junction rows without their own object ID inherit access from their protected parent and cannot be separately discovered or granted.
+Every table below has `org_id uuid NOT NULL`, `id uuid NOT NULL`, `created_at timestamptz NOT NULL DEFAULT now()`, and `PRIMARY KEY (org_id,id)`. **W** adds required `workspace_id uuid`, an FK to `workspaces`, and `UNIQUE (org_id,workspace_id,id)`. **T** is org-wide. **S** permits an explicit org-wide NULL workspace or a named workspace; it must match the protected object. S references require an org FK plus a checked scope relation because NULL cannot enforce a workspace FK. UUIDs come from the trusted caller. Unmarked columns are `NOT NULL` with no default; `?` means nullable. `→table` denotes an FK to that table's ID with `ON DELETE RESTRICT`. All FKs include `org_id`; W-to-W links also include `workspace_id`. Shared-table references must enforce their declared workspace scope. No cross-org links are valid. Every independently permissioned record also has `object_id uuid NOT NULL`, `UNIQUE (org_id,object_id)`, and an FK to `protected_objects`; the row ID may equal its object ID. Scope must match the protected object. Junction rows without their own object ID inherit access from their protected parent and cannot be separately discovered or granted.
 
-Each FK needs a tenant-prefixed index unless covered by its primary or unique key. Positive revisions use `integer CHECK (>0)`; sequences and epochs use nonnegative `bigint`. Money uses integer minor units, never floating point. State columns are `text` with explicit `CHECK` values named below. JSON columns use `jsonb CHECK (jsonb_typeof(value)='object')`; schema validation occurs before writes. JSON cannot replace declared identity, version, state, or FK columns. All persisted content and free text must pass data protection. A `digest` means SHA-256 of approved cleaned bytes only; raw secret fingerprints are forbidden.
+Each FK needs an org-prefixed index unless covered by its primary or unique key. Positive revisions use `integer CHECK (>0)`; sequences and epochs use nonnegative `bigint`. Money uses integer minor units, never floating point. State columns are `text` with explicit `CHECK` values named below. JSON columns use `jsonb CHECK (jsonb_typeof(value)='object')`; schema validation occurs before writes. JSON cannot replace declared identity, version, state, or FK columns. All persisted content and free text must pass data protection. A `digest` means SHA-256 of approved cleaned bytes only; raw secret fingerprints are forbidden.
 
 **I** marks immutable rows: app roles cannot update or delete them. **P** marks current projections with `row_version bigint DEFAULT 1` for compare-and-swap updates. Retention uses controlled deletion, not normal update rights. Append-only records and related outbox entries commit together through the shared transaction outbox. Retry keys are unique in their declared scope; repeating a key with changed content fails.
 
 ### Devices, gateways, and harness targets
 
-- **`devices` T/P:** `principal_id uuid→principals`, `owner_principal_id uuid→principals`, `display_name text`, `platform text CHECK IN ('macos','windows','linux','remote')`, `status text CHECK IN ('enrolled','suspended','revoked')`, `device_key_id text`, `last_seen_at timestamptz?`, `revoked_at timestamptz?`. Unique `(tenant_id,device_key_id)`; index owner/status. Device keys are references, not private-key bytes.
-- **`scanner_authorities` S/P:** `principal_id uuid→principals`, `device_id uuid→devices`, `key_id text`, `profile_revision text`, `status text CHECK IN ('active','revoked')`, `expires_at timestamptz`. Unique tenant/key ID. Scope follows the protected object; a tenant authority needs an explicit tenant-service grant.
+- **`devices` T/P:** `principal_id uuid→principals`, `owner_principal_id uuid→principals`, `display_name text`, `platform text CHECK IN ('macos','windows','linux','remote')`, `status text CHECK IN ('enrolled','suspended','revoked')`, `device_key_id text`, `last_seen_at timestamptz?`, `revoked_at timestamptz?`. Unique `(org_id,device_key_id)`; index owner/status. Device keys are references, not private-key bytes.
+- **`scanner_authorities` S/P:** `principal_id uuid→principals`, `device_id uuid→devices`, `key_id text`, `profile_revision text`, `status text CHECK IN ('active','revoked')`, `expires_at timestamptz`. Unique org/key ID. Scope follows the protected object; an org authority needs an explicit org-service grant.
 - **`gateway_enrollments` W/P:** `device_id uuid→devices`, `scanner_authority_id uuid→scanner_authorities`, `service_principal_id uuid→principals`, `profile_id text`, `profile_revision integer`, `gateway_version text`, `certificate_key_id text`, `policy_epoch bigint`, `status text CHECK IN ('pending','active','stale','revoked')`, `expires_at timestamptz`, `last_confirmed_at timestamptz?`. Unique workspace/device/service principal; index status/expiry.
 - **`platform_attestations` W/I:** `enrollment_id uuid→gateway_enrollments`, `challenge_id uuid`, `observed_at timestamptz`, `expires_at timestamptz`, `profile_revision integer`, `result text CHECK IN ('pass','fail','unknown')`, `coverage_artifact_id uuid?→evidence_objects`, `verifier_principal_id uuid→principals`, `signature bytea`. Unique enrollment/challenge; expiry after observation.
 - **`harness_targets` W/P:** `enrollment_id uuid→gateway_enrollments`, `owner_principal_id uuid→principals`, `harness_kind text`, `harness_version text`, `adapter_version text`, `capabilities_artifact_id uuid→evidence_objects`, `control_level text CHECK IN ('strict','observed','unsupported')`, `presence text CHECK IN ('online','stale','offline')`, `capacity integer CHECK (capacity>=0)`, `presence_expires_at timestamptz`, `disabled_at timestamptz?`. Index workspace/presence/control level.
@@ -176,7 +176,7 @@ Each FK needs a tenant-prefixed index unless covered by its primary or unique ke
 - **`model_routes` W/P:** `model_release_id uuid→model_releases`, `credential_reference_id uuid→credential_references`, `gateway_enrollment_id uuid?→gateway_enrollments`, `region text`, `placement text CHECK IN ('saas','private','local')`, `endpoint_binding text`, `status text CHECK IN ('active','disabled','unhealthy')`. Index release/status. Approved endpoint bindings and credential references stay separate from model-visible content. Route changes invalidate pending authorizations and require a new versioned route record.
 
 - **`secret_backend_bindings` W/P:** `provider_kind text`, `approved_endpoint_binding text`, `region text`, `namespace text`, `auth_principal_id uuid→principals`, `revision integer`, `safe_config jsonb`, `status text CHECK IN ('active','disabled','revoked')`. Unique workspace/provider/namespace/revision. A changed endpoint or auth scope creates a new binding; safe configuration excludes secret values.
-- **`credential_references` W/P:** `owner_principal_id uuid→principals`, `secret_backend_binding_id uuid→secret_backend_bindings`, `opaque_secret_handle text`, `audience text`, `status text CHECK IN ('active','expired','revoked')`, `expires_at timestamptz?`. Backend binding uses the tenant's protected secret registry; no credential value, refresh token, or signed access URL is stored here.
+- **`credential_references` W/P:** `owner_principal_id uuid→principals`, `secret_backend_binding_id uuid→secret_backend_bindings`, `opaque_secret_handle text`, `audience text`, `status text CHECK IN ('active','expired','revoked')`, `expires_at timestamptz?`. Backend binding uses the org's protected secret registry; no credential value, refresh token, or signed access URL is stored here.
 - **`connectors` W/P:** `owner_principal_id uuid→principals`, `name text`, `kind text`, `status text CHECK IN ('active','retired')`. Unique workspace/name. **`connector_releases` W/I:** `connector_id uuid→connectors`, `version text`, `manifest_artifact_id uuid→evidence_objects`, `published_by uuid→principals`. Unique connector/version. **`connector_deployments` W/P:** `connector_release_id uuid→connector_releases`, `service_principal_id uuid→principals`, `credential_reference_id uuid?→credential_references`, `approved_endpoint_binding text`, `placement text CHECK IN ('local','private','saas')`, `status text CHECK IN ('active','disabled','unhealthy')`. Endpoint bindings resolve trusted routes; agents cannot supply arbitrary URLs.
 - **`tool_definitions` W/P:** `owner_principal_id uuid→principals`, `namespace text`, `name text`, `business_capability text?`, `status text CHECK IN ('active','retired')`. Unique workspace/namespace/name. Stable IDs survive labels and aliases.
 - **`tool_releases` W/I:** `tool_id uuid→tool_definitions`, `revision integer`, `input_schema_artifact_id uuid→evidence_objects`, `output_schema_artifact_id uuid?→evidence_objects`, `description_artifact_id uuid→evidence_objects`, `implementation_ref text`, `published_by uuid→principals`. Unique tool/revision; schema artifacts contain validated schema bytes.
@@ -203,8 +203,8 @@ Each FK needs a tenant-prefixed index unless covered by its primary or unique ke
 
 ### Cleaned payloads and capture
 
-- **`evidence_objects` S/I:** `kind text`, `data_plane_revision_id uuid→data_plane_revisions`, `store_component_key text`, `object_key text`, `object_version text`, `cleaned_sha256 bytea CHECK (octet_length(cleaned_sha256)=32)`, `byte_count bigint CHECK (byte_count>=0)`, `media_type text`, `classification text`, `transform_receipt_id uuid?→sanitization_receipts`, `retention_policy_id uuid→retention_policies`. Unique data-plane revision/store component/key/version. Storage bindings resolve the configured tenant data plane; object keys are opaque.
-- **`sanitization_receipts` S/I:** `scanner_authority_id uuid→scanner_authorities`, `enrollment_id uuid?→gateway_enrollments`, `policy_revision_id uuid→policy_revisions`, `detector_revision text`, `outcome text CHECK IN ('allowed','redacted','replaced','blocked')`, `coverage text CHECK IN ('complete','partial','unsupported')`, `safe_findings jsonb`, `performed_at timestamptz`. **`scan_receipts` S/I** is the canonical **ScanReceipt**: `sanitization_receipt_id uuid→sanitization_receipts`, `principal_id uuid→principals`, `purpose text CHECK IN ('submission','model_send','tool_send','record_export','context','admin_write')`, `run_id uuid?→runs`, `attempt_id uuid?→action_attempts`, `request_artifact_id uuid→evidence_objects`, `artifact_manifest_id uuid→evidence_objects`, `destination_binding text`, `authority_epoch bigint`, `expires_at timestamptz`, `signing_key_id text`, `signature bytea`. Unique nonnull attempt/request artifact. A final model/tool send requires an attempt. Agent execution also requires its run; separately authorized human admin actions may precede a run. Submission scanning can precede either. Scope and disclosure must match the action context and preserve every source restriction. The scanner authority and optional enrollment must agree on device, service identity, and scope. Managed local workspace input requires its matching workspace enrollment; a tenant-admin request uses an explicitly granted tenant scanner without borrowing a workspace. The proxy rejects a submission receipt as model-send proof. No raw hash or matched value.
+- **`evidence_objects` S/I:** `kind text`, `data_plane_revision_id uuid→data_plane_revisions`, `store_component_key text`, `object_key text`, `object_version text`, `cleaned_sha256 bytea CHECK (octet_length(cleaned_sha256)=32)`, `byte_count bigint CHECK (byte_count>=0)`, `media_type text`, `classification text`, `transform_receipt_id uuid?→sanitization_receipts`, `retention_policy_id uuid→retention_policies`. Unique data-plane revision/store component/key/version. Storage bindings resolve the configured org data plane; object keys are opaque.
+- **`sanitization_receipts` S/I:** `scanner_authority_id uuid→scanner_authorities`, `enrollment_id uuid?→gateway_enrollments`, `policy_revision_id uuid→policy_revisions`, `detector_revision text`, `outcome text CHECK IN ('allowed','redacted','replaced','blocked')`, `coverage text CHECK IN ('complete','partial','unsupported')`, `safe_findings jsonb`, `performed_at timestamptz`. **`scan_receipts` S/I** is the canonical **ScanReceipt**: `sanitization_receipt_id uuid→sanitization_receipts`, `principal_id uuid→principals`, `purpose text CHECK IN ('submission','model_send','tool_send','record_export','context','admin_write')`, `run_id uuid?→runs`, `attempt_id uuid?→action_attempts`, `request_artifact_id uuid→evidence_objects`, `artifact_manifest_id uuid→evidence_objects`, `destination_binding text`, `authority_epoch bigint`, `expires_at timestamptz`, `scanner_authority_id uuid→scanner_authorities` (replaces the untyped `signing_key_id`; a check requires the authority's `status='active'` and `expires_at` after the receipt's `performed_at`, and the authority's device must match the enrollment on the sanitization receipt), `signature bytea`. Unique nonnull attempt/request artifact. A final model/tool send requires an attempt. Agent execution also requires its run; separately authorized human admin actions may precede a run. Submission scanning can precede either. Scope and disclosure must match the action context and preserve every source restriction. The scanner authority and optional enrollment must agree on device, service identity, and scope. Managed local workspace input requires its matching workspace enrollment; an org-admin request uses an explicitly granted org scanner without borrowing a workspace. The proxy rejects a submission receipt as model-send proof. No raw hash or matched value.
 - **`model_exchanges` W/I:** `attempt_id uuid→action_attempts`, `scan_receipt_id uuid→scan_receipts`, `request_artifact_id uuid→evidence_objects`, `tool_belt_snapshot_id uuid?→tool_belt_snapshots`, `model_route_id uuid→model_routes`. Unique attempt. **`model_response_receipts` W/I:** `exchange_id uuid→model_exchanges`, `response_evidence_id uuid→response_evidence`, `provider_reported_model text?`, `provider_request_id text?`, `usage_receipt_artifact_id uuid?→evidence_objects`, `source_receipt_key text`. Unique exchange/source receipt key. **`tool_executions` W/I:** `attempt_id uuid→action_attempts`, `belt_entry_id uuid→tool_belt_entries`, `input_artifact_id uuid→evidence_objects`, `resolved_targets_artifact_id uuid→evidence_objects`. Unique attempt. Trusted connector receipts join through `connector_receipts.attempt_id`; later results never edit the original execution input.
 - **`run_events` W/I:** `run_id uuid→runs`, `seq bigint`, `event_key uuid`, `kind text`, `action_id uuid?→governed_actions`, `attempt_id uuid?→action_attempts`, `epoch bigint`, `actor_principal_id uuid→principals`, `payload_artifact_id uuid?→evidence_objects`, `observed_at timestamptz`, `recorded_at timestamptz DEFAULT now()`. Unique run/sequence and workspace/event key; index kind/time. **`stream_chunks` W/I:** `attempt_id uuid→action_attempts`, `stream_kind text`, `chunk_seq bigint`, `artifact_id uuid→evidence_objects`, `terminal boolean DEFAULT false`. Unique attempt/stream/chunk sequence; cleaned chunks only.
 - **`traces` W/I:** `run_id uuid→runs`, `trace_key text`. Unique workspace/trace key. **`spans` W/P:** `trace_id uuid→traces`, `span_key text`, `parent_span_id uuid?→spans`, `action_id uuid?→governed_actions`, `started_at timestamptz`, `ended_at timestamptz?`, `safe_attributes jsonb`, `last_event_id uuid→run_events`. Unique trace/span key; parent must share trace. The projection follows immutable start/end events. **`provenance_links` W/I:** `derived_artifact_id uuid→evidence_objects`, `source_artifact_id uuid→evidence_objects`, `relation text`, `transformation_ref text?`. Unique endpoints/relation; no access is implied by a link.
@@ -221,9 +221,9 @@ Each FK needs a tenant-prefixed index unless covered by its primary or unique ke
 - **`ci_observations` W/I:** `attempt_id uuid→ci_attempts`, `source_event_key text`, `status text`, `conclusion text?`, `observed_at timestamptz`, `source_updated_at timestamptz?`, `safe_details_artifact_id uuid?→evidence_objects`. Unique attempt/source event key; status check queued/in_progress/completed/unknown, with provider conclusion kept separately. **`pr_ci_links` W/I:** `pull_request_id uuid→pull_requests`, `ci_attempt_id uuid→ci_attempts`, `proof_artifact_id uuid→evidence_objects`. Unique PR/attempt. **`ci_coverage` W/I:** `pull_request_id uuid→pull_requests`, `source_id uuid→ci_sources`, `observed_at timestamptz`, `coverage text CHECK IN ('complete','partial','unknown')`, `pages_complete boolean`, `reason_code text?`. Empty or hidden jobs never imply passing CI.
 - **`work_reports` W/P:** `run_id uuid→runs`, `report_kind text CHECK IN ('repository','non_repository')`, `repository_id uuid?→vcs_repositories`, `current_revision_id uuid?→work_report_revisions`, `tracking_policy_revision_id uuid→policy_revisions`, `tracking_until timestamptz?`, `next_refresh_at timestamptz?`, `tracking_state text CHECK IN ('active','paused','ended','blocked')`. Unique run/repository NULLS NOT DISTINCT; repository kind requires repo, non_repository requires NULL and a reason in the report. **`work_report_revisions` W/I:** `report_id uuid→work_reports`, `revision integer`, `tracking_policy_revision_id uuid→policy_revisions`, `tracking_until timestamptz?`, `comparison_id uuid?→vcs_comparisons`, `snapshot_id uuid?→vcs_snapshots`, `source_event_seq bigint`, `manifest_artifact_id uuid→evidence_objects`, `store_receipt_id uuid→report_store_receipts`, `freshness text CHECK IN ('current','stale','partial','unknown')`. Unique report/revision. A NULL tracking cutoff requires an explicit approved ongoing rule; unknown expiry blocks tracking admission. Ended tracking saves the cutoff without claiming CI cannot later change. Index report tracking state/next refresh time. Repo reports require comparison and snapshot; non-repo reports require NULL and explicit not_applicable fields. **`report_pr_links` W/I:** `report_revision_id uuid→work_report_revisions`, `pr_observation_id uuid→pull_request_observations`, `coverage_id uuid?→ci_coverage`. Unique revision/PR observation/source coverage; manifest pins the complete observation set.
 - **`persona_usage_segments` W/P:** `run_id uuid→runs`, `agent_release_id uuid→agent_releases`, `persona_id uuid→persona_definitions`, `persona_version_id uuid→persona_versions`, `persona_name text`, `agent_mode_id uuid?→agent_modes`, `mode_name text`, `start_event_seq bigint`, `end_event_seq bigint?`. Only the end may be closed from immutable persona-change events; pinned identity fields never change. Persona version must belong to persona ID; it is separate from the agent principal. Segments cannot overlap within the same run. **`tool_use_facts` W/I:** `execution_attempt_id uuid→action_attempts`, `execution_id uuid→tool_executions`, `persona_segment_id uuid→persona_usage_segments`, `tool_binding_id uuid→tool_bindings`, `historical_name text`, `started_event_id uuid→run_events`. Unique execution attempt. Counts aggregate these confirmed starts, not callbacks, stream chunks, proposals, or denied calls.
-- **`report_store_receipts` W/I:** `data_plane_binding_id uuid→data_plane_bindings`, `data_plane_revision_id uuid→data_plane_revisions`, `event_id uuid→run_events`, `committed_seq bigint`, `artifact_manifest_id uuid→evidence_objects`, `durable_at timestamptz`. Binding is the same trusted tenant data-plane registry used by the web app. A receipt requires durable artifact bytes and metadata. Local pending spools cannot claim this receipt or choose a public fallback.
+- **`report_store_receipts` W/I:** `data_plane_binding_id uuid→data_plane_bindings`, `data_plane_revision_id uuid→data_plane_revisions`, `event_id uuid→run_events`, `committed_seq bigint`, `artifact_manifest_id uuid→evidence_objects`, `durable_at timestamptz`. Binding is the same trusted org data-plane registry used by the web app. A receipt requires durable artifact bytes and metadata. Local pending spools cannot claim this receipt or choose a public fallback.
 
-Create cyclic FKs after table creation; use deferred constraints only for valid same-transaction inserts. Validate parent membership, scope, pinned versions, and state transitions inside trusted write transactions. Tenant RLS and these FKs do not replace record authorization. Partition large event/chunk/observation tables only when uniqueness and same-tenant references retain their stated guarantees.
+Create cyclic FKs after table creation; use deferred constraints only for valid same-transaction inserts. Validate parent membership, scope, pinned versions, and state transitions inside trusted write transactions. Org RLS and these FKs do not replace record authorization. Partition large event/chunk/observation tables only when uniqueness and same-org references retain their stated guarantees.
 
 ### Transaction and projection rules
 
@@ -235,11 +235,11 @@ Use column-specific update grants or protected procedures on P tables. A tool bi
 
 Reports are rebuildable views over immutable observations. The current report manifest pins the chosen PR observations, CI attempts and latest admitted observations, coverage receipts, persona segments, and tool facts. A late CI event updates a new report revision; it does not mutate the prior report or resume a finished run. Preserve provider source times and reconcile out-of-order callbacks against source reads. A job list is complete only for the configured sources and observation time recorded by its coverage rows.
 
-Indexes for operator dashboards should start with tenant/workspace, then run state or observed time. Tool rollups group unique execution-attempt facts by historical name while retaining binding IDs for drill-down. Do not store a free-standing counter as the source of truth. A retried execution gets a new attempt and counts once if it really starts; a repeated callback does not. Uncertain starts remain separate until a trusted execution or connector receipt resolves them.
+Indexes for operator dashboards should start with org/workspace, then run state or observed time. Tool rollups group unique execution-attempt facts by historical name while retaining binding IDs for drill-down. Do not store a free-standing counter as the source of truth. A retried execution gets a new attempt and counts once if it really starts; a repeated callback does not. Uncertain starts remain separate until a trusted execution or connector receipt resolves them.
 
 Object-store writes must be durable before a database transaction publishes evidence references. A committed metadata row cannot point to an unconfirmed upload. Use staging objects and reconciliation to clean abandoned uploads, without treating them as approved evidence. Every read rechecks access to the protected object, permitted source views, and current policy. Cleaned payload checksums verify stored bytes; they neither grant access nor promise the missing original can be restored.
 
-Deletion is a workflow across database projections, object versions, caches, graph views, and backup retention. Keep a safe tombstone and receipt while removing content as policy requires. Legal holds cover protected objects and their required evidence, not merely a convenient current URL. Never drop a referenced source record with cascading deletes during ordinary operation. A controlled retention job resolves dependency and replay consequences, records the reduced coverage, and checks the tenant's approved retention and hold rules.
+Deletion is a workflow across database projections, object versions, caches, graph views, and backup retention. Keep a safe tombstone and receipt while removing content as policy requires. Legal holds cover protected objects and their required evidence, not merely a convenient current URL. Never drop a referenced source record with cascading deletes during ordinary operation. A controlled retention job resolves dependency and replay consequences, records the reduced coverage, and checks the org's approved retention and hold rules.
 
 ## Graph, context, and future plugin tables
 
@@ -247,11 +247,11 @@ These are proposed PostgreSQL tables. The graph and checked context path are req
 
 ### Shared table rules
 
-Every table below has `tenant_id uuid`, `id uuid`, `workspace_id uuid`, and `created_at timestamptz NOT NULL`. Its primary key is `(tenant_id,id)`. Workspace is required except for S-scoped tables and the explicit tenant-only plugin records. **S** permits a deliberately tenant-wide NULL workspace or a named workspace. The source/graph foundation, `context_records`, `context_revisions`, `memory_views`, `memory_view_memberships`, `skill_context_refs`, `cgp_providers`, `context_queries`, `retrieval_receipts`, and `retrieval_frames` are S-scoped. Composition, business execution, and run plugins remain workspace-scoped. `(tenant_id,workspace_id)` references `workspaces(tenant_id,id)`. Each table has an index on `(tenant_id,workspace_id,id)`.
+Every table below has `org_id uuid`, `id uuid`, `workspace_id uuid`, and `created_at timestamptz NOT NULL`. Its primary key is `(org_id,id)`. Workspace is required except for S-scoped tables and the explicit org-only plugin records. **S** permits a deliberately org-wide NULL workspace or a named workspace. The source/graph foundation, `context_records`, `context_revisions`, `memory_views`, `memory_view_memberships`, `skill_context_refs`, `cgp_providers`, `context_queries`, `retrieval_receipts`, and `retrieval_frames` are S-scoped. Composition, business execution, and run plugins remain workspace-scoped. `(org_id,workspace_id)` references `workspaces(org_id,id)`. Each table has an index on `(org_id,workspace_id,id)`.
 
-All columns below are NOT NULL unless marked `?` or covered by S scope. `-> table` means a composite foreign key `(tenant_id,column)` to that table’s `(tenant_id,id)`, never a bare UUID reference. Workspace-required parents also have `UNIQUE(tenant_id,workspace_id,id)`; workspace-required child links include workspace in their foreign key. S links use a tenant FK plus a mandatory scope constraint trigger: revisions/memberships inherit their parent's scope, a workspace record may use authorized tenant-wide content, and tenant-wide content cannot depend on narrower workspace inputs without explicit authorized declassification. An edge from a tenant entity to a workspace entity uses that workspace's scope and checks both endpoints. Links to tenant-only parents use the same checked scope rule. No cascading delete may erase evidence. Nullable-scope unique keys use NULLS NOT DISTINCT where a tenant-wide duplicate would otherwise be possible.
+All columns below are NOT NULL unless marked `?` or covered by S scope. `-> table` means a composite foreign key `(org_id,column)` to that table’s `(org_id,id)`, never a bare UUID reference. Workspace-required parents also have `UNIQUE(org_id,workspace_id,id)`; workspace-required child links include workspace in their foreign key. S links use an org FK plus a mandatory scope constraint trigger: revisions/memberships inherit their parent's scope, a workspace record may use authorized org-wide content, and org-wide content cannot depend on narrower workspace inputs without explicit authorized declassification. An edge from an org entity to a workspace entity uses that workspace's scope and checks both endpoints. Links to org-only parents use the same checked scope rule. No cascading delete may erase evidence. Nullable-scope unique keys use NULLS NOT DISTINCT where an org-wide duplicate would otherwise be possible.
 
-`U(...)` means UNIQUE and `I(...)` means a B-tree index; both start with `tenant_id`. `A` means the table also has `object_id uuid`, UNIQUE within tenant, referencing `protected_objects`. Its workspace must match that object. The object’s canonical IAM grants protect the row; a graph edge is never an access grant. Search results, links, counts, and cached views need the same checks. SQL row rules guard every table. Non-SQL copies must enforce equivalent access.
+`U(...)` means UNIQUE and `I(...)` means a B-tree index; both start with `org_id`. `A` means the table also has `object_id uuid`, UNIQUE within org, referencing `protected_objects`. Its workspace must match that object. The object’s canonical IAM grants protect the row; a graph edge is never an access grant. Search results, links, counts, and cached views need the same checks. SQL row rules guard every table. Non-SQL copies must enforce equivalent access.
 
 Text status fields have CHECK constraints listing only the stated values. Digests are `bytea` with length 32 and cover approved cleaned content only. Positive revisions and sequence numbers use `bigint CHECK (>0)`. Money uses integer minor units, never floating point. Referenced evidence objects and scan receipts must already pass the shared local-cleaning contract.
 
@@ -282,7 +282,7 @@ Source versions are opaque source-issued text. PostgreSQL cannot foreign-key a r
 | `memory_view_memberships` | `view_id uuid -> memory_views`, `context_revision_id uuid -> context_revisions`, `position integer CHECK (>=0)` | U(view_id,position); U(view_id,context_revision_id). |
 | `skill_context_refs` | `agent_release_id uuid -> agent_releases`, `context_revision_id uuid -> context_revisions`, `purpose text` | U(agent_release_id,context_revision_id,purpose). Trigger requires skill-kind context. This reference grants no install or execution right. |
 | `cgp_providers` A | `binding_id uuid -> source_bindings`, `principal_id uuid -> principals`, `protocol_version text`, `schema_digest bytea`, `registry_key_id text`, `state text` | U(binding_id,principal_id,protocol_version); state enabled/disabled. Keys come from a trusted registry. |
-| `context_queries` A | `context_kind text CHECK IN ('run','workspace_admin','tenant_admin')`, `run_id uuid? -> runs`, `caller_id uuid -> principals`, `clean_query_id uuid -> evidence_objects`, `scan_receipt_id uuid -> scan_receipts`, `decision_id uuid -> authorization_decisions`, `byte_limit bigint CHECK (>=0)`, `state text` | I(run_id,created_at); state pending/complete/denied/failed. Run requires workspace/run; workspace_admin requires workspace and NULL run; tenant_admin requires both NULL. Query decision/action/scan must match caller and this exact scope. Human pre-run discovery needs no fabricated run. |
+| `context_queries` A | `context_kind text CHECK IN ('run','workspace_admin','org_admin')`, `run_id uuid? -> runs`, `caller_id uuid -> principals`, `clean_query_id uuid -> evidence_objects`, `scan_receipt_id uuid -> scan_receipts`, `decision_id uuid -> authorization_decisions`, `byte_limit bigint CHECK (>=0)`, `state text` | I(run_id,created_at); state pending/complete/denied/failed. Run requires workspace/run; workspace_admin requires workspace and NULL run; org_admin requires both NULL. Query decision/action/scan must match caller and this exact scope. Human pre-run discovery needs no fabricated run. |
 | `retrieval_receipts` A | `query_id uuid -> context_queries`, `provider_id uuid -> cgp_providers`, `provider_request_id text`, `clean_reply_id uuid -> evidence_objects`, `scan_receipt_id uuid -> scan_receipts`, `signature_check text`, `received_at timestamptz` | U(provider_id,provider_request_id); signature valid/invalid/unavailable. Invalid data cannot enter composition. |
 | `retrieval_frames` | `receipt_id uuid -> retrieval_receipts`, `position integer CHECK (>=0)`, `context_revision_id uuid -> context_revisions`, `provider_frame_id text`, `byte_count bigint CHECK (>=0)` | U(receipt_id,position); U(receipt_id,provider_frame_id). |
 | `composition_receipts` A | `run_id uuid -> runs`, `action_id uuid -> governed_actions`, `request_object_id uuid -> evidence_objects`, `scan_receipt_id uuid -> scan_receipts`, `request_digest bytea`, `composed_at timestamptz` | U(action_id,request_digest); I(run_id,composed_at). Records the actual cleaned model request. |
@@ -310,8 +310,8 @@ These tables define a future interface. They do not implement partner code, a ma
 
 | Table | Typed columns beyond the shared fields | Keys and checks |
 |---|---|---|
-| `plugin_publishers` A | `principal_id uuid -> principals`, `name text`, `state text` | Workspace may be NULL for tenant-only publisher; U(principal_id); state active/revoked. |
-| `plugin_packages` A | `publisher_id uuid -> plugin_publishers`, `name text`, `version text`, `manifest_object_id uuid -> evidence_objects`, `digest bytea` | Tenant-only allowed; U(publisher_id,name,version). Immutable, reviewed metadata. |
+| `plugin_publishers` A | `principal_id uuid -> principals`, `name text`, `state text` | Workspace may be NULL for org-only publisher; U(principal_id); state active/revoked. |
+| `plugin_packages` A | `publisher_id uuid -> plugin_publishers`, `name text`, `version text`, `manifest_object_id uuid -> evidence_objects`, `digest bytea` | Org-only allowed; U(publisher_id,name,version). Immutable, reviewed metadata. |
 | `plugin_installs` A | `package_id uuid -> plugin_packages`, `principal_id uuid -> principals`, `state text` | U(workspace_id,principal_id); state reserved/enabled/disabled/revoked. Required workspace. |
 | `plugin_install_grants` | `install_id uuid -> plugin_installs`, `iam_grant_id uuid -> record_grants`, `capability text`, `expires_at timestamptz` | U(install_id,iam_grant_id,capability); capability control/context_offer/event_read/job. Trigger checks grant principal, object scope, mapped permission, revocation, and expiry. It never supplies separate authority. |
 | `plugin_subscriptions` A | `install_id uuid -> plugin_installs`, `event_kind text`, `run_id uuid? -> runs`, `required boolean`, `state text` | U(install_id,event_kind,run_id); use NULLS NOT DISTINCT. State enabled/disabled. Event kind from reviewed registry. |
@@ -330,13 +330,13 @@ Plugin deliveries reference durable run_events; outbox rows only transport them.
 
 ## Repo setup, loaded inputs, and first-run proof
 
-These records support the proposed `.oxagen` setup flow. They use the existing B/W/I/P column rules, tenant-prefixed keys, workspace constraints, protected objects, and reverse-FK indexes. They store cleaned evidence and source references. They are not a second permission system. An ignored local lock is a read-only mirror of a protected receipt, not authority.
+These records support the proposed `.oxagen` setup flow. They use the existing B/W/I/P column rules, org-prefixed keys, workspace constraints, protected objects, and reverse-FK indexes. They store cleaned evidence and source references. They are not a second permission system. An ignored local lock is a read-only mirror of a protected receipt, not authority.
 
 ### Configuration and sync
 
 | Table | Typed columns beyond B/W; keys and checks |
 | --- | --- |
-| `repo_config_snapshots` I | `repository_id uuid FK vcs_repositories`, `checkout_binding_id uuid FK checkout_bindings`, `source_snapshot_id uuid FK vcs_snapshots`, `settings_revision_id uuid FK workspace_repo_settings`, `data_plane_revision_id uuid FK data_plane_revisions`, `agent_release_id uuid FK agent_releases`, `mode_id uuid FK agent_modes`, `config_format text`, `manifest_object_id uuid FK evidence_objects`, `created_by uuid FK principals`. Prove all repository references match, mode belongs to release, and data placement is the current approved tenant binding. |
+| `repo_config_snapshots` I | `repository_id uuid FK vcs_repositories`, `checkout_binding_id uuid FK checkout_bindings`, `source_snapshot_id uuid FK vcs_snapshots`, `settings_revision_id uuid FK workspace_repo_settings`, `data_plane_revision_id uuid FK data_plane_revisions`, `agent_release_id uuid FK agent_releases`, `mode_id uuid FK agent_modes`, `config_format text`, `manifest_object_id uuid FK evidence_objects`, `created_by uuid FK principals`. Prove all repository references match, mode belongs to release, and data placement is the current approved org binding. |
 | `repo_config_files` I | `snapshot_id uuid FK repo_config_snapshots`, `relative_path text`, `source_commit_id text?`, `clean_object_id uuid FK evidence_objects`, `cleaned_sha256 bytea CHECK length=32`; UNIQUE snapshot/path. The strict repo profile requires workspace/context/steering files. Validate safe paths and recorded cleaned bytes. A dirty source has a pinned working-copy snapshot, never a fabricated commit ID. |
 | `repo_config_entries` I | `snapshot_id uuid FK repo_config_snapshots`, `entry_key text`, `kind text CHECK IN ('context','steering')`, `source_kind text CHECK IN ('vcs','context')`, `source_path text?`, `context_revision_id uuid? FK context_revisions`, `required boolean`, `delivery text CHECK IN ('request','turn_start')`, `priority text CHECK IN ('task_context','task_guidance')`; UNIQUE snapshot/kind/key. Exactly one source form; steering requires turn_start/task_guidance. Neither form grants rights. |
 | `repo_sync_plans` P | `snapshot_id uuid FK repo_config_snapshots`, `target_id uuid FK harness_targets`, `actor_id uuid FK principals`, `expected_binding_version bigint CHECK >0`, `plan_object_id uuid FK evidence_objects`, `expires_at timestamptz`, `state text CHECK IN ('planned','applied','conflict','expired','blocked')`, `request_key text`; UNIQUE actor/request key. A stale or changed plan needs a new checked revision. |
@@ -369,11 +369,11 @@ The protected service stores canonical sync and load state outside the agent-wri
 
 ## Cross-domain constraints
 
-Every foreign key named in the catalog is a required integration constraint. Same-tenant UUIDs are not enough: a turn must belong to its run, a tool release to its tool, a grant to its principal, a policy evaluation to its decision, and a receipt to its exact attempt. Use composite unique keys and foreign keys for these links. Where a check needs several rows, use a locked trusted procedure and constraint trigger. Do not hide that check in an optional UI validator.
+Every foreign key named in the catalog is a required integration constraint. Same-org UUIDs are not enough: a turn must belong to its run, a tool release to its tool, a grant to its principal, a policy evaluation to its decision, and a receipt to its exact attempt. Use composite unique keys and foreign keys for these links. Where a check needs several rows, use a locked trusted procedure and constraint trigger. Do not hide that check in an optional UI validator.
 
-An S-scoped evidence, graph, or context object may be tenant-wide only when the author and all contributing inputs allow that scope. A workspace row may reference tenant-wide evidence that its actor can read; it may not widen workspace content by relabeling it tenant-wide. The catalog's S-scoped `scanner_authorities`, `sanitization_receipts`, and `scan_receipts` support explicitly granted tenant-admin work. Optional gateway enrollment must match the authority's device, identity, and permitted scope. Managed local workspace data still requires its matching workspace enrollment. This covers tenant-level templates without borrowing an arbitrary workspace's authority.
+An S-scoped evidence, graph, or context object may be org-wide only when the author and all contributing inputs allow that scope. A workspace row may reference org-wide evidence that its actor can read; it may not widen workspace content by relabeling it org-wide. The catalog's S-scoped `scanner_authorities`, `sanitization_receipts`, and `scan_receipts` support explicitly granted org-admin work. Optional gateway enrollment must match the authority's device, identity, and permitted scope. Managed local workspace data still requires its matching workspace enrollment. This covers org-level templates without borrowing an arbitrary workspace's authority.
 
-The `workspace_admin` and `tenant_admin` context labels name non-run scope; they do not grant an administrator role. A human context read still needs its ordinary IAM permission for the selected records.
+The `workspace_admin` and `org_admin` context labels name non-run scope; they do not grant an administrator role. A human context read still needs its ordinary IAM permission for the selected records.
 
 The scanner authority, signed receipt, and destination must agree. Final request digests cover only cleaned wire content. Headers added by the trusted transport are outside model-visible content and contain no prompt additions. New content needs a new local scan and new action decision.
 
@@ -401,249 +401,451 @@ An external API call cannot be made atomic with a local database commit. Store d
 
 ## Indexes and scale
 
-Create tenant-prefixed indexes for every FK and common scope filter. Add `(tenant_id,workspace_id,created_at,id)` for bounded timeline lists, `(tenant_id,run_id,seq)` for event order, active grant expiry indexes, and partial pending-work indexes. Index fixed states, not predicates that depend on the changing clock. Partition high-volume events and ledger history by tenant placement and time only when all unique-key and FK rules are preserved. Do not weaken financial deduplication to make a partition key fit.
+Create org-prefixed indexes for every FK and common scope filter. Add `(org_id,workspace_id,created_at,id)` for bounded timeline lists, `(org_id,run_id,seq)` for event order, active grant expiry indexes, and partial pending-work indexes. Index fixed states, not predicates that depend on the changing clock. Partition high-volume events and ledger history by organization hash, not by time. A PostgreSQL unique constraint on a partitioned table must include every partition column, and `run_events` and `limit_ledger_entries` are keyed without time and are foreign-key targets from rows that carry only organization and id, so time partitioning is not satisfiable as keyed. Retention therefore runs as a bounded deletion job, not a partition drop. Do not weaken financial deduplication to make a partition key fit.
 
-Return opaque keyset cursors for large lists. Cursors bind the caller, query, scope, and snapshot. Apply access before counts, sorting, aggregation, and pagination. Rate-limit exports and graph fan-out. Admission and revoke controls need capacity even when a tenant's stream queue is full.
+State the write cost of a model call as a design constraint. With per-item composition decisions, per-scope epoch rows, per-bucket reservations and ledger entries, an event row and an outbox row per state change, and the same ledger rows again at settlement, one call is on the order of a hundred durable row writes before content. Batch the per-item disclosure decisions into one decision row with an item manifest artifact, keep run sequence allocation in a narrow `run_sequences (org_id, run_id, next_seq)` table with no secondary indexes so the indexed `runs` row is not rewritten on every event, and give `graph_entities` and `context_records` a compare-and-swap current-revision pointer with an index on `(org_id, entity_id, revision DESC)` so the per-turn read path does not sort revisions. Bound context assembly: a maximum hop count and candidate set per graph query, a per-organization entity and edge sizing target, and assembly latency as a measured gate. Make CI webhooks primary with bounded reconciliation polling under one token bucket per installation, degrading to `ci_coverage=partial` with a reason. Allow a scan-result cache keyed by content digest plus policy and detector revision so a fork does not rescan an unchanged tree, and give `continuation_capsules` a retention policy reference like `evidence_objects`. Bound JSONB columns with `pg_column_size` checks and spill larger values to evidence objects. Batch 21 measures writes per turn against the stated budget, and a synthetic load gate on event and ledger volume runs after batch 6, before certification freezes the schema.
 
-One data-plane revision identifies the authority database, object namespace, region, and key handles. Use tenant encryption keys and authenticated internal links. Caches, search, backups, signed URLs, and exports honor the same residency and access rules. Private installs use the same contracts with local endpoints. They need no unsolicited inbound internet connection.
+Return opaque keyset cursors for large lists. Cursors bind the caller, query, scope, and snapshot. Apply access before counts, sorting, aggregation, and pagination. Rate-limit exports and graph fan-out. Admission and revoke controls need capacity even when an org's stream queue is full.
+
+One data-plane revision identifies the authority database, object namespace, region, and key handles. Use org encryption keys and authenticated internal links. Caches, search, backups, signed URLs, and exports honor the same residency and access rules. Private installs use the same contracts with local endpoints. They need no unsolicited inbound internet connection.
 
 ## Migrations, backup, and deletion
 
-Version the schema and API together. A migration has an immutable ID, checksum, compatible reader/writer range, test evidence, and rollback or roll-forward plan. Expand first, backfill in bounded tenant-scoped jobs, compare old and new results, switch readers, then remove obsolete fields after the rollback window. Never let a worker running an older schema skip a required new gate.
+Version the schema and API together. A migration has an immutable ID, checksum, compatible reader/writer range, test evidence, and rollback or roll-forward plan. Expand first, backfill in bounded org-scoped jobs, compare old and new results, switch readers, then remove obsolete fields after the rollback window. Never let a worker running an older schema skip a required new gate.
 
-Keep encrypted backups and point-in-time recovery in the tenant's allowed region. Test restores into an isolated environment. On restore, invalidate old service credentials, dispatch ownership, and authorization epochs before reconnecting. Reconcile outside effects and charges that occurred after the restored point. Do not replay queue messages as new refunds or model calls. A restore is not permission to reuse old single-use approvals.
+Keep encrypted backups and point-in-time recovery in the org's allowed region. Test restores into an isolated environment. On restore, invalidate old service credentials, dispatch ownership, and authorization epochs before reconnecting. Reconcile outside effects and charges that occurred after the restored point. Do not replay queue messages as new refunds or model calls. A restore is not permission to reuse old single-use approvals.
 
 Retention is a controlled job. Check legal holds and dependencies; delete allowed content across object versions, search, graph, caches, and replicas; keep a safe tombstone and reduced-capture marker. Backups age out by a declared schedule. Key destruction and content deletion have separate receipts. A legal hold must cover the actual content and keys needed to preserve it. Never promise full replay of deleted or locally removed data.
 
-Use separate migration, backup, emergency, and runtime identities. Require recorded access for emergency work, tenant-scoped export tests, and restore exercises. This design supports audit evidence; a schema alone does not grant SOC 2 certification.
+Use separate migration, backup, emergency, and runtime identities. Require recorded access for emergency work, org-scoped export tests, and restore exercises. This design supports audit evidence; a schema alone does not grant SOC 2 certification.
 
 ## Required verification before production
 
-Test tenant and workspace isolation for reads, writes, joins, views, graph traversal, search, exports, and background jobs. Include human and agent identities, stale grants, pooled connection reuse, malicious IDs, null scope, forged receipts, and revoked keys. Test concurrent shared reservations, ratios, timezone boundaries, provider corrections, unknown results, duplicate callbacks, and integer overflow.
+Test org and workspace isolation for reads, writes, joins, views, graph traversal, search, exports, and background jobs. Include human and agent identities, stale grants, pooled connection reuse, malicious IDs, null scope, forged receipts, and revoked keys. Test concurrent shared reservations, ratios, timezone boundaries, provider corrections, unknown results, duplicate callbacks, and integer overflow.
 
-Test a policy revision during an active budget period, a lower cap with outstanding holds, a renamed agent, and a period/time-zone cutover. Test duplicate success observations and two retry holds for one external effect, source-account rotation, and a legitimate later correction. Test tenant-level context/scanning without a borrowed workspace and pre-run setup without a fabricated run. Prove that first-start receipts bind actual composition rather than only prepared input.
+Test a policy revision during an active budget period, a lower cap with outstanding holds, a renamed agent, and a period/time-zone cutover. Test duplicate success observations and two retry holds for one external effect, source-account rotation, and a legitimate later correction. Test org-level context/scanning without a borrowed workspace and pre-run setup without a fabricated run. Prove that first-start receipts bind actual composition rather than only prepared input.
 
 Use crash and race tests at every transaction boundary. Test a late response after pause, a takeover with an old ownership epoch, a policy change during dispatch, and a stale completion reply. Verify report fields against the actual default-branch comparison and CI provider coverage. Exercise private placement, scanner failure, missing evidence, and backup restoration.
 
-The following SQL is a representative subset for review. It does not create every catalog table, the whole policy service, production settlement procedures, or every integration FK. In particular, it omits stable limit-definition continuity, canonical financial-effect deduplication, S-scoped scanner/context records, and the repo-setup tables; the catalog rules remain mandatory. It must be assembled and tested with the full schema before deployment. PostgreSQL is not installed in this task environment, so these statements were reviewed rather than executed. The build plan makes real database tests a required gate.
+The following SQL is a representative subset for review. It does not create every catalog table, the whole policy service, production settlement procedures, or every integration FK. In particular, it omits stable limit-definition continuity, canonical financial-effect deduplication, S-scoped scanner/context records, and the repo-setup tables; the catalog rules remain mandatory. It must be assembled and tested with the full schema before deployment. These statements were executed on PostgreSQL 16 on 2026-09-20 with org, workspace, cross-org and concurrent-hold tests (see AUDIT.md). Loading cleanly is not the same as production qualification. The build plan makes real database tests a required gate.
+
+## Usage and performance records
+
+These proposed additions support the [SDK](ARP-SDK-spec.md) and [performance views](ARP-Performance-spec.md). They extend the catalog; they are not yet included in the representative SQL or generated OpenAPI. Add their migrations, exact schemas, permissions, and conformance tests before release. They reuse authoritative usage receipts and budget records instead of creating a second bill.
+
+Each record carries org and workspace keys, a protected-object link or protected parent, source/mapping version, observed and recorded times, and coverage. All references include matching org and workspace scope. Use RLS plus the same record and field checks for both people and agents. The org's configured data plane stores details and rollups.
+
+| Proposed record | Required fields and rules |
+| --- | --- |
+| `ModelUsageObservation` / `model_usage_observations` | Exchange and attempt references; safe receipt reference; provider/API/model mapping version; producer; source revision; basis (`provider_reported`, `gateway_measured`, `client_reported`, `estimated`); completeness; input/output totals; disjoint input cache-read/cache-write/fresh counts where known; other usage classes with units and subset relationships; stream semantics (`delta`, `cumulative`, `final`); superseded observation reference. Counts are nonnegative integers or null. An unknown is not zero. Unique producer/source receipt/revision within scope; conflicts are retained and flagged. |
+| `RequestCompositionBreakdown` / `request_compositions` and `request_composition_blocks` | Exact cleaned request/artifact and exchange; tokenizer/version; block ordinal and kind; cleaned source reference/version; origin event; estimated token count/byte count; repeated-from reference; unassigned overhead and coverage. Parent composition inherits request permissions. Any digest is of permitted cleaned content, scoped against cross-org correlation. No raw-content digest or replacement map. |
+| `LoopDependency` / `loop_dependencies` | Producer/event key; from/to run-event or action reference; typed relation (`requested_by`, `consumed_by`, `retry_of`, `member_of_batch`, `waits_for`); batch/context/access version; adapter contract version; source trust and missing-evidence state. Canonical parent/child and edge directions must be fixed in the versioned schema. Causal links must be acyclic; retries get distinct attempts. No dependency can grant access. |
+| `RunFinding` / `run_findings` | Run/scope, detector/version, finding kind, severity, `observed`/`inferred`/`incomplete` classification, evidence set, safe explanation and proposed change, applicable source versions, coverage, optional confidence, assumptions, price basis, estimated USD/token range, overlap group, and status. Negative or unknown estimated savings are allowed and labeled. Findings and evidence links cannot outlive their applicable read rights. |
+| `finding_responses` | Finding/version, actor, disposition, scanned reason, linked proposed action, and idempotency key. Keep history rather than overwriting who accepted or dismissed advice. |
+| `performance_comparisons` | Baseline and changed run sets, change/version, task-group criteria, mode (`estimate`, `recorded_replay`, `live_opt_in`), initiating approval/action, costs including the trial, metrics, acceptance-signal source, sample size, coverage and confounding limits. Computed reductions are separate from estimated opportunities. |
+
+Provider usage belongs to the exchange actually billed, even when its reply was excluded after a pause. A late receipt may settle that cost without adding its text to active context. Financial settlement still uses the existing receipt and posting rules; an analytics observation cannot independently debit or release money.
+
+Rollups use unique underlying exchange/attempt and cost facts. Count parent/child charges once. Save sums and their denominators, unknown counts, revisions, and an as-of point; never store an unexplained cache percentage. Rebuild rollups when a receipt is corrected. Do not treat a new stream snapshot as another model call.
+
+Metrics exports contain approved low-cardinality labels. Keep sensitive prompts, file paths, user text, and per-record detail in protected evidence, with safe references for drill-down. Retention and erasure apply to findings, manifests, and derived views too. There is no cross-company benchmark dataset in this scope.
+
+## Additions from the 2026-09-20 review
+
+These rows and rules were missing from the catalog and are now required. The representative SQL below carries the ones that fit its subset; the rest are catalog rules for the full migration.
+
+| Table or rule | What it adds and why |
+|---|---|
+| `org.organizations`, `org.org_users`, `auth.users`, `workspace.workspaces` | The customer account is an organization (`org_id`), users live in `auth`, membership is the `org_users` junction, and workspaces have their own schema, matching the product's schema layout. |
+| `enrollment_challenges` W/P | `device_public_key bytea`, `nonce bytea`, `required_attestation_profile text`, `expires_at`, `consumed_at?`; unique org/id. `device.enroll` consumes the challenge in its own transaction, and the attestation transcript signs over the nonce and the device public key. Without this row an enrollment proof replays until expiry and `attestation_evidence_id` can name another device's attestation. |
+| `encryption_key_versions` T/P and `evidence_objects.encryption_key_version_id`, `encryption_context_digest` | `purpose text`, `kms_key_ref text`, `version integer`, `state text CHECK IN ('active','rotating','retired','destroyed')`, `rotated_at?`, `destroyed_at?`. Every evidence object names the key version that wraps it. Key provisioning moves to batch 5, and a re-wrap migration is a gate before batch 20. |
+| `limit_definitions` T/P and `limit_accounts.definition_id`, `workspace_id` | Stable limit identity across policy revisions. `UNIQUE NULLS NOT DISTINCT (org_id, definition_id, workspace_id, scope_object_id, currency, charge_unit)` so a new revision or a renamed policy cannot mint a fresh allowance. In the SQL below. |
+| `runs.root_run_id` | Self for a root run, inherited by every fork and child. Run-scoped limit accounts key on the root run's protected object, so a fork cannot shed cost. |
+| `policy_thresholds.requires_distinct_approver boolean DEFAULT true` and `exception_grants.hard_cap_threshold_id` | A trigger rejects `exception_grants` whose `approver_id` equals the request's `requester_id` or the action's accountable operator, and whose `max_amount_minor` exceeds the governing `hard_cap` threshold in the same policy revision. Self-approval returns 422. |
+| `context_revisions.trust_state`, `context_revisions.origin`, `context_records.state`, and both on `composition_items` | `trust_state CHECK IN ('untrusted','proposed','inferred','verified')`, `origin CHECK IN ('human','agent','external_source','model_output')`, and a promotion state with an approving decision FK. The trust label must survive to the point the text enters the model request; that is the prompt-injection boundary. |
+| `audit_log_leaves` and `audit_log_checkpoints` | `leaf_index bigint`, `leaf_hash bytea`, `event_ref`; `tree_size bigint`, `root_hash bytea`, `signed_at`, `signature bytea`, `witness_ack?`. Backs `audit.inclusion_proof` and `audit.consistency_proof`. Without them chapter 18's tamper-evidence claim had no mechanism. |
+| `ledger_source_events` | FK target for `limit_ledger_entries.source_event_id`, with the derivation fixed per entry kind: reserve uses the hold id, release and settle use the receipt or cancellation event id, adjust uses the correction id. |
+| `credential_references.max_lease_seconds` | Server ceiling on every credential lease; `expires_at` on a lease is server-issued. |
+| Column-level update grants and one-way triggers | No P table is fully updatable by the runtime role. `authority_epochs.epoch` may only advance; a `revoked` principal cannot return to `active`; `idempotency_keys` cannot leave `complete` or change its digest; `governed_actions` may change only `state` and `version` through legal transitions; `protected_objects` may change only `deleted_at`. In the SQL below. |
+| Lock order | Every money writer locks the action row, then accounts in id order one row at a time, then periods in id order one row at a time, then holds, then effect state. `ORDER BY ... FOR UPDATE` is not a lock order in PostgreSQL. Settlement follows the same order. In the SQL below. |
+| Rolling windows | Removed from the subset's `period_kind`. A rolling window needs a windowed aggregate table indexed on `(org_id, account_id, posted_at)` and a compaction rule before it can be admitted. |
+| `orgs.state` and `workspaces.state` | The SQL now carries `provisioning` and a workspace state, so platform provisioning cannot create an active organization and `workspaces.revoke` has a column to write. |
 
 ## Representative core SQL
 
-Download the same [core SQL file](ARP-core-schema.sql). It demonstrates tenant RLS, a single-use action authorization, and a transaction that reserves several limit buckets together.
+Download the same [core SQL file](ARP-core-schema.sql). It demonstrates org RLS, a single-use action authorization, and a transaction that reserves several limit buckets together.
 
 ```sql
 -- Proposed, self-contained PostgreSQL subset; run as a migration owner in an empty database.
 -- UUIDs come from the caller. External object, run, scan and evidence FKs are added by integration.
--- Structurally reviewed, not executed: no PostgreSQL runtime was available. This is not a full migration.
+-- Executed on PostgreSQL 16 on 2026-09-20 (see AUDIT.md): loads cleanly; organization, workspace,
+-- revocation-fence and concurrent-hold tests pass. This is still a representative subset, not a full migration.
+--
+-- Schemas follow the product: auth holds sign-in users, org holds organizations and their members,
+-- workspace holds workspaces, oxagen holds the ARP control records. An organization is the customer
+-- account; older prose calls it an org. Every private row carries org_id.
+CREATE SCHEMA auth;
+CREATE SCHEMA org;
+CREATE SCHEMA workspace;
 CREATE SCHEMA oxagen;
+-- oxagen_runtime is a NOLOGIN group role that holds every runtime privilege. The application connects as
+-- a LOGIN role that is a member of it and of nothing else, for example:
+--   CREATE ROLE oxagen_app LOGIN NOSUPERUSER NOBYPASSRLS NOCREATEROLE NOCREATEDB INHERIT IN ROLE oxagen_runtime;
+-- The migration owner must never grant oxagen_app or oxagen_runtime membership in the owner role.
 CREATE ROLE oxagen_runtime NOLOGIN NOSUPERUSER NOBYPASSRLS;
 SET search_path = oxagen, pg_catalog;
-CREATE TABLE tenants (
-  tenant_id uuid PRIMARY KEY, name text NOT NULL,
-  state text NOT NULL CHECK (state IN ('active','suspended','closing')),
+
+CREATE TABLE auth.users (
+  id uuid PRIMARY KEY, display_name text NOT NULL,
+  state text NOT NULL CHECK (state IN ('active','suspended','deleted')),
   created_at timestamptz NOT NULL DEFAULT now()
 );
-CREATE TABLE workspaces (
-  tenant_id uuid NOT NULL REFERENCES tenants, id uuid NOT NULL, object_id uuid NOT NULL,
+CREATE TABLE org.organizations (
+  org_id uuid PRIMARY KEY, name text NOT NULL,
+  state text NOT NULL CHECK (state IN ('provisioning','active','suspended','closing')),
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+-- Membership of a user in an organization. Roles and record grants live in the IAM tables; this row only
+-- says the user belongs. The first member of a new organization is created with role 'owner' in the same
+-- transaction that activates the organization.
+CREATE TABLE org.org_users (
+  org_id uuid NOT NULL REFERENCES org.organizations, user_id uuid NOT NULL REFERENCES auth.users,
+  membership_role text NOT NULL CHECK (membership_role IN ('owner','member')),
+  state text NOT NULL CHECK (state IN ('active','suspended','removed')),
+  created_at timestamptz NOT NULL DEFAULT now(), removed_at timestamptz,
+  PRIMARY KEY (org_id,user_id)
+);
+CREATE TABLE workspace.workspaces (
+  org_id uuid NOT NULL REFERENCES org.organizations, id uuid NOT NULL, object_id uuid NOT NULL,
   name text NOT NULL, slug text NOT NULL, settings_revision bigint NOT NULL DEFAULT 1 CHECK (settings_revision > 0),
-  created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (tenant_id,id),
-  UNIQUE (tenant_id,slug), UNIQUE (tenant_id,object_id)
+  state text NOT NULL DEFAULT 'active' CHECK (state IN ('active','suspended','revoked')),
+  created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (org_id,id),
+  UNIQUE (org_id,slug), UNIQUE (org_id,object_id)
 );
 CREATE TABLE principals (
-  tenant_id uuid NOT NULL REFERENCES tenants, id uuid NOT NULL, object_id uuid NOT NULL,
+  org_id uuid NOT NULL REFERENCES org.organizations, id uuid NOT NULL, object_id uuid NOT NULL,
   kind text NOT NULL CHECK (kind IN ('human','agent','service','plugin')), display_name text NOT NULL,
+  user_id uuid REFERENCES auth.users,
   state text NOT NULL CHECK (state IN ('active','suspended','revoked')), revoked_at timestamptz,
-  created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (tenant_id,id), UNIQUE (tenant_id,object_id)
+  created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (org_id,id), UNIQUE (org_id,object_id),
+  CHECK ((kind='human') = (user_id IS NOT NULL)),
+  FOREIGN KEY (org_id,user_id) REFERENCES org.org_users (org_id,user_id)
 );
 CREATE TABLE protected_objects (
-  tenant_id uuid NOT NULL REFERENCES tenants, id uuid NOT NULL, workspace_id uuid,
+  org_id uuid NOT NULL REFERENCES org.organizations, id uuid NOT NULL, workspace_id uuid,
   kind text NOT NULL, deleted_at timestamptz, created_at timestamptz NOT NULL DEFAULT now(),
-  PRIMARY KEY (tenant_id,id), FOREIGN KEY (tenant_id,workspace_id) REFERENCES workspaces DEFERRABLE INITIALLY DEFERRED
+  PRIMARY KEY (org_id,id), FOREIGN KEY (org_id,workspace_id) REFERENCES workspace.workspaces DEFERRABLE INITIALLY DEFERRED
 );
-ALTER TABLE workspaces ADD FOREIGN KEY (tenant_id,object_id) REFERENCES protected_objects DEFERRABLE INITIALLY DEFERRED;
-ALTER TABLE principals ADD FOREIGN KEY (tenant_id,object_id) REFERENCES protected_objects DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE workspace.workspaces ADD FOREIGN KEY (org_id,object_id) REFERENCES protected_objects DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE principals ADD FOREIGN KEY (org_id,object_id) REFERENCES protected_objects DEFERRABLE INITIALLY DEFERRED;
 CREATE TABLE governed_actions (
-  tenant_id uuid NOT NULL REFERENCES tenants, id uuid NOT NULL, object_id uuid NOT NULL,
+  org_id uuid NOT NULL REFERENCES org.organizations, id uuid NOT NULL, object_id uuid NOT NULL,
   workspace_id uuid, run_id uuid, principal_id uuid NOT NULL, capability text NOT NULL,
-  context_kind text NOT NULL CHECK (context_kind IN ('run','workspace_admin','tenant_admin')),
+  context_kind text NOT NULL CHECK (context_kind IN ('run','workspace_admin','org_admin')),
   state text NOT NULL CHECK (state IN ('proposed','denied','approved','running','completed','failed','unknown')),
   version bigint NOT NULL DEFAULT 1 CHECK (version > 0), input_object_id uuid NOT NULL, scan_receipt_id uuid NOT NULL,
-  created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (tenant_id,id), UNIQUE (tenant_id,object_id),
-  FOREIGN KEY (tenant_id,workspace_id) REFERENCES workspaces,
-  FOREIGN KEY (tenant_id,principal_id) REFERENCES principals,
-  FOREIGN KEY (tenant_id,object_id) REFERENCES protected_objects,
+  created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (org_id,id), UNIQUE (org_id,object_id),
+  FOREIGN KEY (org_id,workspace_id) REFERENCES workspace.workspaces,
+  FOREIGN KEY (org_id,principal_id) REFERENCES principals,
+  FOREIGN KEY (org_id,object_id) REFERENCES protected_objects,
   CHECK ((context_kind='run' AND workspace_id IS NOT NULL AND run_id IS NOT NULL)
       OR (context_kind='workspace_admin' AND workspace_id IS NOT NULL AND run_id IS NULL)
-      OR (context_kind='tenant_admin' AND workspace_id IS NULL AND run_id IS NULL))
+      OR (context_kind='org_admin' AND workspace_id IS NULL AND run_id IS NULL))
 );
 -- Full schema adds run_id -> runs, input_object_id -> evidence_objects, scan_receipt_id -> scan_receipts.
 CREATE TABLE action_attempts (
-  tenant_id uuid NOT NULL, id uuid NOT NULL, action_id uuid NOT NULL, attempt_no integer NOT NULL CHECK (attempt_no > 0),
+  org_id uuid NOT NULL, id uuid NOT NULL, action_id uuid NOT NULL, attempt_no integer NOT NULL CHECK (attempt_no > 0),
   state text NOT NULL CHECK (state IN ('proposed','authorized','dispatched','completed','failed','unknown')),
   provider_idempotency_key text, started_at timestamptz, finished_at timestamptz,
-  created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (tenant_id,id),
-  UNIQUE (tenant_id,action_id,attempt_no), UNIQUE (tenant_id,action_id,id),
-  FOREIGN KEY (tenant_id,action_id) REFERENCES governed_actions,
+  created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (org_id,id),
+  UNIQUE (org_id,action_id,attempt_no), UNIQUE (org_id,action_id,id),
+  FOREIGN KEY (org_id,action_id) REFERENCES governed_actions,
   CHECK (finished_at IS NULL OR started_at IS NULL OR finished_at >= started_at)
 );
 CREATE TABLE action_authorizations (
-  tenant_id uuid NOT NULL, id uuid NOT NULL, action_id uuid NOT NULL, attempt_id uuid NOT NULL,
+  org_id uuid NOT NULL, id uuid NOT NULL, action_id uuid NOT NULL, attempt_id uuid NOT NULL,
   decision_id uuid NOT NULL, audience_principal_id uuid NOT NULL, scan_receipt_id uuid NOT NULL,
   request_digest bytea NOT NULL CHECK (octet_length(request_digest)=32),
   run_control_epoch bigint CHECK (run_control_epoch>=0), owner_epoch bigint CHECK (owner_epoch>0),
   scope_count integer NOT NULL CHECK (scope_count>0), expires_at timestamptz NOT NULL, consumed_at timestamptz,
-  proof_object_id uuid NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (tenant_id,id),
-  UNIQUE (tenant_id,attempt_id), FOREIGN KEY (tenant_id,action_id,attempt_id) REFERENCES action_attempts (tenant_id,action_id,id),
-  FOREIGN KEY (tenant_id,audience_principal_id) REFERENCES principals, CHECK (expires_at > created_at),
+  proof_object_id uuid NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (org_id,id),
+  UNIQUE (org_id,attempt_id), FOREIGN KEY (org_id,action_id,attempt_id) REFERENCES action_attempts (org_id,action_id,id),
+  FOREIGN KEY (org_id,audience_principal_id) REFERENCES principals, CHECK (expires_at > created_at),
   CHECK ((run_control_epoch IS NULL)=(owner_epoch IS NULL))
 );
 CREATE TABLE authority_epochs (
-  tenant_id uuid NOT NULL, id uuid NOT NULL, scope_object_id uuid NOT NULL, epoch bigint NOT NULL DEFAULT 1 CHECK (epoch>0),
+  org_id uuid NOT NULL, id uuid NOT NULL, scope_object_id uuid NOT NULL, epoch bigint NOT NULL DEFAULT 1 CHECK (epoch>0),
   changed_at timestamptz NOT NULL DEFAULT now(), reason_code text NOT NULL, created_at timestamptz NOT NULL DEFAULT now(),
-  PRIMARY KEY (tenant_id,id), UNIQUE (tenant_id,scope_object_id), FOREIGN KEY (tenant_id,scope_object_id) REFERENCES protected_objects
+  PRIMARY KEY (org_id,id), UNIQUE (org_id,scope_object_id), FOREIGN KEY (org_id,scope_object_id) REFERENCES protected_objects
 );
 CREATE TABLE authorization_scope_epochs (
-  tenant_id uuid NOT NULL, id uuid NOT NULL, authorization_id uuid NOT NULL, scope_object_id uuid NOT NULL,
-  observed_epoch bigint NOT NULL CHECK (observed_epoch>0), created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (tenant_id,id),
-  UNIQUE (tenant_id,authorization_id,scope_object_id), FOREIGN KEY (tenant_id,authorization_id) REFERENCES action_authorizations,
-  FOREIGN KEY (tenant_id,scope_object_id) REFERENCES authority_epochs (tenant_id,scope_object_id)
+  org_id uuid NOT NULL, id uuid NOT NULL, authorization_id uuid NOT NULL, scope_object_id uuid NOT NULL,
+  observed_epoch bigint NOT NULL CHECK (observed_epoch>0), created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (org_id,id),
+  UNIQUE (org_id,authorization_id,scope_object_id), FOREIGN KEY (org_id,authorization_id) REFERENCES action_authorizations,
+  FOREIGN KEY (org_id,scope_object_id) REFERENCES authority_epochs (org_id,scope_object_id)
 );
 -- Integration adds decision_id -> matching authorization_decisions, scan_receipt_id -> scan_receipts,
 -- proof_object_id -> evidence_objects. Signed proofs contain no live bearer credential.
+-- A limit definition is the stable identity of one limit across policy revisions. Renaming a policy,
+-- publishing a new revision, or creating an agent must not mint a fresh allowance, so accounts key on
+-- the definition, not on the revision.
+CREATE TABLE limit_definitions (
+  org_id uuid NOT NULL REFERENCES org.organizations, id uuid NOT NULL, name text NOT NULL,
+  capability text NOT NULL, state text NOT NULL CHECK (state IN ('active','retired')),
+  created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (org_id,id)
+);
 CREATE TABLE limit_accounts (
-  tenant_id uuid NOT NULL, id uuid NOT NULL, object_id uuid NOT NULL, scope_object_id uuid NOT NULL,
+  org_id uuid NOT NULL, id uuid NOT NULL, object_id uuid NOT NULL, definition_id uuid NOT NULL,
+  workspace_id uuid, scope_object_id uuid NOT NULL,
   capability text NOT NULL, currency char(3) NOT NULL CHECK (currency ~ '^[A-Z]{3}$'), charge_unit text NOT NULL,
   rule_revision_id uuid NOT NULL, cap_kind text NOT NULL CHECK (cap_kind IN ('fixed','ratio')),
   cap_minor bigint, ratio_numerator bigint, ratio_denominator bigint,
-  period_kind text NOT NULL CHECK (period_kind IN ('lifetime','calendar_day','rolling')),
+  period_kind text NOT NULL CHECK (period_kind IN ('lifetime','calendar_day')),
   timezone_name text NOT NULL, event_basis text NOT NULL, state text NOT NULL CHECK (state IN ('active','frozen','closed')),
-  created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (tenant_id,id), UNIQUE (tenant_id,object_id),
-  FOREIGN KEY (tenant_id,object_id) REFERENCES protected_objects,
-  FOREIGN KEY (tenant_id,scope_object_id) REFERENCES protected_objects,
+  created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (org_id,id), UNIQUE (org_id,object_id),
+  UNIQUE NULLS NOT DISTINCT (org_id,definition_id,workspace_id,scope_object_id,currency,charge_unit),
+  FOREIGN KEY (org_id,definition_id) REFERENCES limit_definitions,
+  FOREIGN KEY (org_id,workspace_id) REFERENCES workspace.workspaces,
+  FOREIGN KEY (org_id,object_id) REFERENCES protected_objects,
+  FOREIGN KEY (org_id,scope_object_id) REFERENCES protected_objects,
   CHECK ((cap_kind='fixed' AND cap_minor IS NOT NULL AND cap_minor>=0 AND ratio_numerator IS NULL AND ratio_denominator IS NULL)
       OR (cap_kind='ratio' AND cap_minor IS NULL AND ratio_numerator IS NOT NULL AND ratio_denominator IS NOT NULL
           AND ratio_numerator>=0 AND ratio_denominator>0 AND ratio_numerator<=ratio_denominator))
 );
--- Integration adds rule_revision_id -> policy_revisions. Rolling windows require serialized overlap accounting.
+-- Integration adds rule_revision_id -> policy_revisions. Rolling windows are not in this subset: a running
+-- total cannot age amounts out, so the full catalog adds a windowed aggregate table indexed on
+-- (org_id, account_id, posted_at) with a stated compaction rule before 'rolling' is allowed.
 CREATE TABLE limit_periods (
-  tenant_id uuid NOT NULL, id uuid NOT NULL, account_id uuid NOT NULL,
+  org_id uuid NOT NULL, id uuid NOT NULL, account_id uuid NOT NULL,
   cap_fact_id uuid, period_start timestamptz NOT NULL, period_end timestamptz NOT NULL,
   effective_cap_minor bigint NOT NULL CHECK (effective_cap_minor>=0),
   used_minor bigint NOT NULL DEFAULT 0 CHECK (used_minor>=0), held_minor bigint NOT NULL DEFAULT 0 CHECK (held_minor>=0),
   version bigint NOT NULL DEFAULT 1 CHECK (version>0), frozen boolean NOT NULL DEFAULT false,
-  created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (tenant_id,id), UNIQUE (tenant_id,account_id,period_start),
-  FOREIGN KEY (tenant_id,account_id) REFERENCES limit_accounts, CHECK (period_end>period_start)
+  created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (org_id,id), UNIQUE (org_id,account_id,period_start),
+  FOREIGN KEY (org_id,account_id) REFERENCES limit_accounts, CHECK (period_end>period_start)
 );
 CREATE TABLE limit_holds (
-  tenant_id uuid NOT NULL, id uuid NOT NULL, action_id uuid NOT NULL, attempt_id uuid NOT NULL,
+  org_id uuid NOT NULL, id uuid NOT NULL, action_id uuid NOT NULL, attempt_id uuid NOT NULL,
   state text NOT NULL CHECK (state IN ('held','settled','released','unknown')), expires_at timestamptz,
-  created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (tenant_id,id), UNIQUE (tenant_id,attempt_id),
-  FOREIGN KEY (tenant_id,action_id,attempt_id) REFERENCES action_attempts (tenant_id,action_id,id)
+  created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (org_id,id), UNIQUE (org_id,attempt_id),
+  FOREIGN KEY (org_id,action_id,attempt_id) REFERENCES action_attempts (org_id,action_id,id)
 );
 CREATE TABLE limit_reservations (
-  tenant_id uuid NOT NULL, id uuid NOT NULL, hold_id uuid NOT NULL, period_id uuid NOT NULL,
+  org_id uuid NOT NULL, id uuid NOT NULL, hold_id uuid NOT NULL, period_id uuid NOT NULL,
   amount_minor bigint NOT NULL CHECK (amount_minor>0), currency char(3) NOT NULL, fx_quote_id uuid, price_schedule_id uuid,
   created_at timestamptz NOT NULL DEFAULT now(),
-  PRIMARY KEY (tenant_id,id), UNIQUE (tenant_id,hold_id,period_id),
-  FOREIGN KEY (tenant_id,hold_id) REFERENCES limit_holds, FOREIGN KEY (tenant_id,period_id) REFERENCES limit_periods
+  PRIMARY KEY (org_id,id), UNIQUE (org_id,hold_id,period_id),
+  FOREIGN KEY (org_id,hold_id) REFERENCES limit_holds, FOREIGN KEY (org_id,period_id) REFERENCES limit_periods
 );
+-- source_event_id makes postings idempotent per period. Its derivation is fixed per entry kind: reserve uses
+-- the hold id; release and settle use the id of the trusted receipt or cancellation event that caused them;
+-- adjust uses the id of the recorded correction. The full catalog adds ledger_source_events as the FK target.
 CREATE TABLE limit_ledger_entries (
-  tenant_id uuid NOT NULL, id uuid NOT NULL, period_id uuid NOT NULL, hold_id uuid,
+  org_id uuid NOT NULL, id uuid NOT NULL, period_id uuid NOT NULL, hold_id uuid,
   entry_kind text NOT NULL CHECK (entry_kind IN ('reserve','release','settle','adjust')),
   held_delta bigint NOT NULL, used_delta bigint NOT NULL, source_event_id uuid NOT NULL,
-  posted_at timestamptz NOT NULL DEFAULT now(), created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (tenant_id,id),
-  UNIQUE (tenant_id,period_id,source_event_id), FOREIGN KEY (tenant_id,period_id) REFERENCES limit_periods,
-  FOREIGN KEY (tenant_id,hold_id) REFERENCES limit_holds,
+  posted_at timestamptz NOT NULL DEFAULT now(), created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (org_id,id),
+  UNIQUE (org_id,period_id,source_event_id), FOREIGN KEY (org_id,period_id) REFERENCES limit_periods,
+  FOREIGN KEY (org_id,hold_id) REFERENCES limit_holds,
   CHECK ((entry_kind='reserve' AND held_delta>0 AND used_delta=0)
       OR (entry_kind='release' AND held_delta<0 AND used_delta=0)
       OR (entry_kind='settle' AND held_delta<=0 AND used_delta>=0)
       OR entry_kind='adjust')
 );
 CREATE TABLE idempotency_keys (
-  tenant_id uuid NOT NULL, id uuid NOT NULL, principal_id uuid NOT NULL, operation text NOT NULL, key text NOT NULL,
+  org_id uuid NOT NULL, id uuid NOT NULL, principal_id uuid NOT NULL, operation text NOT NULL, key text NOT NULL,
   request_digest bytea NOT NULL CHECK (octet_length(request_digest)=32), response_object_id uuid,
   state text NOT NULL CHECK (state IN ('pending','complete','unknown')), expires_at timestamptz NOT NULL,
-  created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (tenant_id,id), UNIQUE (tenant_id,principal_id,operation,key),
-  FOREIGN KEY (tenant_id,principal_id) REFERENCES principals, FOREIGN KEY (tenant_id,response_object_id) REFERENCES protected_objects,
+  created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (org_id,id), UNIQUE (org_id,principal_id,operation,key),
+  FOREIGN KEY (org_id,principal_id) REFERENCES principals, FOREIGN KEY (org_id,response_object_id) REFERENCES protected_objects,
   CHECK (length(key) BETWEEN 1 AND 200), CHECK (expires_at>created_at)
 );
 CREATE TABLE outbox_events (
-  tenant_id uuid NOT NULL, id uuid NOT NULL, aggregate_object_id uuid NOT NULL, aggregate_version bigint NOT NULL CHECK (aggregate_version>0),
+  org_id uuid NOT NULL, id uuid NOT NULL, aggregate_object_id uuid NOT NULL, aggregate_version bigint NOT NULL CHECK (aggregate_version>0),
   event_type text NOT NULL, payload_object_id uuid NOT NULL, available_at timestamptz NOT NULL DEFAULT now(),
   published_at timestamptz, attempt_count integer NOT NULL DEFAULT 0 CHECK (attempt_count>=0),
-  created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (tenant_id,id),
-  UNIQUE (tenant_id,aggregate_object_id,aggregate_version,event_type),
-  FOREIGN KEY (tenant_id,aggregate_object_id) REFERENCES protected_objects
+  created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (org_id,id),
+  UNIQUE (org_id,aggregate_object_id,aggregate_version,event_type),
+  FOREIGN KEY (org_id,aggregate_object_id) REFERENCES protected_objects
 );
 -- Integration adds outbox_events.payload_object_id -> evidence_objects; only cleaned payloads enter this table.
-CREATE INDEX actions_by_run ON governed_actions (tenant_id,run_id,created_at,id);
-CREATE INDEX objects_by_workspace ON protected_objects (tenant_id,workspace_id,id);
-CREATE INDEX reservations_by_period ON limit_reservations (tenant_id,period_id,hold_id);
-CREATE INDEX ledger_by_hold ON limit_ledger_entries (tenant_id,hold_id,posted_at,id);
-CREATE INDEX pending_outbox ON outbox_events (available_at,id) WHERE published_at IS NULL;
-CREATE INDEX pending_authorizations ON action_authorizations (tenant_id,expires_at,id) WHERE consumed_at IS NULL;
+CREATE INDEX actions_by_run ON governed_actions (org_id,run_id,created_at,id);
+CREATE INDEX objects_by_workspace ON protected_objects (org_id,workspace_id,id);
+CREATE INDEX accounts_by_scope ON limit_accounts (org_id,scope_object_id,capability) WHERE state='active';
+CREATE INDEX reservations_by_period ON limit_reservations (org_id,period_id,hold_id);
+CREATE INDEX ledger_by_hold ON limit_ledger_entries (org_id,hold_id,posted_at,id);
+-- The outbox relay runs once per organization under that organization's scope, so the index is org-prefixed.
+-- There is no global cross-organization poller; FORCE ROW LEVEL SECURITY would return it nothing.
+CREATE INDEX pending_outbox ON outbox_events (org_id,available_at,id) WHERE published_at IS NULL;
+CREATE INDEX pending_authorizations ON action_authorizations (org_id,expires_at,id) WHERE consumed_at IS NULL;
+CREATE INDEX expired_idempotency_keys ON idempotency_keys (expires_at,org_id,id);
+
+-- Column-level write protection. Revocation, ledger, authorization, and identity columns cannot be rewritten
+-- by the runtime role; triggers below make the remaining transitions one-way.
+CREATE FUNCTION forbid_identity_change() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF NEW.org_id IS DISTINCT FROM OLD.org_id THEN RAISE EXCEPTION 'ORG_CHANGE_FORBIDDEN'; END IF;
+  IF TG_TABLE_NAME IN ('protected_objects','governed_actions') AND NEW.workspace_id IS DISTINCT FROM OLD.workspace_id THEN
+    RAISE EXCEPTION 'WORKSPACE_MOVE_FORBIDDEN'; END IF;
+  RETURN NEW;
+END $$;
+CREATE FUNCTION epoch_only_advances() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF NEW.epoch <= OLD.epoch THEN RAISE EXCEPTION 'EPOCH_MUST_ADVANCE'; END IF;
+  RETURN NEW;
+END $$;
+CREATE FUNCTION revocation_is_final() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF OLD.state='revoked' AND (NEW.state<>'revoked' OR NEW.revoked_at IS DISTINCT FROM OLD.revoked_at) THEN
+    RAISE EXCEPTION 'REVOCATION_IS_FINAL'; END IF;
+  IF NEW.state='revoked' AND NEW.revoked_at IS NULL THEN RAISE EXCEPTION 'REVOKED_AT_REQUIRED'; END IF;
+  RETURN NEW;
+END $$;
+CREATE FUNCTION idempotency_key_is_final() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF OLD.state='complete' AND NEW.state<>'complete' THEN RAISE EXCEPTION 'IDEMPOTENCY_STATE_FINAL'; END IF;
+  RETURN NEW;
+END $$;
+CREATE FUNCTION action_state_transition() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE ok boolean;
+BEGIN
+  ok := (OLD.state,NEW.state) IN (('proposed','denied'),('proposed','approved'),('approved','running'),('approved','denied'),
+         ('running','completed'),('running','failed'),('running','unknown'),('unknown','completed'),('unknown','failed'))
+        OR OLD.state=NEW.state;
+  IF NOT ok THEN RAISE EXCEPTION 'ILLEGAL_ACTION_TRANSITION % -> %', OLD.state, NEW.state; END IF;
+  IF NEW.state<>OLD.state AND NEW.version<=OLD.version THEN RAISE EXCEPTION 'VERSION_MUST_ADVANCE'; END IF;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER protected_objects_identity BEFORE UPDATE ON protected_objects FOR EACH ROW EXECUTE FUNCTION forbid_identity_change();
+CREATE TRIGGER governed_actions_identity BEFORE UPDATE ON governed_actions FOR EACH ROW EXECUTE FUNCTION forbid_identity_change();
+CREATE TRIGGER governed_actions_transition BEFORE UPDATE ON governed_actions FOR EACH ROW EXECUTE FUNCTION action_state_transition();
+CREATE TRIGGER authority_epochs_advance BEFORE UPDATE ON authority_epochs FOR EACH ROW EXECUTE FUNCTION epoch_only_advances();
+CREATE TRIGGER principals_revocation BEFORE UPDATE ON principals FOR EACH ROW EXECUTE FUNCTION revocation_is_final();
+CREATE TRIGGER idempotency_keys_final BEFORE UPDATE ON idempotency_keys FOR EACH ROW EXECUTE FUNCTION idempotency_key_is_final();
+
 -- RLS is a floor. Per-record IAM remains mandatory at the checked API and query layer.
+-- Threat model: RLS keyed on a transaction setting stops application logic that forgets a WHERE clause.
+-- It does not stop SQL injection executed with the runtime role, because an injected statement can set the
+-- scope itself. Services must use parameterized statements only, never build SQL from input, and a lint gate
+-- must reject dynamic SQL. The design does not claim RLS defends against injection.
 DO $$ DECLARE t text; BEGIN
-  FOREACH t IN ARRAY ARRAY['tenants','workspaces','principals','protected_objects','governed_actions','action_attempts',
-    'action_authorizations','authority_epochs','authorization_scope_epochs','limit_accounts','limit_periods','limit_holds','limit_reservations','limit_ledger_entries','idempotency_keys','outbox_events'] LOOP
+  FOREACH t IN ARRAY ARRAY['principals','protected_objects','governed_actions','action_attempts',
+    'action_authorizations','authority_epochs','authorization_scope_epochs','limit_definitions','limit_accounts','limit_periods',
+    'limit_holds','limit_reservations','limit_ledger_entries','idempotency_keys','outbox_events'] LOOP
     EXECUTE format('ALTER TABLE oxagen.%I ENABLE ROW LEVEL SECURITY',t);
     EXECUTE format('ALTER TABLE oxagen.%I FORCE ROW LEVEL SECURITY',t);
-    EXECUTE format('CREATE POLICY tenant_scope ON oxagen.%I USING
-      (tenant_id = nullif(current_setting(''oxagen.tenant_id'',true),'''')::uuid) WITH CHECK
-      (tenant_id = nullif(current_setting(''oxagen.tenant_id'',true),'''')::uuid)',t);
+    EXECUTE format('CREATE POLICY org_scope ON oxagen.%I USING
+      (org_id = nullif(current_setting(''oxagen.org_id'',true),'''')::uuid) WITH CHECK
+      (org_id = nullif(current_setting(''oxagen.org_id'',true),'''')::uuid)',t);
   END LOOP;
 END $$;
-CREATE POLICY workspace_scope ON workspaces AS RESTRICTIVE USING
-  (id=nullif(current_setting('oxagen.workspace_id',true),'')::uuid)
-  WITH CHECK (id=nullif(current_setting('oxagen.workspace_id',true),'')::uuid);
+ALTER TABLE org.organizations ENABLE ROW LEVEL SECURITY; ALTER TABLE org.organizations FORCE ROW LEVEL SECURITY;
+CREATE POLICY org_scope ON org.organizations USING (org_id = nullif(current_setting('oxagen.org_id',true),'')::uuid)
+  WITH CHECK (org_id = nullif(current_setting('oxagen.org_id',true),'')::uuid);
+ALTER TABLE org.org_users ENABLE ROW LEVEL SECURITY; ALTER TABLE org.org_users FORCE ROW LEVEL SECURITY;
+CREATE POLICY org_scope ON org.org_users USING (org_id = nullif(current_setting('oxagen.org_id',true),'')::uuid)
+  WITH CHECK (org_id = nullif(current_setting('oxagen.org_id',true),'')::uuid);
+ALTER TABLE workspace.workspaces ENABLE ROW LEVEL SECURITY; ALTER TABLE workspace.workspaces FORCE ROW LEVEL SECURITY;
+CREATE POLICY org_scope ON workspace.workspaces USING (org_id = nullif(current_setting('oxagen.org_id',true),'')::uuid)
+  WITH CHECK (org_id = nullif(current_setting('oxagen.org_id',true),'')::uuid);
+-- A user row is visible only through a membership in the current organization. Users are global rows, so
+-- the scoped runtime never lists them without that join.
+ALTER TABLE auth.users ENABLE ROW LEVEL SECURITY; ALTER TABLE auth.users FORCE ROW LEVEL SECURITY;
+CREATE POLICY member_of_current_org ON auth.users USING
+  (EXISTS (SELECT 1 FROM org.org_users ou WHERE ou.user_id=users.id
+     AND ou.org_id = nullif(current_setting('oxagen.org_id',true),'')::uuid));
+-- Workspace scope has two verified shapes. A run or workspace-admin transaction sets
+-- oxagen.workspace_id and sees one workspace. An organization-admin transaction (workspace picker,
+-- cross-workspace spend and audit views, org-level policy templates) sets
+-- oxagen.scope_kind='org' and no workspace_id. Any other combination denies. The trusted
+-- service sets scope_kind only after checking the caller's organization-level grant.
+CREATE FUNCTION workspace_scope_allows(p_workspace uuid) RETURNS boolean
+LANGUAGE sql STABLE SET search_path=oxagen,pg_catalog AS $$
+  SELECT CASE
+    WHEN nullif(current_setting('oxagen.workspace_id',true),'') IS NOT NULL
+      THEN p_workspace = nullif(current_setting('oxagen.workspace_id',true),'')::uuid
+    WHEN current_setting('oxagen.scope_kind',true) = 'org' THEN true
+    ELSE false END
+$$;
+CREATE FUNCTION org_scope_allows() RETURNS boolean
+LANGUAGE sql STABLE AS $$ SELECT current_setting('oxagen.scope_kind',true) = 'org' $$;
+CREATE POLICY workspace_scope ON workspace.workspaces AS RESTRICTIVE USING
+  (oxagen.workspace_scope_allows(id)) WITH CHECK (oxagen.workspace_scope_allows(id));
+-- Org-wide objects such as principals stay readable from a workspace scope because workspace rows reference
+-- them. Creating or changing an org-wide object needs org scope.
 CREATE POLICY workspace_scope ON protected_objects AS RESTRICTIVE USING
-  (workspace_id IS NULL OR workspace_id=nullif(current_setting('oxagen.workspace_id',true),'')::uuid)
-  WITH CHECK (workspace_id IS NULL OR workspace_id=nullif(current_setting('oxagen.workspace_id',true),'')::uuid);
+  (workspace_id IS NULL OR workspace_scope_allows(workspace_id))
+  WITH CHECK (CASE WHEN workspace_id IS NULL THEN org_scope_allows() ELSE workspace_scope_allows(workspace_id) END);
+-- org_admin actions are the most privileged class; a workspace-scoped session may neither read nor create them.
 CREATE POLICY workspace_scope ON governed_actions AS RESTRICTIVE USING
-  (workspace_id IS NULL OR workspace_id=nullif(current_setting('oxagen.workspace_id',true),'')::uuid)
-  WITH CHECK (workspace_id IS NULL OR workspace_id=nullif(current_setting('oxagen.workspace_id',true),'')::uuid);
--- Child tables inherit the visible parent's workspace floor. Global IAM principals remain tenant-wide.
+  (CASE WHEN workspace_id IS NULL THEN org_scope_allows() ELSE workspace_scope_allows(workspace_id) END)
+  WITH CHECK (CASE WHEN workspace_id IS NULL THEN org_scope_allows() ELSE workspace_scope_allows(workspace_id) END);
+CREATE POLICY workspace_scope ON limit_accounts AS RESTRICTIVE USING
+  (workspace_id IS NULL OR workspace_scope_allows(workspace_id))
+  WITH CHECK (CASE WHEN workspace_id IS NULL THEN org_scope_allows() ELSE workspace_scope_allows(workspace_id) END);
+-- Child tables inherit the visible parent's workspace floor. Global IAM principals remain org-wide.
 CREATE POLICY action_scope ON action_attempts AS RESTRICTIVE USING
-  (EXISTS (SELECT 1 FROM governed_actions a WHERE a.tenant_id=action_attempts.tenant_id AND a.id=action_attempts.action_id));
+  (EXISTS (SELECT 1 FROM governed_actions a WHERE a.org_id=action_attempts.org_id AND a.id=action_attempts.action_id));
 CREATE POLICY action_scope ON action_authorizations AS RESTRICTIVE USING
-  (EXISTS (SELECT 1 FROM governed_actions a WHERE a.tenant_id=action_authorizations.tenant_id AND a.id=action_authorizations.action_id));
+  (EXISTS (SELECT 1 FROM governed_actions a WHERE a.org_id=action_authorizations.org_id AND a.id=action_authorizations.action_id));
 CREATE POLICY scope_object ON authority_epochs AS RESTRICTIVE USING
-  (EXISTS (SELECT 1 FROM protected_objects o WHERE o.tenant_id=authority_epochs.tenant_id AND o.id=authority_epochs.scope_object_id));
+  (EXISTS (SELECT 1 FROM protected_objects o WHERE o.org_id=authority_epochs.org_id AND o.id=authority_epochs.scope_object_id));
 CREATE POLICY parent_scope ON authorization_scope_epochs AS RESTRICTIVE USING
-  (EXISTS (SELECT 1 FROM action_authorizations a WHERE a.tenant_id=authorization_scope_epochs.tenant_id AND a.id=authorization_scope_epochs.authorization_id));
-CREATE POLICY object_scope ON limit_accounts AS RESTRICTIVE USING
-  (EXISTS (SELECT 1 FROM protected_objects o WHERE o.tenant_id=limit_accounts.tenant_id AND o.id=limit_accounts.scope_object_id));
+  (EXISTS (SELECT 1 FROM action_authorizations a WHERE a.org_id=authorization_scope_epochs.org_id AND a.id=authorization_scope_epochs.authorization_id));
 CREATE POLICY account_scope ON limit_periods AS RESTRICTIVE USING
-  (EXISTS (SELECT 1 FROM limit_accounts a WHERE a.tenant_id=limit_periods.tenant_id AND a.id=limit_periods.account_id));
+  (EXISTS (SELECT 1 FROM limit_accounts a WHERE a.org_id=limit_periods.org_id AND a.id=limit_periods.account_id));
 CREATE POLICY action_scope ON limit_holds AS RESTRICTIVE USING
-  (EXISTS (SELECT 1 FROM governed_actions a WHERE a.tenant_id=limit_holds.tenant_id AND a.id=limit_holds.action_id));
+  (EXISTS (SELECT 1 FROM governed_actions a WHERE a.org_id=limit_holds.org_id AND a.id=limit_holds.action_id));
 CREATE POLICY hold_scope ON limit_reservations AS RESTRICTIVE USING
-  (EXISTS (SELECT 1 FROM limit_holds h WHERE h.tenant_id=limit_reservations.tenant_id AND h.id=limit_reservations.hold_id));
+  (EXISTS (SELECT 1 FROM limit_holds h WHERE h.org_id=limit_reservations.org_id AND h.id=limit_reservations.hold_id));
 CREATE POLICY period_scope ON limit_ledger_entries AS RESTRICTIVE USING
-  (EXISTS (SELECT 1 FROM limit_periods p WHERE p.tenant_id=limit_ledger_entries.tenant_id AND p.id=limit_ledger_entries.period_id));
+  (EXISTS (SELECT 1 FROM limit_periods p WHERE p.org_id=limit_ledger_entries.org_id AND p.id=limit_ledger_entries.period_id));
 CREATE POLICY object_scope ON outbox_events AS RESTRICTIVE USING
-  (EXISTS (SELECT 1 FROM protected_objects o WHERE o.tenant_id=outbox_events.tenant_id AND o.id=outbox_events.aggregate_object_id));
+  (EXISTS (SELECT 1 FROM protected_objects o WHERE o.org_id=outbox_events.org_id AND o.id=outbox_events.aggregate_object_id));
 -- Without an explicit WITH CHECK, PostgreSQL applies these USING expressions to new rows too.
-GRANT USAGE ON SCHEMA oxagen TO oxagen_runtime;
-GRANT SELECT,INSERT,UPDATE ON ALL TABLES IN SCHEMA oxagen TO oxagen_runtime;
-REVOKE UPDATE ON limit_ledger_entries,limit_reservations,limit_periods,limit_holds,action_authorizations,authorization_scope_epochs,outbox_events FROM oxagen_runtime;
+GRANT USAGE ON SCHEMA auth,org,workspace,oxagen TO oxagen_runtime;
+GRANT SELECT ON auth.users TO oxagen_runtime;
+GRANT SELECT,INSERT ON org.organizations,org.org_users,workspace.workspaces TO oxagen_runtime;
+GRANT UPDATE (state) ON org.organizations TO oxagen_runtime;
+GRANT UPDATE (membership_role,state,removed_at) ON org.org_users TO oxagen_runtime;
+GRANT UPDATE (name,settings_revision,state) ON workspace.workspaces TO oxagen_runtime;
+GRANT SELECT,INSERT ON ALL TABLES IN SCHEMA oxagen TO oxagen_runtime;
+-- No table in oxagen is fully updatable by the runtime role. Each grant below names the columns a
+-- transition may touch; identity, scope, digest, and posted amounts are never among them.
+GRANT UPDATE (state,revoked_at,display_name) ON principals TO oxagen_runtime;
+GRANT UPDATE (deleted_at) ON protected_objects TO oxagen_runtime;
+GRANT UPDATE (state,version) ON governed_actions TO oxagen_runtime;
+GRANT UPDATE (state,started_at,finished_at) ON action_attempts TO oxagen_runtime;
+GRANT UPDATE (epoch,changed_at,reason_code) ON authority_epochs TO oxagen_runtime;
+GRANT UPDATE (state) ON limit_definitions TO oxagen_runtime;
+GRANT UPDATE (state,rule_revision_id) ON limit_accounts TO oxagen_runtime;
 GRANT UPDATE (effective_cap_minor,cap_fact_id,used_minor,held_minor,version,frozen) ON limit_periods TO oxagen_runtime;
 GRANT UPDATE (state,expires_at) ON limit_holds TO oxagen_runtime;
 GRANT UPDATE (consumed_at) ON action_authorizations TO oxagen_runtime;
+GRANT UPDATE (state,response_object_id) ON idempotency_keys TO oxagen_runtime;
 GRANT UPDATE (available_at,published_at,attempt_count) ON outbox_events TO oxagen_runtime;
 -- Never grant this role to a browser/agent or expose arbitrary SQL. Session settings are not unforgeable identity.
--- A trusted service begins EVERY transaction with set_config(..., true) for verified tenant/workspace scope.
+-- A trusted service begins EVERY transaction with set_config(..., true) for verified org/workspace scope.
+-- Use transaction-mode connection pooling only. Session-mode pooling or a plain SET (not SET LOCAL /
+-- set_config(..., true)) can leak one organization's scope into the next borrower of the connection.
 -- Missing scope returns no rows; invalid UUID scope errors. SET LOCAL resets on commit/rollback, preventing pool leakage.
-CREATE FUNCTION reserve_limit_hold(p_tenant uuid,p_hold uuid,p_action uuid,p_attempt uuid,
-  p_periods uuid[],p_amounts bigint[],p_reservation_ids uuid[],p_ledger_ids uuid[]) RETURNS void
+--
+-- Lock order for every writer that touches money: governed_actions row, then limit_accounts rows in id order
+-- one at a time, then limit_periods rows in id order one at a time, then limit_holds, then effect state.
+-- Settlement, release, and adjustment follow this same order. ORDER BY ... FOR UPDATE does not guarantee
+-- acquisition order in PostgreSQL, so the procedure locks one row per iteration over a sorted array.
+CREATE FUNCTION reserve_limit_hold(p_org uuid,p_hold uuid,p_action uuid,p_attempt uuid,
+  p_scope_object_ids uuid[],p_periods uuid[],p_amounts bigint[],p_reservation_ids uuid[],p_ledger_ids uuid[]) RETURNS text
 LANGUAGE plpgsql SECURITY INVOKER SET search_path=oxagen,pg_catalog AS $$
-DECLARE n integer; i integer; found_count integer; p record;
+DECLARE n integer; i integer; found_count integer; required_count integer; p record; v_capability text;
+        v_account_ids uuid[]; v_period_ids uuid[]; v_id uuid;
 BEGIN
-  IF p_tenant IS DISTINCT FROM nullif(current_setting('oxagen.tenant_id',true),'')::uuid THEN
+  IF p_org IS DISTINCT FROM nullif(current_setting('oxagen.org_id',true),'')::uuid THEN
     RAISE EXCEPTION 'SCOPE_MISMATCH'; END IF;
   n:=cardinality(p_periods);
   IF n IS NULL OR n=0 OR cardinality(p_amounts) IS DISTINCT FROM n
      OR cardinality(p_reservation_ids) IS DISTINCT FROM n OR cardinality(p_ledger_ids) IS DISTINCT FROM n
+     OR cardinality(p_scope_object_ids) IS NULL OR cardinality(p_scope_object_ids)=0
      OR array_ndims(p_periods)<>1 OR array_ndims(p_amounts)<>1
      OR array_ndims(p_reservation_ids)<>1 OR array_ndims(p_ledger_ids)<>1
      OR array_lower(p_periods,1)<>1 OR array_lower(p_amounts,1)<>1
@@ -652,48 +854,75 @@ BEGIN
   IF (SELECT count(DISTINCT v) FROM unnest(p_periods) AS u(v))<>n
      OR EXISTS (SELECT 1 FROM unnest(p_amounts) AS u(v) WHERE v IS NULL OR v<=0) THEN
     RAISE EXCEPTION 'INVALID_RESERVATION'; END IF;
-  PERFORM id FROM governed_actions WHERE tenant_id=p_tenant AND id=p_action FOR UPDATE;
+  SELECT capability INTO v_capability FROM governed_actions WHERE org_id=p_org AND id=p_action FOR UPDATE;
   IF NOT FOUND THEN RAISE EXCEPTION 'ACTION_NOT_FOUND'; END IF;
-  -- Trusted authority resolves complete buckets, current epochs, period/fact/FX validity; caller cannot choose them.
-  -- Lock account rows first so rule/cap changes cannot race admission; all other writers use this order.
-  PERFORM a.id FROM limit_accounts a WHERE a.tenant_id=p_tenant AND a.id IN
-    (SELECT account_id FROM limit_periods WHERE tenant_id=p_tenant AND id=ANY(p_periods)) ORDER BY a.id FOR UPDATE;
-  PERFORM id FROM limit_periods WHERE tenant_id=p_tenant AND id=ANY(p_periods) ORDER BY id FOR UPDATE;
-  GET DIAGNOSTICS found_count=ROW_COUNT;
+  -- Reserve once per attempt. The action row lock above serializes duplicate callers, so a second caller
+  -- finds the existing hold here and returns it instead of dispatching twice.
+  IF EXISTS (SELECT 1 FROM limit_holds WHERE org_id=p_org AND attempt_id=p_attempt) THEN
+    RETURN 'EXISTING_HOLD'; END IF;
+  -- Bucket completeness: every active account for this capability on the action's scope chain must be
+  -- covered by exactly one supplied period. An omitted bucket is an error, not a smaller reservation.
+  SELECT count(*) INTO required_count FROM limit_accounts a
+    WHERE a.org_id=p_org AND a.state='active' AND a.capability=v_capability AND a.scope_object_id=ANY(p_scope_object_ids);
+  SELECT array_agg(DISTINCT b.account_id ORDER BY b.account_id) INTO v_account_ids
+    FROM limit_periods b WHERE b.org_id=p_org AND b.id=ANY(p_periods);
+  IF required_count<>n OR cardinality(v_account_ids) IS DISTINCT FROM n
+     OR EXISTS (SELECT 1 FROM unnest(v_account_ids) AS u(v) LEFT JOIN limit_accounts a
+                ON a.org_id=p_org AND a.id=u.v AND a.state='active' AND a.capability=v_capability
+                   AND a.scope_object_id=ANY(p_scope_object_ids) WHERE a.id IS NULL) THEN
+    RAISE EXCEPTION 'INCOMPLETE_SCOPE'; END IF;
+  -- Lock accounts, then periods, one row per iteration in sorted id order (see lock order note above).
+  FOREACH v_id IN ARRAY v_account_ids LOOP
+    PERFORM 1 FROM limit_accounts WHERE org_id=p_org AND id=v_id FOR UPDATE;
+  END LOOP;
+  SELECT array_agg(v ORDER BY v) INTO v_period_ids FROM unnest(p_periods) AS u(v);
+  found_count:=0;
+  FOREACH v_id IN ARRAY v_period_ids LOOP
+    PERFORM 1 FROM limit_periods WHERE org_id=p_org AND id=v_id FOR UPDATE;
+    IF FOUND THEN found_count:=found_count+1; END IF;
+  END LOOP;
   IF found_count<>n THEN RAISE EXCEPTION 'BUCKET_NOT_FOUND'; END IF;
   FOR i IN 1..n LOOP
     SELECT b.*,a.state AS account_state,a.cap_kind,a.currency,a.period_kind INTO p FROM limit_periods b JOIN limit_accounts a
-      ON a.tenant_id=b.tenant_id AND a.id=b.account_id WHERE b.tenant_id=p_tenant AND b.id=p_periods[i];
-    IF p.cap_kind<>'fixed' OR p.period_kind='rolling' OR p.currency<>'USD' THEN RAISE EXCEPTION 'FULL_PRICING_GATE_REQUIRED'; END IF;
+      ON a.org_id=b.org_id AND a.id=b.account_id WHERE b.org_id=p_org AND b.id=p_periods[i];
+    IF p.cap_kind<>'fixed' OR p.currency<>'USD' THEN RAISE EXCEPTION 'FULL_PRICING_GATE_REQUIRED'; END IF;
     IF clock_timestamp()<p.period_start OR clock_timestamp()>=p.period_end THEN RAISE EXCEPTION 'PERIOD_STALE'; END IF;
     IF p.frozen OR p.account_state<>'active' OR p.used_minor::numeric+p.held_minor::numeric+p_amounts[i]::numeric>p.effective_cap_minor::numeric THEN
       RAISE EXCEPTION 'LIMIT_EXCEEDED'; END IF;
   END LOOP;
-  INSERT INTO limit_holds(tenant_id,id,action_id,attempt_id,state) VALUES(p_tenant,p_hold,p_action,p_attempt,'held');
-  -- UNIQUE attempt means reserve once. Duplicate callers read the existing result; they never dispatch twice.
+  INSERT INTO limit_holds(org_id,id,action_id,attempt_id,state) VALUES(p_org,p_hold,p_action,p_attempt,'held');
   FOR i IN 1..n LOOP
-    INSERT INTO limit_reservations(tenant_id,id,hold_id,period_id,amount_minor,currency)
-      SELECT p_tenant,p_reservation_ids[i],p_hold,b.id,p_amounts[i],a.currency FROM limit_periods b JOIN limit_accounts a
-      ON a.tenant_id=b.tenant_id AND a.id=b.account_id WHERE b.tenant_id=p_tenant AND b.id=p_periods[i];
-    UPDATE limit_periods SET held_minor=held_minor+p_amounts[i],version=version+1 WHERE tenant_id=p_tenant AND id=p_periods[i];
-    INSERT INTO limit_ledger_entries(tenant_id,id,period_id,hold_id,entry_kind,held_delta,used_delta,source_event_id)
-      VALUES(p_tenant,p_ledger_ids[i],p_periods[i],p_hold,'reserve',p_amounts[i],0,p_hold);
+    INSERT INTO limit_reservations(org_id,id,hold_id,period_id,amount_minor,currency)
+      SELECT p_org,p_reservation_ids[i],p_hold,b.id,p_amounts[i],a.currency FROM limit_periods b JOIN limit_accounts a
+      ON a.org_id=b.org_id AND a.id=b.account_id WHERE b.org_id=p_org AND b.id=p_periods[i];
+    UPDATE limit_periods SET held_minor=held_minor+p_amounts[i],version=version+1 WHERE org_id=p_org AND id=p_periods[i];
+    INSERT INTO limit_ledger_entries(org_id,id,period_id,hold_id,entry_kind,held_delta,used_delta,source_event_id)
+      VALUES(p_org,p_ledger_ids[i],p_periods[i],p_hold,'reserve',p_amounts[i],0,p_hold);
   END LOOP;
+  RETURN 'HELD';
 END $$;
-REVOKE ALL ON FUNCTION reserve_limit_hold(uuid,uuid,uuid,uuid,uuid[],bigint[],uuid[],uuid[]) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION reserve_limit_hold(uuid,uuid,uuid,uuid,uuid[],bigint[],uuid[],uuid[]) TO oxagen_runtime;
--- Example reserves current fixed USD caps; ratio, rolling and FX admission require full procedures; pricing/FX contexts must use the full gate, not this helper alone.
+REVOKE ALL ON FUNCTION reserve_limit_hold(uuid,uuid,uuid,uuid,uuid[],uuid[],bigint[],uuid[],uuid[]) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION reserve_limit_hold(uuid,uuid,uuid,uuid,uuid[],uuid[],bigint[],uuid[],uuid[]) TO oxagen_runtime;
+-- Example reserves current fixed USD caps; ratio and FX admission require full procedures; pricing/FX contexts must use the full gate, not this helper alone.
 -- Call in ONE transaction with identity/epoch checks, action version, sanitized evidence and outbox write.
 -- Any exception aborts the statement; the service MUST ROLLBACK the whole transaction, never commit partial work.
 -- Before provider dispatch, consume exactly one current authorization and write dispatch/outbox atomically:
 -- UPDATE action_authorizations SET consumed_at=clock_timestamp()
--- WHERE tenant_id=:verified_tenant AND id=:authorization AND consumed_at IS NULL
+-- WHERE org_id=:verified_org AND id=:authorization AND consumed_at IS NULL
 --   AND expires_at>clock_timestamp() AND run_control_epoch IS NOT DISTINCT FROM :verified_run_epoch
 --   AND owner_epoch IS NOT DISTINCT FROM :verified_owner_epoch
 --   AND request_digest=:cleaned_wire_digest AND audience_principal_id=:verified_gateway
 -- RETURNING id;  -- require one row after locking/checking ALL scope epochs, complete scope_count, scan, policies and holds.
--- Settlement locks accounts then periods in the same order; replaces held with used; appends unique postings.
+-- Settlement locks the action, then accounts, then periods in the same order; replaces held with used; appends unique postings.
 -- It requires a trusted receipt and cannot release unknown liability because a timeout or expiry occurred.
 -- Omits settlement, all-policy evaluation joins, source/price/FX tables and their FKs; see the full typed catalog.
 -- It is not a production admission API: interval/fact/FX checks and complete scope resolution are required integration gates.
 ```
+
+## First hosted database and release changes
+
+The first hosted database is Aurora PostgreSQL Serverless v2 in separate staging and production AWS accounts. It uses encrypted storage, managed backups and bounded capacity. Runtime roles must not own org tables or bypass RLS. Keep schema-maintenance access separate from app access. The [AWS infrastructure](build-system/infrastructure/aws/README.md) provides cloud resources; the complete certified schema, database roles and RLS policies still need their product implementation and tests.
+
+The [release adapter](build-system/adapters/local-release.md) uses a source-bound plan for a small set of added schema changes. It creates and restores a snapshot, applies the change to a test copy, and checks old and new app images before the live change. Unsupported changes stop release and need a separate reviewed plan. Do not call this limited adapter a replacement for the full schema migration system.
+
+App rollback keeps the current database. It requires proof that the old app still fits that database. A database restore is an incident recovery decision with a stated loss window, not an automatic release rollback. The [release setup](build-system/RELEASE-SETUP.md) explains the source, image, approval and recovery records.

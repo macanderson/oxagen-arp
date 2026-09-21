@@ -1,0 +1,19 @@
+schema = "context-record/v0.1"
+set_id = "macanderson.oxagen-arp"
+
+[[record]]
+lineage_id = "ctx.arp.pages-read-through-ports"
+record_id = "rec_arp_pages_read_through_ports_3fed8812d7a7"
+record_hash = "sha256:6d4d6527d6b8e95b7459fe574fc868bc942d811491bc10b217320e0b203b76e9"
+kind = "rule"
+statement = "A page reads only through the DataSource port in apps/web/src/data/ports.ts, which source.ts resolves from OXAGEN_DATA_SOURCE; wiring the product means installing live handlers and flipping that variable, and pages, stories, and ports do not change."
+origin = "user"
+sharing_scope = "repository"
+status = "active"
+
+[record.provenance]
+source_kind = "document"
+source_uri = "apps/web/src/data/source.ts"
+
+[record.steering]
+force = "must"

@@ -10,18 +10,21 @@ Open the [high-fidelity desktop mockups](certification/Oxagen-desktop-mockups.ht
 
 Support macOS, Windows, and Linux with separate, tested builds. Each strict setup must prove that its guard, file rules, and network rules work. Installing an icon or changing a model URL is not enough. A setup that cannot block bypasses must say so and cannot launch strict work.
 
-The protected service runs outside the agent's control. Every model call passes through its local scan, then the tenant's model proxy. Adapters and hooks carry steering and turn events. The guard also checks local and remote tool paths. Keys stay outside agent code.
+The protected service runs outside the agent's control. Every model call passes through its local scan, then the org's model proxy. Adapters and hooks carry steering and turn events. The guard also checks local and remote tool paths. Keys stay outside agent code.
 
 A remote worker needs the same protected service on the host where its raw data lives. It may run without a desktop window. A hostile device admin remains outside the promise unless the customer controls that device through a managed setup.
 
 ## Enroll and connect a harness
 
-1. Sign in through the customer's identity system.
+1. Sign in. Email with a second factor is supported; the organization's identity provider is optional.
 2. Enroll the device and choose an allowed workspace.
-3. Bind the local repo to that workspace's approved repo record.
-4. Select a supported harness, agent identity, and mode.
-5. Check the platform, adapter, current rules, and data route.
-6. Open the gates only after those checks pass.
+3. Register a supported harness. It stays unbound and cannot launch.
+4. Bind the local repo to that workspace's approved repo record.
+5. Select the agent identity and mode.
+6. Check the platform, adapter, current rules, and data route.
+7. Open the gates only after those checks pass.
+
+This order is the same in the design walkthrough, the CLI, and the sample files: enroll the device, register the harness, link the checkout, then choose the agent and mode.
 
 Use the same IAM rights as the web app. A repo path or edited remote URL cannot pick a weaker workspace. Show the device, operator, agent, workspace, and control level together. An old session may attach only if the adapter can prove control; otherwise start a new guarded session.
 
@@ -33,13 +36,13 @@ Scan prompts, attachments, names, paths, history, steering, context, tool schema
 
 The web app must pair with an authenticated local bridge before accepting raw prompts or files. Check the caller and browser origin. Disable raw uploads, autosave, page replay, and analytics on these inputs. A local address alone does not prove who called it.
 
-Build the complete model request locally after context is added, then scan again. The tenant proxy may add protected sign-in headers, but no new model-visible content. Any such change requires another local scan and access check.
+Build the complete model request locally after context is added, then scan again. The org proxy may add protected sign-in headers, but no new model-visible content. Any such change requires another local scan and access check.
 
 Create immutable cleaned files. Provider file and cache IDs must resolve to those approved copies. Do not upload a raw file first. Do not release raw stream chunks while a scan catches up.
 
-![Raw prompt text, full history, tool inputs and results, tool schemas, files, images, attachments, URLs, and request headers enter the protected local desktop gateway. The service is separate from the app UI and protected from the controlled agent. The workspace scanner checks the full assembled outgoing request and every required attachment. Workspace rules may block the send, redact content, or replace sensitive values. If required content cannot be checked, the send is blocked. The blocked path does not upload raw content or raw evidence. The allowed path carries only the cleaned full request and a minimal ScanReceipt without raw text. This receipt binds the exact cleaned request digest and workspace scan-policy version. The tenant gateway checks the receipt and blocks missing, stale, or mismatched receipts. Changed requests are rechecked under current access and policy. Only this cleaned form reaches the tenant gateway, approved model or tool, and sanitized Oxagen evidence records. The same path applies to outgoing reports and telemetry. No raw request, raw evidence, or replacement mapping may take a separate cloud path.](diagrams/data_protection.svg)
+![Raw prompt text, full history, tool inputs and results, tool schemas, files, images, attachments, URLs, and request headers enter the protected local desktop gateway. The service is separate from the app UI and protected from the controlled agent. The workspace scanner checks the full assembled outgoing request and every required attachment. Workspace rules may block the send, redact content, or replace sensitive values. If required content cannot be checked, the send is blocked. The blocked path does not upload raw content or raw evidence. The allowed path carries only the cleaned full request and a minimal ScanReceipt without raw text. This receipt binds the exact cleaned request digest and workspace scan-policy version. The org gateway checks the receipt and blocks missing, stale, or mismatched receipts. Changed requests are rechecked under current access and policy. Only this cleaned form reaches the org gateway, approved model or tool, and sanitized Oxagen evidence records. The same path applies to outgoing reports and telemetry. No raw request, raw evidence, or replacement mapping may take a separate cloud path.](diagrams/data_protection.svg)
 
-*A protected desktop gateway scans the full assembled request under workspace rules. It may block, redact, or replace content. Only the cleaned form can reach tenant gateways, approved models, or Oxagen records. The app UI and harness cannot use a raw-to-cloud route.*
+*A protected desktop gateway scans the full assembled request under workspace rules. It may block, redact, or replace content. Only the cleaned form can reach org gateways, approved models, or Oxagen records. The app UI and harness cannot use a raw-to-cloud route.*
 
 ## Authorize the governed action
 
@@ -49,17 +52,33 @@ Count tokens and reserve funds from the cleaned request. The governed action mus
 
 ## Show safe records and clear failures
 
-Save only cleaned content to the tenant's chosen store. Relay model replies through the local scan before remote evidence storage or dependent work. Apply this rule to errors, tool results, diffs, reports, and callbacks too. Keep safe usage facts and mark missing evidence.
+Save only cleaned content to the org's chosen store. Relay model replies through the local scan before remote evidence storage or dependent work. Apply this rule to errors, tool results, diffs, reports, and callbacks too. Keep safe usage facts and mark missing evidence.
 
 Raw copies stay in short-lived local memory by default. Source files stay where they were. No raw logs, crash dumps, sync queues, or secret hashes. Any local quarantine is separate, encrypted, permissioned, time-limited, and off by default. State device memory limits honestly; do not promise perfect erasure. Saved evidence can replay the actual cleaned model input, but cannot recover removed originals.
 
 | Screen | Required behavior |
 | --- | --- |
 | Workspaces | Show repo links, effective rules, scan coverage, and storage destination. |
-| Runs | Show queued, active, pausing, confirmed paused, blocked, and uncertain states. |
+| Runs | Show the same run states as the web app and CLI: queued, running, pause requested, pausing, paused, resuming, blocked, and outcome unknown. Use no local synonyms such as "active" or "confirmed paused". |
 | Data protection | Preview cleaned content locally; show safe reasons without quoting secrets. |
 | Access | Request scoped rights without placing keys in chat. |
 | Health | Show stale policy, failed scans, lost links, pending records, and updates. |
+
+## Devices over their lifetime
+
+| Situation | Required behavior |
+| --- | --- |
+| Second computer | Enroll it as its own device. Register the harness and link the checkout again; the ignored `state/` folder never moves between machines. The web app lists both devices. |
+| Reinstall or lost laptop | The old device row stays visible under **Devices** as stale, then offline. An owner revokes it from the web app or with `oxagen device revoke`. Revocation advances the authority epoch, so any run it still held stops at its next gate. Enrolling again creates a new device; nothing is copied from the old one. |
+| Session expiry mid-run | The guard keeps its device credential and finishes the admitted step. The next step waits with the copy “Waiting for connection. The next step needs Oxagen to confirm your rules.” Signing in again resumes it. No work is lost. |
+| Lost network | Same as session expiry. Strict mode waits; it does not run on cached rules. The run shows **waiting for a device** in the web app. |
+| Leaving a workspace | Grants for that workspace are revoked, cached context and steering for it are deleted, and runs bound to it stop at their next gate. |
+
+`oxagen device list`, `oxagen device rename`, and `oxagen device revoke` manage these rows from the CLI with the same rights as the web app.
+
+## Authenticate the local caller
+
+A local address alone proves nothing, and the CLI, the browser, and the guarded agent run as the same OS user. The guard authenticates every local peer with the operating system's peer credentials: `SO_PEERCRED` on Linux, `LOCAL_PEERCRED` on macOS, and the named-pipe client process id on Windows. It then checks the peer binary's code signature or entitlement and refuses any peer that runs inside the agent's sandbox. The browser pairing endpoint validates the `Host` and `Origin` headers against an allowlist to defeat DNS rebinding and uses a per-pairing token that lives outside the agent's file scope. A shared secret in a file or an environment variable the agent can read is not an accepted mechanism.
 
 ## Fail closed and recover
 

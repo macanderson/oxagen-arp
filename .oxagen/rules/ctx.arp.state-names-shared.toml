@@ -1,0 +1,19 @@
+schema = "context-record/v0.1"
+set_id = "macanderson.oxagen-arp"
+
+[[record]]
+lineage_id = "ctx.arp.state-names-shared"
+record_id = "rec_arp_state_names_shared_c504a3e63ba4"
+record_hash = "sha256:4049a28024fdde8eeed056caeed7e313f3fa8aa84d0d66226d0101c12df96853"
+kind = "rule"
+statement = "Use one vocabulary for run and target states on every surface: queued, waiting for a device, waiting for capacity, starting, started, running, pause requested, pausing, paused, resuming, blocked, expired, cancelled, and outcome unknown; do not coin local synonyms."
+origin = "user"
+sharing_scope = "repository"
+status = "active"
+
+[record.provenance]
+source_kind = "document"
+source_uri = "ARP-design.md"
+
+[record.steering]
+force = "must"

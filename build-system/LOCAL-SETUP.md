@@ -1,8 +1,10 @@
-# Set up the local runner
+# Build runner setup (Oxagen engineering)
+
+This page is for engineers running the agent build controller. It is not the product's first-workspace setup; that walkthrough is in [the design](../ARP-design.md#first-workspace-and-first-run).
 
 This is the setup path for the code in this package. It uses a Linux host or a local Linux VM with Docker Engine. Direct macOS/Windows execution and a remote Docker daemon are not supported by this profile. The controller and Docker must see the same absolute paths. Agents never receive the Docker socket.
 
-The operator chooses the repository, model budget, credentials, allowed data, images, and required tests. Those are configuration choices, not missing execution services. **The hosting target for staging and production is still a required decision.** Release stays disabled until its concrete adapter is implemented.
+The operator chooses the repository, model budget, credentials, allowed data, images, and required tests. Those are configuration choices, not missing execution services. The chosen release target is **AWS ECS with Fargate** in separate staging and production accounts. Follow [RELEASE-SETUP.md](RELEASE-SETUP.md) for the concrete cloud setup. Release remains disabled in the supplied example until real settings are reviewed.
 
 ## 1. Install tools and copy the approved inputs
 
@@ -90,4 +92,15 @@ The [README](README.md#certification-before-product-work) gives the exact snapsh
 
 After certification, the runner implements each batch, gets a fresh opposite-harness review, runs the configured local checks, creates a PR, waits for required CI, verifies the actual merge result, and waits for checks on that merge commit. It keeps durable records for resume and bounded repair.
 
-Use `status`, `cancel`, `reconcile`, and `retry` as documented. Never delete unknown cost holds or edit journal records. A hosting choice and target-specific release implementation are still needed before the final release stage can run.
+Use `status`, `cancel`, `reconcile`, and `retry` as documented. Never delete unknown cost holds or edit journal records. Before the release stage, complete the AWS setup, infrastructure review, exact-image checks and required certification in [RELEASE-SETUP.md](RELEASE-SETUP.md).
+
+## Operational limits found in review
+
+- **Certifier key.** Generate the Ed25519 signing key outside the control root, for example `openssl genpkey -algorithm ed25519 -out certifier.pem` followed by `chmod 600 certifier.pem`, and export the public key with `openssl pkey -in certifier.pem -pubout -out certifier.pub`. The controller reads only the public key.
+- **gh version.** The adapter passes `--paginate --slurp` to `gh api`; use a gh release that supports `--slurp` (2.60 or later works).
+- **Quality image digest.** A locally built quality image has no `repository@sha256:` digest until it is pushed to a registry, and the quality profile rejects a bare `sha256:` image ID. Push the image to a private registry the host can reach, or use the execution profile's bare ID form only where that profile accepts it.
+- **Account identity.** The controller must run as the UID and GID named in `local.execution`; preflight asserts this. A control root you create by hand must be mode 0700, or the GitHub preflight refuses it.
+- **Preflight age.** The local preflight receipt expires after 24 hours even when `maxRunSeconds` is longer. A run that outlives it stops with `Matching measured local preflight is required`; run `preflight` again and then `run` to resume from the journal.
+- **Cancel grace.** `hook.killGraceMs` (default 30000) is how long a cancelled hook gets to remove its container before SIGKILL. Do not lower it below the time `docker rm --force` needs on the host.
+- **Budget math.** Each Claude request reserves the full-context bound (about $6.13 for the current Sonnet profile). The shipped plan sets every batch's `maxCostCents` to the ledger's arithmetic ceiling (900000000, about $9,000,000), which is the owner's choice of no practical cap. Set `runBudgetCents` in the run configuration to the same value; the example configuration still ships zero so nothing runs by accident. Every settled cost and unknown liability is still recorded.
+- **CI that gates its own merge.** Product batches may no longer edit `.github/`. Workflow changes need a separate reviewed control run so an implementer cannot rewrite the check that approves its work.

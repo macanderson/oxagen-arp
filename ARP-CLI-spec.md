@@ -15,9 +15,13 @@ oxagen login
 oxagen device enroll
 oxagen workspace list
 oxagen workspace use ws_support
+oxagen harness register codex --name local-codex
+oxagen repo link . --repository support-app --target local-codex
 oxagen agent use agent_refunds --mode support
 oxagen status --json
 ```
+
+Register the harness before linking the checkout; the harness stays unbound until the link exists. Running `oxagen` with no arguments prints these steps in order with a one-line status for each, and every access, wait, or unavailable exit prints the one command that continues.
 
 Sign-in opens a protected browser or device flow. Enrollment needs the caller's right to register that device. Store Oxagen session credentials in the operating system's protected credential store. Workspace and agent choices request a context. The service must verify each choice and bind it to the real repo and run. A config file, `--workspace` flag, environment variable, or changed folder cannot grant access. A revoked or stale binding blocks new work.
 
@@ -35,7 +39,15 @@ oxagen run steer run_456 --message-file steering.md --interrupt
 oxagen run pause run_456
 oxagen run status run_456 --wait paused --timeout 30s --json
 oxagen run resume run_456 --boundary pause_789
+oxagen run stop run_456
+oxagen work cancel work_123
+oxagen device list
+oxagen device revoke dev_789
 ```
+
+`run stop` asks for a confirmed stop; the run cannot resume, and the reply says so: “Stopped. This run cannot resume. Send new work to continue.” `work cancel` withdraws a request that has not started, or becomes a stop request for each started run. Both exist because the design and the brand rules separate Stop from Pause; a surface without a Stop control is incomplete. `device list` and `device revoke` manage enrolled devices with the same rights as the web app.
+
+Exit code 3 carries a `reason` in JSON. A budget block is `BUDGET_EXCEEDED` with `binding_scope`, the scope that stopped the call, and the amounts held and remaining, so a script can tell a budget stop from an access denial.
 
 The service reads prompt files through approved local file scope and scans them before submission. File names, attachments, and messages cannot bypass the scan. Prefer files or protected local input over sensitive command-line text. Do not echo raw content in debug output.
 
@@ -55,7 +67,7 @@ Provide these proposed command groups:
 | `oxagen policies validate`, `oxagen policies publish` | Check a proposed revision, then publish it only with the required rights and review. |
 | `oxagen data-protection status`, `oxagen data-protection inspect` | Show local scanner coverage or inspect a local input without sending it. Report safe findings, not matched secrets. |
 | `oxagen budget status` | Show spent, reserved, and remaining amounts for allowed scopes. |
-| `oxagen run logs`, `oxagen report show` | Read cleaned events and required work reports from the tenant's store. |
+| `oxagen run logs`, `oxagen report show` | Read cleaned events and required work reports from the org's store. |
 | `oxagen access request`, `oxagen access approve` | Request a named grant or decide a permitted approval. |
 | `oxagen fork plan`, `oxagen fork create` | Review a saved boundary and create an allowed continuation. |
 
@@ -84,6 +96,8 @@ These additions complete the flow around the commands already specified:
 
 | Command | Contract |
 | --- | --- |
+| `oxagen quickstart` | Run login, enrollment, workspace selection or creation, harness detection, checkout link, repo init and sync, validation, and one read-only smoke task as one flow with safe defaults. It uses the same gates as the separate commands and stops at the first step it cannot complete, naming that step and the command that continues it. It cannot weaken a control or raise a limit. |
+| `oxagen doctor` | Check the local service, device enrollment, workspace binding, harness adapter, scanner coverage, model route, policy freshness, and clock skew. Print one line per check with pass, warn, or fail and the fix. `--json` returns the same list. |
 | `oxagen repo link PATH --repository REF --target TARGET` | Establish a verified checkout binding; return binding ID and settings revision. |
 | `oxagen harness register KIND --name NAME` | Register the enrolled installed version and adapter after capability checks; return an unbound target ID. Linking the checkout is required before launch. |
 | `oxagen repo init --path PATH --agent REF --mode REF` | Export allowed references and schemas; refuse to overwrite changed files without a reviewed plan. |

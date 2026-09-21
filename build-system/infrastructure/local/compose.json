@@ -1,0 +1,602 @@
+{
+  "name": "oxagen-local",
+  "services": {
+    "postgres": {
+      "init": true,
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "logging": {
+        "driver": "none"
+      },
+      "restart": "no",
+      "stop_grace_period": "30s",
+      "pids_limit": 128,
+      "mem_limit": "512m",
+      "cpus": 1,
+      "tmpfs": [
+        "/tmp:rw,nosuid,nodev,noexec,size=64m,mode=1777",
+        "/var/run/postgresql:rw,nosuid,nodev,noexec,size=16m,mode=1777"
+      ],
+      "image": "${POSTGRES_IMAGE:?Set a reviewed repository@sha256 digest}",
+      "pull_policy": "never",
+      "user": "${LOCAL_UID:?Set your non-root UID}:${LOCAL_GID:?Set your GID}",
+      "environment": {
+        "POSTGRES_USER": "postgres",
+        "POSTGRES_DB": "oxagen",
+        "POSTGRES_PASSWORD_FILE": "/run/secrets/postgres_admin_password",
+        "POSTGRES_INITDB_ARGS": "--auth-host=scram-sha-256",
+        "PGDATA": "/var/lib/postgresql/data/pgdata"
+      },
+      "secrets": [
+        "postgres_admin_password",
+        "postgres_migration_password",
+        "postgres_runtime_password"
+      ],
+      "volumes": [
+        {
+          "type": "bind",
+          "source": "./.local-data/postgres",
+          "target": "/var/lib/postgresql/data",
+          "bind": {
+            "create_host_path": false
+          }
+        },
+        {
+          "type": "bind",
+          "source": "./postgres-init.sh",
+          "target": "/docker-entrypoint-initdb.d/10-oxagen.sh",
+          "read_only": true,
+          "bind": {
+            "create_host_path": false
+          }
+        }
+      ],
+      "networks": [
+        "data"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "pg_isready",
+          "-h",
+          "127.0.0.1",
+          "-U",
+          "postgres",
+          "-d",
+          "oxagen"
+        ],
+        "interval": "5s",
+        "timeout": "5s",
+        "retries": 20,
+        "start_period": "30s"
+      }
+    },
+    "object-store": {
+      "init": true,
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "logging": {
+        "driver": "none"
+      },
+      "restart": "no",
+      "stop_grace_period": "30s",
+      "pids_limit": 128,
+      "mem_limit": "512m",
+      "cpus": 1,
+      "tmpfs": [
+        "/tmp:rw,nosuid,nodev,noexec,size=64m,mode=1777"
+      ],
+      "image": "${OBJECT_STORE_IMAGE:?Set a reviewed repository@sha256 digest}",
+      "pull_policy": "never",
+      "user": "${LOCAL_UID:?Set your non-root UID}:${LOCAL_GID:?Set your GID}",
+      "entrypoint": [
+        "/usr/bin/weed"
+      ],
+      "command": [
+        "server",
+        "-ip=object-store",
+        "-ip.bind=0.0.0.0",
+        "-dir=/data",
+        "-master.volumeSizeLimitMB=256",
+        "-master.telemetry=false",
+        "-volume.max=8",
+        "-filer",
+        "-s3",
+        "-s3.port=8333",
+        "-s3.config=/run/secrets/object_store_config"
+      ],
+      "secrets": [
+        "object_store_config"
+      ],
+      "configs": [
+        {
+          "source": "filer_config",
+          "target": "/etc/seaweedfs/filer.toml"
+        }
+      ],
+      "volumes": [
+        {
+          "type": "bind",
+          "source": "./.local-data/objects",
+          "target": "/data",
+          "bind": {
+            "create_host_path": false
+          }
+        }
+      ],
+      "networks": [
+        "data"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "curl",
+          "--fail",
+          "--silent",
+          "--output",
+          "/dev/null",
+          "http://127.0.0.1:9333/cluster/healthz"
+        ],
+        "interval": "5s",
+        "timeout": "5s",
+        "retries": 20,
+        "start_period": "30s"
+      }
+    },
+    "migrate": {
+      "init": true,
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "logging": {
+        "driver": "none"
+      },
+      "restart": "no",
+      "stop_grace_period": "30s",
+      "pids_limit": 128,
+      "mem_limit": "512m",
+      "cpus": 1,
+      "tmpfs": [
+        "/tmp:rw,nosuid,nodev,noexec,size=64m,mode=1777"
+      ],
+      "image": "${APP_IMAGE:?Set a reviewed repository@sha256 digest}",
+      "pull_policy": "never",
+      "user": "${LOCAL_UID:?Set your non-root UID}:${LOCAL_GID:?Set your GID}",
+      "entrypoint": [
+        "/opt/oxagen/bin/oxagen"
+      ],
+      "command": [
+        "database",
+        "migrate",
+        "--no-seed"
+      ],
+      "environment": {
+        "OXAGEN_ENV": "local",
+        "OXAGEN_DB_HOST": "postgres",
+        "OXAGEN_DB_PORT": "5432",
+        "OXAGEN_DB_NAME": "oxagen",
+        "OXAGEN_DB_USER": "oxagen_migrator",
+        "OXAGEN_DB_PASSWORD_FILE": "/run/secrets/postgres_migration_password",
+        "OXAGEN_DB_TLS": "disable-local-only"
+      },
+      "secrets": [
+        "postgres_migration_password"
+      ],
+      "networks": [
+        "data"
+      ],
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy"
+        }
+      }
+    },
+    "storage-init": {
+      "init": true,
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "logging": {
+        "driver": "none"
+      },
+      "restart": "no",
+      "stop_grace_period": "30s",
+      "pids_limit": 128,
+      "mem_limit": "512m",
+      "cpus": 1,
+      "tmpfs": [
+        "/tmp:rw,nosuid,nodev,noexec,size=64m,mode=1777"
+      ],
+      "image": "${APP_IMAGE:?Set a reviewed repository@sha256 digest}",
+      "pull_policy": "never",
+      "user": "${LOCAL_UID:?Set your non-root UID}:${LOCAL_GID:?Set your GID}",
+      "entrypoint": [
+        "/opt/oxagen/bin/oxagen"
+      ],
+      "command": [
+        "storage",
+        "init-local",
+        "--verify-roundtrip",
+        "--deadline-seconds",
+        "120"
+      ],
+      "environment": {
+        "OXAGEN_ENV": "local",
+        "OXAGEN_S3_ENDPOINT": "http://object-store:8333",
+        "OXAGEN_S3_REGION": "us-east-1",
+        "OXAGEN_S3_BUCKET": "oxagen-dev",
+        "OXAGEN_S3_FORCE_PATH_STYLE": "true",
+        "OXAGEN_S3_CREDENTIALS_FILE": "/run/secrets/object_store_runtime",
+        "OXAGEN_S3_ADMIN_CREDENTIALS_FILE": "/run/secrets/object_store_admin"
+      },
+      "secrets": [
+        "object_store_admin",
+        "object_store_runtime"
+      ],
+      "networks": [
+        "data"
+      ],
+      "depends_on": {
+        "object-store": {
+          "condition": "service_healthy"
+        }
+      }
+    },
+    "app": {
+      "init": true,
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "logging": {
+        "driver": "none"
+      },
+      "restart": "no",
+      "stop_grace_period": "30s",
+      "pids_limit": 128,
+      "mem_limit": "512m",
+      "cpus": 1,
+      "tmpfs": [
+        "/tmp:rw,nosuid,nodev,noexec,size=64m,mode=1777"
+      ],
+      "image": "${APP_IMAGE:?Set a reviewed repository@sha256 digest}",
+      "pull_policy": "never",
+      "user": "${LOCAL_UID:?Set your non-root UID}:${LOCAL_GID:?Set your GID}",
+      "entrypoint": [
+        "/opt/oxagen/bin/oxagen"
+      ],
+      "command": [
+        "serve",
+        "api"
+      ],
+      "environment": {
+        "OXAGEN_ENV": "local",
+        "OXAGEN_BIND_HOST": "0.0.0.0",
+        "OXAGEN_CONFIG_FILE": "/etc/oxagen/local.json",
+        "OXAGEN_ALLOW_ANONYMOUS": "false",
+        "OXAGEN_BOOTSTRAP_ADMIN": "false",
+        "OXAGEN_RAW_LOGGING": "false",
+        "OXAGEN_DB_HOST": "postgres",
+        "OXAGEN_DB_PORT": "5432",
+        "OXAGEN_DB_NAME": "oxagen",
+        "OXAGEN_DB_USER": "oxagen_runtime",
+        "OXAGEN_DB_PASSWORD_FILE": "/run/secrets/postgres_runtime_password",
+        "OXAGEN_DB_TLS": "disable-local-only",
+        "OXAGEN_S3_ENDPOINT": "http://object-store:8333",
+        "OXAGEN_S3_REGION": "us-east-1",
+        "OXAGEN_S3_BUCKET": "oxagen-dev",
+        "OXAGEN_S3_FORCE_PATH_STYLE": "true",
+        "OXAGEN_S3_CREDENTIALS_FILE": "/run/secrets/object_store_runtime",
+        "OXAGEN_HTTP_PORT": "8080",
+        "OXAGEN_GATEWAY_URL": "http://gateway:8081"
+      },
+      "secrets": [
+        "postgres_runtime_password",
+        "object_store_runtime"
+      ],
+      "configs": [
+        {
+          "source": "local_config",
+          "target": "/etc/oxagen/local.json"
+        }
+      ],
+      "networks": [
+        "data",
+        "edge"
+      ],
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy"
+        },
+        "object-store": {
+          "condition": "service_healthy"
+        },
+        "migrate": {
+          "condition": "service_completed_successfully"
+        },
+        "storage-init": {
+          "condition": "service_completed_successfully"
+        },
+        "gateway": {
+          "condition": "service_healthy"
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "/opt/oxagen/bin/oxagen",
+          "health",
+          "--component",
+          "api",
+          "--ready",
+          "--quiet"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 12,
+        "start_period": "20s"
+      },
+      "ports": [
+        {
+          "target": 8080,
+          "published": "${APP_PORT:-8080}",
+          "host_ip": "127.0.0.1",
+          "protocol": "tcp"
+        }
+      ]
+    },
+    "gateway": {
+      "init": true,
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "logging": {
+        "driver": "none"
+      },
+      "restart": "no",
+      "stop_grace_period": "30s",
+      "pids_limit": 128,
+      "mem_limit": "512m",
+      "cpus": 1,
+      "tmpfs": [
+        "/tmp:rw,nosuid,nodev,noexec,size=64m,mode=1777"
+      ],
+      "image": "${GATEWAY_IMAGE:?Set a reviewed repository@sha256 digest}",
+      "pull_policy": "never",
+      "user": "${LOCAL_UID:?Set your non-root UID}:${LOCAL_GID:?Set your GID}",
+      "entrypoint": [
+        "/opt/oxagen/bin/oxagen"
+      ],
+      "command": [
+        "serve",
+        "gateway"
+      ],
+      "environment": {
+        "OXAGEN_ENV": "local",
+        "OXAGEN_BIND_HOST": "0.0.0.0",
+        "OXAGEN_CONFIG_FILE": "/etc/oxagen/local.json",
+        "OXAGEN_ALLOW_ANONYMOUS": "false",
+        "OXAGEN_BOOTSTRAP_ADMIN": "false",
+        "OXAGEN_RAW_LOGGING": "false",
+        "OXAGEN_DB_HOST": "postgres",
+        "OXAGEN_DB_PORT": "5432",
+        "OXAGEN_DB_NAME": "oxagen",
+        "OXAGEN_DB_USER": "oxagen_runtime",
+        "OXAGEN_DB_PASSWORD_FILE": "/run/secrets/postgres_runtime_password",
+        "OXAGEN_DB_TLS": "disable-local-only",
+        "OXAGEN_S3_ENDPOINT": "http://object-store:8333",
+        "OXAGEN_S3_REGION": "us-east-1",
+        "OXAGEN_S3_BUCKET": "oxagen-dev",
+        "OXAGEN_S3_FORCE_PATH_STYLE": "true",
+        "OXAGEN_S3_CREDENTIALS_FILE": "/run/secrets/object_store_runtime",
+        "OXAGEN_HTTP_PORT": "8081"
+      },
+      "secrets": [
+        "postgres_runtime_password",
+        "object_store_runtime"
+      ],
+      "configs": [
+        {
+          "source": "local_config",
+          "target": "/etc/oxagen/local.json"
+        }
+      ],
+      "networks": [
+        "data",
+        "edge"
+      ],
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy"
+        },
+        "object-store": {
+          "condition": "service_healthy"
+        },
+        "migrate": {
+          "condition": "service_completed_successfully"
+        },
+        "storage-init": {
+          "condition": "service_completed_successfully"
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "/opt/oxagen/bin/oxagen",
+          "health",
+          "--component",
+          "gateway",
+          "--ready",
+          "--quiet"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 12,
+        "start_period": "20s"
+      },
+      "ports": [
+        {
+          "target": 8081,
+          "published": "${GATEWAY_PORT:-8081}",
+          "host_ip": "127.0.0.1",
+          "protocol": "tcp"
+        }
+      ]
+    },
+    "worker": {
+      "init": true,
+      "read_only": true,
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "logging": {
+        "driver": "none"
+      },
+      "restart": "no",
+      "stop_grace_period": "30s",
+      "pids_limit": 128,
+      "mem_limit": "512m",
+      "cpus": 1,
+      "tmpfs": [
+        "/tmp:rw,nosuid,nodev,noexec,size=64m,mode=1777"
+      ],
+      "image": "${WORKER_IMAGE:?Set a reviewed repository@sha256 digest}",
+      "pull_policy": "never",
+      "user": "${LOCAL_UID:?Set your non-root UID}:${LOCAL_GID:?Set your GID}",
+      "entrypoint": [
+        "/opt/oxagen/bin/oxagen"
+      ],
+      "command": [
+        "serve",
+        "worker"
+      ],
+      "environment": {
+        "OXAGEN_ENV": "local",
+        "OXAGEN_BIND_HOST": "0.0.0.0",
+        "OXAGEN_CONFIG_FILE": "/etc/oxagen/local.json",
+        "OXAGEN_ALLOW_ANONYMOUS": "false",
+        "OXAGEN_BOOTSTRAP_ADMIN": "false",
+        "OXAGEN_RAW_LOGGING": "false",
+        "OXAGEN_DB_HOST": "postgres",
+        "OXAGEN_DB_PORT": "5432",
+        "OXAGEN_DB_NAME": "oxagen",
+        "OXAGEN_DB_USER": "oxagen_runtime",
+        "OXAGEN_DB_PASSWORD_FILE": "/run/secrets/postgres_runtime_password",
+        "OXAGEN_DB_TLS": "disable-local-only",
+        "OXAGEN_S3_ENDPOINT": "http://object-store:8333",
+        "OXAGEN_S3_REGION": "us-east-1",
+        "OXAGEN_S3_BUCKET": "oxagen-dev",
+        "OXAGEN_S3_FORCE_PATH_STYLE": "true",
+        "OXAGEN_S3_CREDENTIALS_FILE": "/run/secrets/object_store_runtime",
+        "OXAGEN_GATEWAY_URL": "http://gateway:8081"
+      },
+      "secrets": [
+        "postgres_runtime_password",
+        "object_store_runtime"
+      ],
+      "configs": [
+        {
+          "source": "local_config",
+          "target": "/etc/oxagen/local.json"
+        }
+      ],
+      "networks": [
+        "data"
+      ],
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy"
+        },
+        "object-store": {
+          "condition": "service_healthy"
+        },
+        "migrate": {
+          "condition": "service_completed_successfully"
+        },
+        "storage-init": {
+          "condition": "service_completed_successfully"
+        },
+        "gateway": {
+          "condition": "service_healthy"
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "/opt/oxagen/bin/oxagen",
+          "health",
+          "--component",
+          "worker",
+          "--ready",
+          "--quiet"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 12,
+        "start_period": "20s"
+      }
+    }
+  },
+  "networks": {
+    "data": {
+      "internal": true
+    },
+    "edge": {}
+  },
+  "configs": {
+    "local_config": {
+      "file": "./local-config.json"
+    },
+    "filer_config": {
+      "file": "./filer.toml"
+    }
+  },
+  "secrets": {
+    "postgres_admin_password": {
+      "file": "./.local-secrets/postgres_admin_password"
+    },
+    "postgres_migration_password": {
+      "file": "./.local-secrets/postgres_migration_password"
+    },
+    "postgres_runtime_password": {
+      "file": "./.local-secrets/postgres_runtime_password"
+    },
+    "object_store_config": {
+      "file": "./.local-secrets/object_store_config"
+    },
+    "object_store_admin": {
+      "file": "./.local-secrets/object_store_admin"
+    },
+    "object_store_runtime": {
+      "file": "./.local-secrets/object_store_runtime"
+    }
+  }
+}

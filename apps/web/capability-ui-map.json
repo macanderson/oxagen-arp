@@ -1,0 +1,18 @@
+{
+  "workspace.list": { "page": "app/page.tsx" },
+  "model_route.list": { "page": "app/policies/model-routes/page.tsx", "also": ["app/send/page.tsx"] },
+  "run.list": { "page": "app/runs/page.tsx", "also": ["app/page.tsx"] },
+  "run.get": { "page": "app/runs/[id]/page.tsx" },
+  "run.pause": { "page": "app/runs/[id]/page.tsx" },
+  "run.resume": { "page": "app/runs/[id]/page.tsx" },
+  "run.stop": { "page": "app/runs/[id]/page.tsx" },
+  "run.steer": { "page": "app/runs/[id]/page.tsx" },
+  "work.submit": { "page": "app/send/page.tsx" },
+  "work.cancel": { "page": "app/runs/page.tsx" },
+  "budget.status": { "page": "app/spend/page.tsx", "also": ["app/send/page.tsx"] },
+  "device.list": { "page": "app/devices/page.tsx" },
+  "device.revoke": { "page": "app/devices/page.tsx" },
+  "usage.query": { "page": "app/coaching/page.tsx", "also": ["app/spend/page.tsx"] },
+  "finding.list": { "page": "app/coaching/page.tsx" },
+  "finding.respond": { "page": "app/coaching/page.tsx" }
+}

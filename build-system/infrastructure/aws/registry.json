@@ -1,0 +1,490 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Create three immutable image repositories and ECR-only publication authority before the first service stack.",
+  "Parameters": {
+    "NamePrefix": {
+      "Type": "String",
+      "AllowedPattern": "[a-z][a-z0-9-]{1,15}"
+    },
+    "Environment": {
+      "Type": "String",
+      "AllowedValues": [
+        "staging",
+        "production"
+      ]
+    },
+    "ControllerPrincipalArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:[^:]+:iam::[0-9]{12}:role/.+",
+      "Description": "Existing protected controller role allowed to assume this environment deployment role."
+    },
+    "GitHubOidcProviderArn": {
+      "Type": "String",
+      "Default": "",
+      "Description": "Optional existing token.actions.githubusercontent.com IAM OIDC provider ARN."
+    },
+    "GitHubRepository": {
+      "Type": "String",
+      "Default": "",
+      "AllowedPattern": "|[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+"
+    },
+    "EcrKmsKeyArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:[^:]+:kms:[^:]+:[0-9]{12}:key/.+"
+    }
+  },
+  "Conditions": {
+    "UseGitHubOidc": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "GitHubOidcProviderArn"
+            },
+            ""
+          ]
+        }
+      ]
+    }
+  },
+  "Resources": {
+    "ApiRepository": {
+      "Type": "AWS::ECR::Repository",
+      "Properties": {
+        "RepositoryName": {
+          "Fn::Sub": "${NamePrefix}/${Environment}/api"
+        },
+        "ImageTagMutability": "IMMUTABLE",
+        "EncryptionConfiguration": {
+          "EncryptionType": "KMS",
+          "KmsKey": {
+            "Ref": "EcrKmsKeyArn"
+          }
+        },
+        "EmptyOnDelete": false,
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "GatewayRepository": {
+      "Type": "AWS::ECR::Repository",
+      "Properties": {
+        "RepositoryName": {
+          "Fn::Sub": "${NamePrefix}/${Environment}/gateway"
+        },
+        "ImageTagMutability": "IMMUTABLE",
+        "EncryptionConfiguration": {
+          "EncryptionType": "KMS",
+          "KmsKey": {
+            "Ref": "EcrKmsKeyArn"
+          }
+        },
+        "EmptyOnDelete": false,
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "WorkerRepository": {
+      "Type": "AWS::ECR::Repository",
+      "Properties": {
+        "RepositoryName": {
+          "Fn::Sub": "${NamePrefix}/${Environment}/worker"
+        },
+        "ImageTagMutability": "IMMUTABLE",
+        "EncryptionConfiguration": {
+          "EncryptionType": "KMS",
+          "KmsKey": {
+            "Ref": "EcrKmsKeyArn"
+          }
+        },
+        "EmptyOnDelete": false,
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "ArtifactPublisherRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Ref": "ControllerPrincipalArn"
+                }
+              },
+              "Action": "sts:AssumeRole"
+            },
+            {
+              "Fn::If": [
+                "UseGitHubOidc",
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Federated": {
+                      "Ref": "GitHubOidcProviderArn"
+                    }
+                  },
+                  "Action": "sts:AssumeRoleWithWebIdentity",
+                  "Condition": {
+                    "StringEquals": {
+                      "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+                      "token.actions.githubusercontent.com:sub": {
+                        "Fn::Sub": "repo:${GitHubRepository}:environment:${Environment}"
+                      }
+                    }
+                  }
+                },
+                {
+                  "Ref": "AWS::NoValue"
+                }
+              ]
+            }
+          ]
+        },
+        "MaxSessionDuration": 3600,
+        "Policies": [
+          {
+            "PolicyName": "ThreeImmutableImageRepositories",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecr:GetAuthorizationToken"
+                  ],
+                  "Resource": "*",
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:RequestedRegion": {
+                        "Ref": "AWS::Region"
+                      }
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecr:BatchCheckLayerAvailability",
+                    "ecr:InitiateLayerUpload",
+                    "ecr:UploadLayerPart",
+                    "ecr:CompleteLayerUpload",
+                    "ecr:PutImage",
+                    "ecr:DescribeRepositories",
+                    "ecr:BatchGetImage",
+                    "ecr:GetDownloadUrlForLayer",
+                    "ecr:DescribeImages"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::GetAtt": [
+                        "ApiRepository",
+                        "Arn"
+                      ]
+                    },
+                    {
+                      "Fn::GetAtt": [
+                        "GatewayRepository",
+                        "Arn"
+                      ]
+                    },
+                    {
+                      "Fn::GetAtt": [
+                        "WorkerRepository",
+                        "Arn"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "InfrastructureTemplates": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "IgnorePublicAcls": true,
+          "BlockPublicPolicy": true,
+          "RestrictPublicBuckets": true
+        },
+        "OwnershipControls": {
+          "Rules": [
+            {
+              "ObjectOwnership": "BucketOwnerEnforced"
+            }
+          ]
+        },
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "aws:kms",
+                "KMSMasterKeyID": {
+                  "Ref": "EcrKmsKeyArn"
+                }
+              }
+            }
+          ]
+        },
+        "VersioningConfiguration": {
+          "Status": "Enabled"
+        },
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "TemplatePolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "InfrastructureTemplates"
+        },
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "s3:*",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "InfrastructureTemplates",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::Sub": "${InfrastructureTemplates.Arn}/*"
+                }
+              ],
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false"
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "ApiRepositoryArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "ApiRepository",
+          "Arn"
+        ]
+      },
+      "Description": "Api exact ECR repository ARN"
+    },
+    "ApiRepositoryUri": {
+      "Value": {
+        "Fn::GetAtt": [
+          "ApiRepository",
+          "RepositoryUri"
+        ]
+      },
+      "Description": "Api image destination"
+    },
+    "ApiRepositoryName": {
+      "Value": {
+        "Ref": "ApiRepository"
+      },
+      "Description": "Api repository name"
+    },
+    "GatewayRepositoryArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "GatewayRepository",
+          "Arn"
+        ]
+      },
+      "Description": "Gateway exact ECR repository ARN"
+    },
+    "GatewayRepositoryUri": {
+      "Value": {
+        "Fn::GetAtt": [
+          "GatewayRepository",
+          "RepositoryUri"
+        ]
+      },
+      "Description": "Gateway image destination"
+    },
+    "GatewayRepositoryName": {
+      "Value": {
+        "Ref": "GatewayRepository"
+      },
+      "Description": "Gateway repository name"
+    },
+    "WorkerRepositoryArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "WorkerRepository",
+          "Arn"
+        ]
+      },
+      "Description": "Worker exact ECR repository ARN"
+    },
+    "WorkerRepositoryUri": {
+      "Value": {
+        "Fn::GetAtt": [
+          "WorkerRepository",
+          "RepositoryUri"
+        ]
+      },
+      "Description": "Worker image destination"
+    },
+    "WorkerRepositoryName": {
+      "Value": {
+        "Ref": "WorkerRepository"
+      },
+      "Description": "Worker repository name"
+    },
+    "ArtifactPublisherRoleArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "ArtifactPublisherRole",
+          "Arn"
+        ]
+      },
+      "Description": "ECR only; no ECS, database or deployment authority"
+    },
+    "InfrastructureTemplateBucketName": {
+      "Value": {
+        "Ref": "InfrastructureTemplates"
+      },
+      "Description": "Versioned private bucket for reviewed CloudFormation templates only"
+    }
+  },
+  "Rules": {
+    "OidcRepositoryProvided": {
+      "RuleCondition": {
+        "Fn::Not": [
+          {
+            "Fn::Equals": [
+              {
+                "Ref": "GitHubOidcProviderArn"
+              },
+              ""
+            ]
+          }
+        ]
+      },
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Not": [
+              {
+                "Fn::Equals": [
+                  {
+                    "Ref": "GitHubRepository"
+                  },
+                  ""
+                ]
+              }
+            ]
+          },
+          "AssertDescription": "GitHub repository is required when an OIDC provider is configured."
+        }
+      ]
+    }
+  }
+}

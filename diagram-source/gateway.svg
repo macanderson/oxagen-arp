@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" id="arp-gateway" class="arp-diagram" viewBox="0 0 1200 1140" role="img" aria-labelledby="arp-gateway-title arp-gateway-desc">
-<title id="arp-gateway-title">Model requests must pass through Oxagen</title><desc id="arp-gateway-desc">Oxagen prepares allowed run context and steering. A harness adapter or custom SDK puts them into the next supported step. Hooks report events and help with steering, but are not the security boundary. The harness sends model, tool, and context requests through a protected desktop gateway outside the agent process and separate from the app UI. The local gateway scans the full assembled request, history, tool data, and attachments under workspace rules. It blocks, redacts, or replaces sensitive content before remote egress and blocks a send if required content cannot be checked. It also prevents direct network and credential bypass. Only cleaned requests reach the tenant model proxy, which authorizes each call, holds provider keys, and sends approved requests to models. Each tenant gate checks the ScanReceipt that binds the exact cleaned request to the current workspace scan policy. A missing, stale, or mismatched receipt blocks the request. Remote tool and context gates also check operations and record rights. Only cleaned evidence enters Oxagen records. Strict mode refuses any required route that cannot be guarded or disabled. A removable hook alone cannot stop bypass.</desc>
+<title id="arp-gateway-title">Model requests must pass through Oxagen</title><desc id="arp-gateway-desc">Oxagen prepares allowed run context and steering. A harness adapter or custom SDK puts them into the next supported step. Hooks report events and help with steering, but are not the security boundary. The harness sends model, tool, and context requests through a protected desktop gateway outside the agent process and separate from the app UI. The local gateway scans the full assembled request, history, tool data, and attachments under workspace rules. It blocks, redacts, or replaces sensitive content before remote egress and blocks a send if required content cannot be checked. It also prevents direct network and credential bypass. Only cleaned requests reach the org model proxy, which authorizes each call, holds provider keys, and sends approved requests to models. Each org gate checks the ScanReceipt that binds the exact cleaned request to the current workspace scan policy. A missing, stale, or mismatched receipt blocks the request. Remote tool and context gates also check operations and record rights. Only cleaned evidence enters Oxagen records. Strict mode refuses any required route that cannot be guarded or disabled. A removable hook alone cannot stop bypass.</desc>
 <defs><marker id="arp-gateway-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="var(--diagram-line,var(--arp-line,#A1A1AA))" stroke-width="1.5" stroke-linejoin="round"/></marker></defs>
 <style>
 #arp-gateway{--arp-bg:#09090B;--arp-panel:#18181B;--arp-text:#FFFFFF;--arp-muted:#A1A1AA;--arp-line:#A1A1AA}
@@ -40,7 +40,7 @@
 <text x="384" y="556" class="body" text-anchor="start">Block bypass routes and keys.</text>
 <path d="M 995 315 V 365 H 600 V 420" class="edge"/>
 <rect x="40" y="680" width="330" height="180" rx="12" class="box"/>
-<text x="64" y="719" class="label" text-anchor="start">Tenant model gateway</text>
+<text x="64" y="719" class="label" text-anchor="start">Org model gateway</text>
 <text x="64" y="756" class="body" text-anchor="start">Only cleaned requests</text>
 <text x="64" y="786" class="body" text-anchor="start">Holds provider keys</text>
 <text x="64" y="816" class="body" text-anchor="start">Sends to approved models</text>
@@ -70,6 +70,6 @@
 <path d="M 205 860 V 935" class="edge"/>
 <path d="M 600 860 V 935" class="edge"/>
 <path d="M 995 860 V 935" class="edge"/>
-<text x="40" y="1090" class="note" text-anchor="start">Tenant gates check the scan receipt before forwarding a cleaned request.</text>
+<text x="40" y="1090" class="note" text-anchor="start">Org gates check the scan receipt before forwarding a cleaned request.</text>
 <text x="40" y="1126" class="note" text-anchor="start">If a required route cannot be guarded or disabled, strict mode refuses the run.</text>
 </svg>

@@ -56,9 +56,9 @@ The final request sent must match the exact cleaned request that was checked and
 
 No scanner finds every secret perfectly. Each workspace needs clear rules and tests. Strict mode blocks content or paths it cannot inspect or judge safely.
 
-![Raw prompt text, full history, tool inputs and results, tool schemas, files, images, attachments, URLs, and request headers enter the protected local desktop gateway. The service is separate from the app UI and protected from the controlled agent. The workspace scanner checks the full assembled outgoing request and every required attachment. Workspace rules may block the send, redact content, or replace sensitive values. If required content cannot be checked, the send is blocked. The blocked path does not upload raw content or raw evidence. The allowed path carries only the cleaned full request and a minimal ScanReceipt without raw text. This receipt binds the exact cleaned request digest and workspace scan-policy version. The tenant gateway checks the receipt and blocks missing, stale, or mismatched receipts. Changed requests are rechecked under current access and policy. Only this cleaned form reaches the tenant gateway, approved model or tool, and sanitized Oxagen evidence records. The same path applies to outgoing reports and telemetry. No raw request, raw evidence, or replacement mapping may take a separate cloud path.](diagrams/data_protection.svg)
+![Raw prompt text, full history, tool inputs and results, tool schemas, files, images, attachments, URLs, and request headers enter the protected local desktop gateway. The service is separate from the app UI and protected from the controlled agent. The workspace scanner checks the full assembled outgoing request and every required attachment. Workspace rules may block the send, redact content, or replace sensitive values. If required content cannot be checked, the send is blocked. The blocked path does not upload raw content or raw evidence. The allowed path carries only the cleaned full request and a minimal ScanReceipt without raw text. This receipt binds the exact cleaned request digest and workspace scan-policy version. The org gateway checks the receipt and blocks missing, stale, or mismatched receipts. Changed requests are rechecked under current access and policy. Only this cleaned form reaches the org gateway, approved model or tool, and sanitized Oxagen evidence records. The same path applies to outgoing reports and telemetry. No raw request, raw evidence, or replacement mapping may take a separate cloud path.](diagrams/data_protection.svg)
 
-*A protected desktop gateway scans the full assembled request under workspace rules. It may block, redact, or replace content. Only the cleaned form can reach tenant gateways, approved models, or Oxagen records. The app UI and harness cannot use a raw-to-cloud route.*
+*A protected desktop gateway scans the full assembled request under workspace rules. It may block, redact, or replace content. Only the cleaned form can reach org gateways, approved models, or Oxagen records. The app UI and harness cannot use a raw-to-cloud route.*
 
 ![A human operator or human team lead uses the Oxagen web app to choose a workspace and approved targets, dispatch work, steer runs, track spend and progress, and set work orders and context access. Durable routing saves each request, checks the right to start or steer, and creates a distinct run for each selected target when starting new work. Registered Codex, Claude Code, and custom harness targets each have a protected run guard. A protected desktop gateway scans full outgoing requests under workspace rules before remote egress. All model, tool, and context requests pass through mandatory gates that check record access, policies, work orders, and budgets. Only cleaned results and evidence reach Oxagen records and the web app. Sending work to several targets does not mean sending every target the same write. Shared writes still need their own checks.](diagrams/overview.svg)
 
@@ -177,13 +177,33 @@ Oxagen can run as an online service with protected spaces for each customer. A t
 SOC 2 is an outside review of how a company protects customer data. The team must check access, make safe updates, and test how it recovers from failures. It must keep proof that these checks took place.
 
 
+## How the first hosted version will run
+
+AWS will run the app, gateway and workers using a service called ECS with Fargate. The test space and the live customer space use separate AWS accounts. AWS also stores the database and files.
+
+A release is built once. That same release is tested before it reaches customers. The team tests a copy of the database too. Production needs approval for that exact release. If an update fails, the old app can return only if it still works with the current data.
+
+Docker Compose is for local development. Kubernetes can wait. The AWS setup does not change the plan to support customers who keep data in their own network. No cloud resources or live product were started for this document.
+
 ## Set up your first workspace
 
-This is the proposed setup, not a released product. Start in the web app: create a workspace, link a repo, and choose its default branch. Set the data rules, agent, tools, and budget. Then enroll the desktop service and connect a supported harness.
+This is the proposed setup, not a released product. The fastest path is one command, `oxagen quickstart`. It signs you in, enrolls the device, creates a personal workspace if you have none, links the checkout, applies safe read-only defaults, and runs one small task. It uses the same checks as the full path and cannot weaken them.
+
+The full path starts in the web app: create a workspace, link a repo, and choose its default branch. Set the data rules, agent, tools, and budget. Then enroll the desktop service and connect a supported harness.
 
 The CLI links the checkout and creates `.oxagen` files. These files ask for a workspace, context, and guidance. They hold no keys and grant no rights. Sync and validate them through the local service. Run one small read-only task, then inspect its report.
 
 Setup is complete only when a trusted start record shows which config, context, steering, and agent version the first model call used. Making files is not enough. Follow the [full first-workspace walkthrough](ARP-design.md#first-workspace-and-first-run), with [sample files and exact schemas](workspace-samples/README.md).
+
+## See where time and money go
+
+A **token** is a small piece of text a model reads or writes. Oxagen shows tokens, dollars, and wait time as separate measures. You can follow them from a person or agent down to one call. A **cache** can let a model reuse earlier input. Show what was read from it or saved to it, without counting the same tokens twice. Unknown use stays unknown. Totals include retries, helpers, and any paid Oxagen coaching.
+
+The coaching view suggests changes based on recorded calls. It might suggest a short error excerpt and a local file read instead of pasting a long trace each time. That works only if the file exists and the agent can safely read it. A file path alone is not the file, and reading it still has a cost.
+
+Show possible savings as a range, with the evidence and assumptions. Do not promise a cache hit or count the same saving twice. Comparing saved records makes no new calls. A live test needs an explicit choice and a budget; advice never reruns a task on its own.
+
+Teams that build their own agents get these views too. An **SDK** is a code library that connects them to Oxagen. The run view can show repeated calls, missing tool results, bad retries, or a late reply used without the required check. It separates known facts from guesses about wasted work. These clues help people fix their agent's loop. They do not certify that a job is done.
 
 ## Find the right spec
 
@@ -196,7 +216,8 @@ The **Design** tab holds the shared rules. Open **Specs** for the separate produ
 | [API](ARP-API-spec.md) | Requests from code and other systems. |
 | [MCP](ARP-MCP-spec.md) | Tools and context shown to each agent. |
 | [CLI](ARP-CLI-spec.md) | Commands for people and scripts. |
-
 | [Brand](ARP-Brand-spec.md) | Product words, fonts, colors, and states. |
 | [Schema](ARP-Schema-spec.md) | Records, keys, shared limits, and data protection. |
 | [Build plan](ARP-Build-plan.md) | Design certification, build batches, and independent checks. |
+| [SDK](ARP-SDK-spec.md) | Register and run custom agents. |
+| [Usage & performance](ARP-Performance-spec.md) | Tokens, cache use, costs, and ways to improve. |

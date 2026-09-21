@@ -1,0 +1,5024 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Oxagen staging or production: private Fargate API/gateway/worker, Aurora PostgreSQL, encrypted records and bounded release authority. Requires existing approved network, keys, certificate, secret references and published image.",
+  "Parameters": {
+    "NamePrefix": {
+      "Type": "String",
+      "AllowedPattern": "[a-z][a-z0-9-]{1,15}"
+    },
+    "Environment": {
+      "Type": "String",
+      "AllowedValues": [
+        "staging",
+        "production"
+      ]
+    },
+    "VpcId": {
+      "Type": "AWS::EC2::VPC::Id"
+    },
+    "PublicSubnetIds": {
+      "Type": "List<AWS::EC2::Subnet::Id>"
+    },
+    "PrivateSubnetIds": {
+      "Type": "List<AWS::EC2::Subnet::Id>"
+    },
+    "IngressCidr": {
+      "Type": "String",
+      "Description": "Explicit operator-approved IPv4 client range; 0.0.0.0/0 is an intentional public choice."
+    },
+    "ApprovedGatewayEgressCidr": {
+      "Type": "String",
+      "Description": "HTTPS provider/proxy egress range through the existing controlled private-subnet route."
+    },
+    "CertificateArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:[^:]+:acm:[^:]+:[0-9]{12}:certificate/.+"
+    },
+    "PublicHostname": {
+      "Type": "String",
+      "AllowedPattern": "[A-Za-z0-9.-]+",
+      "Description": "Existing DNS name covered by the ACM certificate; operator creates its ALB alias."
+    },
+    "DataKmsKeyArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:[^:]+:kms:[^:]+:[0-9]{12}:key/.+"
+    },
+    "LogsKmsKeyArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:[^:]+:kms:[^:]+:[0-9]{12}:key/.+"
+    },
+    "PostgresEngineVersion": {
+      "Type": "String",
+      "Description": "Operator-selected Aurora PostgreSQL release supporting Serverless v2 and Data API in this region."
+    },
+    "PostgresParameterFamily": {
+      "Type": "String",
+      "AllowedPattern": "aurora-postgresql[0-9]+",
+      "Description": "Family matching the engine major version."
+    },
+    "ApiRuntimeSecretArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:[^:]+:secretsmanager:[^:]+:[0-9]{12}:secret:.+"
+    },
+    "GatewayRuntimeSecretArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:[^:]+:secretsmanager:[^:]+:[0-9]{12}:secret:.+"
+    },
+    "WorkerRuntimeSecretArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:[^:]+:secretsmanager:[^:]+:[0-9]{12}:secret:.+"
+    },
+    "ControllerPrincipalArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:[^:]+:iam::[0-9]{12}:role/.+",
+      "Description": "Existing protected controller role allowed to assume this environment deployment role."
+    },
+    "GitHubOidcProviderArn": {
+      "Type": "String",
+      "Default": "",
+      "Description": "Optional existing token.actions.githubusercontent.com IAM OIDC provider ARN."
+    },
+    "GitHubRepository": {
+      "Type": "String",
+      "Default": "",
+      "AllowedPattern": "|[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+"
+    },
+    "ApiDesiredCount": {
+      "Type": "Number",
+      "Default": 2,
+      "MinValue": 1,
+      "MaxValue": 6
+    },
+    "GatewayDesiredCount": {
+      "Type": "Number",
+      "Default": 2,
+      "MinValue": 1,
+      "MaxValue": 6
+    },
+    "WorkerDesiredCount": {
+      "Type": "Number",
+      "Default": 1,
+      "MinValue": 1,
+      "MaxValue": 4
+    },
+    "DatabaseMinAcu": {
+      "Type": "Number",
+      "Default": 0.5,
+      "AllowedValues": [
+        0.5,
+        1,
+        2
+      ]
+    },
+    "DatabaseMaxAcu": {
+      "Type": "Number",
+      "Default": 4,
+      "AllowedValues": [
+        4,
+        8,
+        16
+      ]
+    },
+    "MonthlyBudgetUsd": {
+      "Type": "Number",
+      "MinValue": 1,
+      "Description": "Notification threshold only; does not stop AWS spending."
+    },
+    "NotificationEmail": {
+      "Type": "String",
+      "AllowedPattern": "[^@ ]+@[^@ ]+\\.[^@ ]+"
+    },
+    "BackupRetentionDays": {
+      "Type": "Number",
+      "Default": 14,
+      "MinValue": 7,
+      "MaxValue": 35
+    },
+    "LogRetentionDays": {
+      "Type": "Number",
+      "Default": 90,
+      "AllowedValues": [
+        30,
+        60,
+        90,
+        120,
+        180,
+        365,
+        731
+      ]
+    },
+    "ApiImageRepositoryUri": {
+      "Type": "String",
+      "AllowedPattern": "[0-9]{12}\\.dkr\\.ecr\\.[a-z0-9-]+\\.[a-z0-9.]+/[a-z0-9/_-]+"
+    },
+    "ApiImageRepositoryArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:[^:]+:ecr:[^:]+:[0-9]{12}:repository/.+"
+    },
+    "ApiImageDigest": {
+      "Type": "String",
+      "AllowedPattern": "sha256:[a-f0-9]{64}"
+    },
+    "ApiDatabaseSecretArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:[^:]+:secretsmanager:[^:]+:[0-9]{12}:secret:.+",
+      "Description": "Dedicated least-privilege DB user JSON; separate from runtime/provider credentials. Password is copied into snapshot clones."
+    },
+    "GatewayImageRepositoryUri": {
+      "Type": "String",
+      "AllowedPattern": "[0-9]{12}\\.dkr\\.ecr\\.[a-z0-9-]+\\.[a-z0-9.]+/[a-z0-9/_-]+"
+    },
+    "GatewayImageRepositoryArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:[^:]+:ecr:[^:]+:[0-9]{12}:repository/.+"
+    },
+    "GatewayImageDigest": {
+      "Type": "String",
+      "AllowedPattern": "sha256:[a-f0-9]{64}"
+    },
+    "GatewayDatabaseSecretArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:[^:]+:secretsmanager:[^:]+:[0-9]{12}:secret:.+",
+      "Description": "Dedicated least-privilege DB user JSON; separate from runtime/provider credentials. Password is copied into snapshot clones."
+    },
+    "WorkerImageRepositoryUri": {
+      "Type": "String",
+      "AllowedPattern": "[0-9]{12}\\.dkr\\.ecr\\.[a-z0-9-]+\\.[a-z0-9.]+/[a-z0-9/_-]+"
+    },
+    "WorkerImageRepositoryArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:[^:]+:ecr:[^:]+:[0-9]{12}:repository/.+"
+    },
+    "WorkerImageDigest": {
+      "Type": "String",
+      "AllowedPattern": "sha256:[a-f0-9]{64}"
+    },
+    "WorkerDatabaseSecretArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:[^:]+:secretsmanager:[^:]+:[0-9]{12}:secret:.+",
+      "Description": "Dedicated least-privilege DB user JSON; separate from runtime/provider credentials. Password is copied into snapshot clones."
+    },
+    "EnableServices": {
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [
+        "true",
+        "false"
+      ],
+      "Description": "Keep tasks stopped until approved baseline images, scoped DB users, secrets and bootstrap migrations are ready."
+    },
+    "S3PrefixListId": {
+      "Type": "String",
+      "AllowedPattern": "pl-[0-9a-f]+",
+      "Description": "AWS-managed S3 prefix list for this region; private subnet route tables must have an S3 gateway endpoint."
+    }
+  },
+  "Conditions": {
+    "RuntimeEnabled": {
+      "Fn::Equals": [
+        {
+          "Ref": "EnableServices"
+        },
+        "true"
+      ]
+    },
+    "IsProduction": {
+      "Fn::Equals": [
+        {
+          "Ref": "Environment"
+        },
+        "production"
+      ]
+    },
+    "UseGitHubOidc": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "GitHubOidcProviderArn"
+            },
+            ""
+          ]
+        }
+      ]
+    }
+  },
+  "Rules": {
+    "OidcRepositoryProvided": {
+      "RuleCondition": {
+        "Fn::Not": [
+          {
+            "Fn::Equals": [
+              {
+                "Ref": "GitHubOidcProviderArn"
+              },
+              ""
+            ]
+          }
+        ]
+      },
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Not": [
+              {
+                "Fn::Equals": [
+                  {
+                    "Ref": "GitHubRepository"
+                  },
+                  ""
+                ]
+              }
+            ]
+          },
+          "AssertDescription": "GitHub repository is required when an OIDC provider is configured."
+        }
+      ]
+    }
+  },
+  "Resources": {
+    "AlbSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Oxagen AlbSecurityGroup",
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "127.0.0.1/32",
+            "Description": "No default outbound permission"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "ApiSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Oxagen ApiSecurityGroup",
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "127.0.0.1/32",
+            "Description": "No default outbound permission"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "GatewaySecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Oxagen GatewaySecurityGroup",
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "127.0.0.1/32",
+            "Description": "No default outbound permission"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "WorkerSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Oxagen WorkerSecurityGroup",
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "127.0.0.1/32",
+            "Description": "No default outbound permission"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "DatabaseSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Oxagen DatabaseSecurityGroup",
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "127.0.0.1/32",
+            "Description": "No default outbound permission"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "EndpointSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Oxagen EndpointSecurityGroup",
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "127.0.0.1/32",
+            "Description": "No default outbound permission"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "AlbHttpsIngress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AlbSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 443,
+        "ToPort": 443,
+        "CidrIp": {
+          "Ref": "IngressCidr"
+        }
+      }
+    },
+    "ApiAlbIngress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "ApiSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 8080,
+        "ToPort": 8080,
+        "SourceSecurityGroupId": {
+          "Ref": "AlbSecurityGroup"
+        }
+      }
+    },
+    "ApiAlbEgress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AlbSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 8080,
+        "ToPort": 8080,
+        "DestinationSecurityGroupId": {
+          "Ref": "ApiSecurityGroup"
+        }
+      }
+    },
+    "GatewayAlbIngress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "GatewaySecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 8081,
+        "ToPort": 8081,
+        "SourceSecurityGroupId": {
+          "Ref": "AlbSecurityGroup"
+        }
+      }
+    },
+    "GatewayAlbEgress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AlbSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 8081,
+        "ToPort": 8081,
+        "DestinationSecurityGroupId": {
+          "Ref": "GatewaySecurityGroup"
+        }
+      }
+    },
+    "ApiDatabaseEgress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "ApiSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 5432,
+        "ToPort": 5432,
+        "DestinationSecurityGroupId": {
+          "Ref": "DatabaseSecurityGroup"
+        }
+      }
+    },
+    "ApiDatabaseIngress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "DatabaseSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 5432,
+        "ToPort": 5432,
+        "SourceSecurityGroupId": {
+          "Ref": "ApiSecurityGroup"
+        }
+      }
+    },
+    "ApiEndpointEgress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "ApiSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 443,
+        "ToPort": 443,
+        "DestinationSecurityGroupId": {
+          "Ref": "EndpointSecurityGroup"
+        }
+      }
+    },
+    "ApiEndpointIngress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "EndpointSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 443,
+        "ToPort": 443,
+        "SourceSecurityGroupId": {
+          "Ref": "ApiSecurityGroup"
+        }
+      }
+    },
+    "GatewayDatabaseEgress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "GatewaySecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 5432,
+        "ToPort": 5432,
+        "DestinationSecurityGroupId": {
+          "Ref": "DatabaseSecurityGroup"
+        }
+      }
+    },
+    "GatewayDatabaseIngress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "DatabaseSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 5432,
+        "ToPort": 5432,
+        "SourceSecurityGroupId": {
+          "Ref": "GatewaySecurityGroup"
+        }
+      }
+    },
+    "GatewayEndpointEgress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "GatewaySecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 443,
+        "ToPort": 443,
+        "DestinationSecurityGroupId": {
+          "Ref": "EndpointSecurityGroup"
+        }
+      }
+    },
+    "GatewayEndpointIngress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "EndpointSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 443,
+        "ToPort": 443,
+        "SourceSecurityGroupId": {
+          "Ref": "GatewaySecurityGroup"
+        }
+      }
+    },
+    "WorkerDatabaseEgress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "WorkerSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 5432,
+        "ToPort": 5432,
+        "DestinationSecurityGroupId": {
+          "Ref": "DatabaseSecurityGroup"
+        }
+      }
+    },
+    "WorkerDatabaseIngress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "DatabaseSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 5432,
+        "ToPort": 5432,
+        "SourceSecurityGroupId": {
+          "Ref": "WorkerSecurityGroup"
+        }
+      }
+    },
+    "WorkerEndpointEgress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "WorkerSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 443,
+        "ToPort": 443,
+        "DestinationSecurityGroupId": {
+          "Ref": "EndpointSecurityGroup"
+        }
+      }
+    },
+    "WorkerEndpointIngress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "EndpointSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 443,
+        "ToPort": 443,
+        "SourceSecurityGroupId": {
+          "Ref": "WorkerSecurityGroup"
+        }
+      }
+    },
+    "GatewayProviderEgress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "GatewaySecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 443,
+        "ToPort": 443,
+        "CidrIp": {
+          "Ref": "ApprovedGatewayEgressCidr"
+        }
+      }
+    },
+    "EcrApiEndpoint": {
+      "Type": "AWS::EC2::VPCEndpoint",
+      "Properties": {
+        "VpcEndpointType": "Interface",
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "SubnetIds": {
+          "Ref": "PrivateSubnetIds"
+        },
+        "SecurityGroupIds": [
+          {
+            "Ref": "EndpointSecurityGroup"
+          }
+        ],
+        "PrivateDnsEnabled": true,
+        "ServiceName": {
+          "Fn::Sub": "com.amazonaws.${AWS::Region}.ecr.api"
+        }
+      }
+    },
+    "EcrDockerEndpoint": {
+      "Type": "AWS::EC2::VPCEndpoint",
+      "Properties": {
+        "VpcEndpointType": "Interface",
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "SubnetIds": {
+          "Ref": "PrivateSubnetIds"
+        },
+        "SecurityGroupIds": [
+          {
+            "Ref": "EndpointSecurityGroup"
+          }
+        ],
+        "PrivateDnsEnabled": true,
+        "ServiceName": {
+          "Fn::Sub": "com.amazonaws.${AWS::Region}.ecr.dkr"
+        }
+      }
+    },
+    "LogsEndpoint": {
+      "Type": "AWS::EC2::VPCEndpoint",
+      "Properties": {
+        "VpcEndpointType": "Interface",
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "SubnetIds": {
+          "Ref": "PrivateSubnetIds"
+        },
+        "SecurityGroupIds": [
+          {
+            "Ref": "EndpointSecurityGroup"
+          }
+        ],
+        "PrivateDnsEnabled": true,
+        "ServiceName": {
+          "Fn::Sub": "com.amazonaws.${AWS::Region}.logs"
+        }
+      }
+    },
+    "MonitoringEndpoint": {
+      "Type": "AWS::EC2::VPCEndpoint",
+      "Properties": {
+        "VpcEndpointType": "Interface",
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "SubnetIds": {
+          "Ref": "PrivateSubnetIds"
+        },
+        "SecurityGroupIds": [
+          {
+            "Ref": "EndpointSecurityGroup"
+          }
+        ],
+        "PrivateDnsEnabled": true,
+        "ServiceName": {
+          "Fn::Sub": "com.amazonaws.${AWS::Region}.monitoring"
+        }
+      }
+    },
+    "SecretsEndpoint": {
+      "Type": "AWS::EC2::VPCEndpoint",
+      "Properties": {
+        "VpcEndpointType": "Interface",
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "SubnetIds": {
+          "Ref": "PrivateSubnetIds"
+        },
+        "SecurityGroupIds": [
+          {
+            "Ref": "EndpointSecurityGroup"
+          }
+        ],
+        "PrivateDnsEnabled": true,
+        "ServiceName": {
+          "Fn::Sub": "com.amazonaws.${AWS::Region}.secretsmanager"
+        }
+      }
+    },
+    "KmsEndpoint": {
+      "Type": "AWS::EC2::VPCEndpoint",
+      "Properties": {
+        "VpcEndpointType": "Interface",
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "SubnetIds": {
+          "Ref": "PrivateSubnetIds"
+        },
+        "SecurityGroupIds": [
+          {
+            "Ref": "EndpointSecurityGroup"
+          }
+        ],
+        "PrivateDnsEnabled": true,
+        "ServiceName": {
+          "Fn::Sub": "com.amazonaws.${AWS::Region}.kms"
+        }
+      }
+    },
+    "SqsEndpoint": {
+      "Type": "AWS::EC2::VPCEndpoint",
+      "Properties": {
+        "VpcEndpointType": "Interface",
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "SubnetIds": {
+          "Ref": "PrivateSubnetIds"
+        },
+        "SecurityGroupIds": [
+          {
+            "Ref": "EndpointSecurityGroup"
+          }
+        ],
+        "PrivateDnsEnabled": true,
+        "ServiceName": {
+          "Fn::Sub": "com.amazonaws.${AWS::Region}.sqs"
+        }
+      }
+    },
+    "ApiS3Egress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "ApiSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 443,
+        "ToPort": 443,
+        "DestinationPrefixListId": {
+          "Ref": "S3PrefixListId"
+        }
+      }
+    },
+    "GatewayS3Egress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "GatewaySecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 443,
+        "ToPort": 443,
+        "DestinationPrefixListId": {
+          "Ref": "S3PrefixListId"
+        }
+      }
+    },
+    "WorkerS3Egress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "WorkerSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 443,
+        "ToPort": 443,
+        "DestinationPrefixListId": {
+          "Ref": "S3PrefixListId"
+        }
+      }
+    },
+    "DbSubnetGroup": {
+      "Type": "AWS::RDS::DBSubnetGroup",
+      "Properties": {
+        "DBSubnetGroupDescription": "Private Aurora subnets in at least two AZs",
+        "SubnetIds": {
+          "Ref": "PrivateSubnetIds"
+        },
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "DbParameterGroup": {
+      "Type": "AWS::RDS::DBClusterParameterGroup",
+      "Properties": {
+        "Description": "Require TLS for application PostgreSQL connections",
+        "Family": {
+          "Ref": "PostgresParameterFamily"
+        },
+        "Parameters": {
+          "rds.force_ssl": "1",
+          "log_statement": "none",
+          "log_min_error_statement": "panic"
+        }
+      }
+    },
+    "DatabaseLogs": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": {
+          "Fn::Sub": "/aws/rds/cluster/${NamePrefix}-${Environment}/postgresql"
+        },
+        "KmsKeyId": {
+          "Ref": "LogsKmsKeyArn"
+        },
+        "RetentionInDays": {
+          "Ref": "LogRetentionDays"
+        },
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "Database": {
+      "Type": "AWS::RDS::DBCluster",
+      "Properties": {
+        "DBClusterIdentifier": {
+          "Fn::Sub": "${NamePrefix}-${Environment}"
+        },
+        "Engine": "aurora-postgresql",
+        "EngineMode": "provisioned",
+        "EngineVersion": {
+          "Ref": "PostgresEngineVersion"
+        },
+        "DatabaseName": "oxagen",
+        "MasterUsername": "oxagen_admin",
+        "ManageMasterUserPassword": true,
+        "MasterUserSecret": {
+          "KmsKeyId": {
+            "Ref": "DataKmsKeyArn"
+          }
+        },
+        "StorageEncrypted": true,
+        "KmsKeyId": {
+          "Ref": "DataKmsKeyArn"
+        },
+        "DBSubnetGroupName": {
+          "Ref": "DbSubnetGroup"
+        },
+        "DBClusterParameterGroupName": {
+          "Ref": "DbParameterGroup"
+        },
+        "VpcSecurityGroupIds": [
+          {
+            "Ref": "DatabaseSecurityGroup"
+          }
+        ],
+        "EnableHttpEndpoint": true,
+        "ServerlessV2ScalingConfiguration": {
+          "MinCapacity": {
+            "Ref": "DatabaseMinAcu"
+          },
+          "MaxCapacity": {
+            "Ref": "DatabaseMaxAcu"
+          }
+        },
+        "BackupRetentionPeriod": {
+          "Ref": "BackupRetentionDays"
+        },
+        "CopyTagsToSnapshot": true,
+        "DeletionProtection": true,
+        "EnableCloudwatchLogsExports": [
+          "postgresql"
+        ],
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      },
+      "DependsOn": "DatabaseLogs",
+      "DeletionPolicy": "Snapshot",
+      "UpdateReplacePolicy": "Snapshot"
+    },
+    "DatabaseWriter": {
+      "Type": "AWS::RDS::DBInstance",
+      "Properties": {
+        "DBClusterIdentifier": {
+          "Ref": "Database"
+        },
+        "Engine": "aurora-postgresql",
+        "DBInstanceClass": "db.serverless",
+        "PubliclyAccessible": false,
+        "AutoMinorVersionUpgrade": false,
+        "PromotionTier": 0,
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "DatabaseReader": {
+      "Type": "AWS::RDS::DBInstance",
+      "Properties": {
+        "DBClusterIdentifier": {
+          "Ref": "Database"
+        },
+        "Engine": "aurora-postgresql",
+        "DBInstanceClass": "db.serverless",
+        "PubliclyAccessible": false,
+        "AutoMinorVersionUpgrade": false,
+        "PromotionTier": 1,
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      },
+      "Condition": "IsProduction"
+    },
+    "Artifacts": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "IgnorePublicAcls": true,
+          "BlockPublicPolicy": true,
+          "RestrictPublicBuckets": true
+        },
+        "OwnershipControls": {
+          "Rules": [
+            {
+              "ObjectOwnership": "BucketOwnerEnforced"
+            }
+          ]
+        },
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "aws:kms",
+                "KMSMasterKeyID": {
+                  "Ref": "DataKmsKeyArn"
+                }
+              },
+              "BucketKeyEnabled": true
+            }
+          ]
+        },
+        "VersioningConfiguration": {
+          "Status": "Enabled"
+        },
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "ArtifactPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "Artifacts"
+        },
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "s3:*",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "Artifacts",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::Sub": "${Artifacts.Arn}/*"
+                }
+              ],
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "DeadLetterQueue": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "KmsMasterKeyId": {
+          "Ref": "DataKmsKeyArn"
+        },
+        "MessageRetentionPeriod": 1209600,
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "WorkQueue": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "KmsMasterKeyId": {
+          "Ref": "DataKmsKeyArn"
+        },
+        "VisibilityTimeout": 300,
+        "MessageRetentionPeriod": 345600,
+        "RedrivePolicy": {
+          "deadLetterTargetArn": {
+            "Fn::GetAtt": [
+              "DeadLetterQueue",
+              "Arn"
+            ]
+          },
+          "maxReceiveCount": 5
+        },
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "DeploymentLocks": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "BillingMode": "PAY_PER_REQUEST",
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "release_scope",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "release_scope",
+            "KeyType": "HASH"
+          }
+        ],
+        "SSESpecification": {
+          "SSEEnabled": true,
+          "SSEType": "KMS",
+          "KMSMasterKeyId": {
+            "Ref": "DataKmsKeyArn"
+          }
+        },
+        "PointInTimeRecoverySpecification": {
+          "PointInTimeRecoveryEnabled": true
+        },
+        "DeletionProtectionEnabled": true,
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "Cluster": {
+      "Type": "AWS::ECS::Cluster",
+      "Properties": {
+        "ClusterName": {
+          "Fn::Sub": "${NamePrefix}-${Environment}"
+        },
+        "ClusterSettings": [
+          {
+            "Name": "containerInsights",
+            "Value": "enabled"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "Notifications": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {
+        "KmsMasterKeyId": {
+          "Ref": "DataKmsKeyArn"
+        },
+        "Subscription": [
+          {
+            "Protocol": "email",
+            "Endpoint": {
+              "Ref": "NotificationEmail"
+            }
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "ApiLogs": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": {
+          "Fn::Sub": "/oxagen/${NamePrefix}/${Environment}/api"
+        },
+        "KmsKeyId": {
+          "Ref": "LogsKmsKeyArn"
+        },
+        "RetentionInDays": {
+          "Ref": "LogRetentionDays"
+        },
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "ApiExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole",
+              "Condition": {
+                "StringEquals": {
+                  "aws:SourceAccount": {
+                    "Ref": "AWS::AccountId"
+                  }
+                },
+                "ArnLike": {
+                  "aws:SourceArn": {
+                    "Fn::Sub": "arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:*"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "PullImageLogsAndOwnSecret",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecr:GetAuthorizationToken"
+                  ],
+                  "Resource": "*",
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:RequestedRegion": {
+                        "Ref": "AWS::Region"
+                      }
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecr:BatchCheckLayerAvailability",
+                    "ecr:GetDownloadUrlForLayer",
+                    "ecr:BatchGetImage"
+                  ],
+                  "Resource": {
+                    "Ref": "ApiImageRepositoryArn"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "ApiLogs",
+                      "Arn"
+                    ]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "secretsmanager:GetSecretValue"
+                  ],
+                  "Resource": [
+                    {
+                      "Ref": "ApiRuntimeSecretArn"
+                    },
+                    {
+                      "Ref": "ApiDatabaseSecretArn"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "kms:Decrypt"
+                  ],
+                  "Resource": {
+                    "Ref": "DataKmsKeyArn"
+                  },
+                  "Condition": {
+                    "StringEquals": {
+                      "kms:ViaService": {
+                        "Fn::Sub": "secretsmanager.${AWS::Region}.${AWS::URLSuffix}"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "ApiTaskRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole",
+              "Condition": {
+                "StringEquals": {
+                  "aws:SourceAccount": {
+                    "Ref": "AWS::AccountId"
+                  }
+                },
+                "ArnLike": {
+                  "aws:SourceArn": {
+                    "Fn::Sub": "arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:*"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "ScopedApplicationData",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:GetObject",
+                    "s3:PutObject",
+                    "s3:GetObjectVersion"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "${Artifacts.Arn}/*"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:ListBucket"
+                  ],
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "Artifacts",
+                      "Arn"
+                    ]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "kms:Decrypt",
+                    "kms:GenerateDataKey"
+                  ],
+                  "Resource": {
+                    "Ref": "DataKmsKeyArn"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "sqs:SendMessage",
+                    "sqs:GetQueueAttributes"
+                  ],
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "WorkQueue",
+                      "Arn"
+                    ]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "cloudwatch:PutMetricData"
+                  ],
+                  "Resource": "*",
+                  "Condition": {
+                    "StringEquals": {
+                      "cloudwatch:namespace": "Oxagen/Runtime",
+                      "aws:RequestedRegion": {
+                        "Ref": "AWS::Region"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "ApiTaskDefinition": {
+      "Type": "AWS::ECS::TaskDefinition",
+      "Properties": {
+        "Family": {
+          "Fn::Sub": "${NamePrefix}-${Environment}-api"
+        },
+        "Cpu": "512",
+        "Memory": "1024",
+        "NetworkMode": "awsvpc",
+        "RequiresCompatibilities": [
+          "FARGATE"
+        ],
+        "RuntimePlatform": {
+          "CpuArchitecture": "X86_64",
+          "OperatingSystemFamily": "LINUX"
+        },
+        "ExecutionRoleArn": {
+          "Fn::GetAtt": [
+            "ApiExecutionRole",
+            "Arn"
+          ]
+        },
+        "TaskRoleArn": {
+          "Fn::GetAtt": [
+            "ApiTaskRole",
+            "Arn"
+          ]
+        },
+        "ContainerDefinitions": [
+          {
+            "Name": "api",
+            "Image": {
+              "Fn::Sub": "${ApiImageRepositoryUri}@${ApiImageDigest}"
+            },
+            "Essential": true,
+            "EntryPoint": [
+              "/opt/oxagen/bin/oxagen"
+            ],
+            "Command": [
+              "serve",
+              "api"
+            ],
+            "ReadonlyRootFilesystem": true,
+            "User": "10001:10001",
+            "LinuxParameters": {
+              "InitProcessEnabled": true,
+              "Capabilities": {
+                "Drop": [
+                  "ALL"
+                ]
+              }
+            },
+            "StopTimeout": 60,
+            "Environment": [
+              {
+                "Name": "OXAGEN_ENVIRONMENT",
+                "Value": {
+                  "Ref": "Environment"
+                }
+              },
+              {
+                "Name": "DB_HOST",
+                "Value": {
+                  "Fn::GetAtt": [
+                    "Database",
+                    "Endpoint.Address"
+                  ]
+                }
+              },
+              {
+                "Name": "DB_PORT",
+                "Value": "5432"
+              },
+              {
+                "Name": "DB_NAME",
+                "Value": "oxagen"
+              },
+              {
+                "Name": "DB_SSLMODE",
+                "Value": "verify-full"
+              },
+              {
+                "Name": "ARTIFACT_BUCKET",
+                "Value": {
+                  "Ref": "Artifacts"
+                }
+              },
+              {
+                "Name": "WORK_QUEUE_URL",
+                "Value": {
+                  "Ref": "WorkQueue"
+                }
+              },
+              {
+                "Name": "RELEASE_IMAGE_DIGEST",
+                "Value": {
+                  "Ref": "ApiImageDigest"
+                }
+              }
+            ],
+            "Secrets": [
+              {
+                "Name": "OXAGEN_RUNTIME_CONFIG",
+                "ValueFrom": {
+                  "Ref": "ApiRuntimeSecretArn"
+                }
+              },
+              {
+                "Name": "DB_USER",
+                "ValueFrom": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Ref": "ApiDatabaseSecretArn"
+                      },
+                      ":username::"
+                    ]
+                  ]
+                }
+              },
+              {
+                "Name": "DB_PASSWORD",
+                "ValueFrom": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Ref": "ApiDatabaseSecretArn"
+                      },
+                      ":password::"
+                    ]
+                  ]
+                }
+              }
+            ],
+            "LogConfiguration": {
+              "LogDriver": "awslogs",
+              "Options": {
+                "awslogs-group": {
+                  "Ref": "ApiLogs"
+                },
+                "awslogs-region": {
+                  "Ref": "AWS::Region"
+                },
+                "awslogs-stream-prefix": "api",
+                "mode": "non-blocking",
+                "max-buffer-size": "10m"
+              }
+            },
+            "MountPoints": [
+              {
+                "SourceVolume": "temp",
+                "ContainerPath": "/tmp",
+                "ReadOnly": false
+              }
+            ],
+            "HealthCheck": {
+              "Command": [
+                "CMD",
+                "/opt/oxagen/bin/oxagen",
+                "health",
+                "--component",
+                "api",
+                "--ready",
+                "--quiet"
+              ],
+              "Interval": 30,
+              "Timeout": 5,
+              "Retries": 3,
+              "StartPeriod": 30
+            },
+            "PortMappings": [
+              {
+                "ContainerPort": 8080,
+                "Protocol": "tcp"
+              }
+            ]
+          }
+        ],
+        "Volumes": [
+          {
+            "Name": "temp"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "GatewayLogs": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": {
+          "Fn::Sub": "/oxagen/${NamePrefix}/${Environment}/gateway"
+        },
+        "KmsKeyId": {
+          "Ref": "LogsKmsKeyArn"
+        },
+        "RetentionInDays": {
+          "Ref": "LogRetentionDays"
+        },
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "GatewayExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole",
+              "Condition": {
+                "StringEquals": {
+                  "aws:SourceAccount": {
+                    "Ref": "AWS::AccountId"
+                  }
+                },
+                "ArnLike": {
+                  "aws:SourceArn": {
+                    "Fn::Sub": "arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:*"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "PullImageLogsAndOwnSecret",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecr:GetAuthorizationToken"
+                  ],
+                  "Resource": "*",
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:RequestedRegion": {
+                        "Ref": "AWS::Region"
+                      }
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecr:BatchCheckLayerAvailability",
+                    "ecr:GetDownloadUrlForLayer",
+                    "ecr:BatchGetImage"
+                  ],
+                  "Resource": {
+                    "Ref": "GatewayImageRepositoryArn"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "GatewayLogs",
+                      "Arn"
+                    ]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "secretsmanager:GetSecretValue"
+                  ],
+                  "Resource": [
+                    {
+                      "Ref": "GatewayRuntimeSecretArn"
+                    },
+                    {
+                      "Ref": "GatewayDatabaseSecretArn"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "kms:Decrypt"
+                  ],
+                  "Resource": {
+                    "Ref": "DataKmsKeyArn"
+                  },
+                  "Condition": {
+                    "StringEquals": {
+                      "kms:ViaService": {
+                        "Fn::Sub": "secretsmanager.${AWS::Region}.${AWS::URLSuffix}"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "GatewayTaskRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole",
+              "Condition": {
+                "StringEquals": {
+                  "aws:SourceAccount": {
+                    "Ref": "AWS::AccountId"
+                  }
+                },
+                "ArnLike": {
+                  "aws:SourceArn": {
+                    "Fn::Sub": "arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:*"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "ScopedApplicationData",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:GetObject",
+                    "s3:PutObject",
+                    "s3:GetObjectVersion"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "${Artifacts.Arn}/*"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:ListBucket"
+                  ],
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "Artifacts",
+                      "Arn"
+                    ]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "kms:Decrypt",
+                    "kms:GenerateDataKey"
+                  ],
+                  "Resource": {
+                    "Ref": "DataKmsKeyArn"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "cloudwatch:PutMetricData"
+                  ],
+                  "Resource": "*",
+                  "Condition": {
+                    "StringEquals": {
+                      "cloudwatch:namespace": "Oxagen/Runtime",
+                      "aws:RequestedRegion": {
+                        "Ref": "AWS::Region"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "GatewayTaskDefinition": {
+      "Type": "AWS::ECS::TaskDefinition",
+      "Properties": {
+        "Family": {
+          "Fn::Sub": "${NamePrefix}-${Environment}-gateway"
+        },
+        "Cpu": "512",
+        "Memory": "1024",
+        "NetworkMode": "awsvpc",
+        "RequiresCompatibilities": [
+          "FARGATE"
+        ],
+        "RuntimePlatform": {
+          "CpuArchitecture": "X86_64",
+          "OperatingSystemFamily": "LINUX"
+        },
+        "ExecutionRoleArn": {
+          "Fn::GetAtt": [
+            "GatewayExecutionRole",
+            "Arn"
+          ]
+        },
+        "TaskRoleArn": {
+          "Fn::GetAtt": [
+            "GatewayTaskRole",
+            "Arn"
+          ]
+        },
+        "ContainerDefinitions": [
+          {
+            "Name": "gateway",
+            "Image": {
+              "Fn::Sub": "${GatewayImageRepositoryUri}@${GatewayImageDigest}"
+            },
+            "Essential": true,
+            "EntryPoint": [
+              "/opt/oxagen/bin/oxagen"
+            ],
+            "Command": [
+              "serve",
+              "gateway"
+            ],
+            "ReadonlyRootFilesystem": true,
+            "User": "10001:10001",
+            "LinuxParameters": {
+              "InitProcessEnabled": true,
+              "Capabilities": {
+                "Drop": [
+                  "ALL"
+                ]
+              }
+            },
+            "StopTimeout": 60,
+            "Environment": [
+              {
+                "Name": "OXAGEN_ENVIRONMENT",
+                "Value": {
+                  "Ref": "Environment"
+                }
+              },
+              {
+                "Name": "DB_HOST",
+                "Value": {
+                  "Fn::GetAtt": [
+                    "Database",
+                    "Endpoint.Address"
+                  ]
+                }
+              },
+              {
+                "Name": "DB_PORT",
+                "Value": "5432"
+              },
+              {
+                "Name": "DB_NAME",
+                "Value": "oxagen"
+              },
+              {
+                "Name": "DB_SSLMODE",
+                "Value": "verify-full"
+              },
+              {
+                "Name": "ARTIFACT_BUCKET",
+                "Value": {
+                  "Ref": "Artifacts"
+                }
+              },
+              {
+                "Name": "WORK_QUEUE_URL",
+                "Value": {
+                  "Ref": "WorkQueue"
+                }
+              },
+              {
+                "Name": "RELEASE_IMAGE_DIGEST",
+                "Value": {
+                  "Ref": "GatewayImageDigest"
+                }
+              }
+            ],
+            "Secrets": [
+              {
+                "Name": "OXAGEN_RUNTIME_CONFIG",
+                "ValueFrom": {
+                  "Ref": "GatewayRuntimeSecretArn"
+                }
+              },
+              {
+                "Name": "DB_USER",
+                "ValueFrom": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Ref": "GatewayDatabaseSecretArn"
+                      },
+                      ":username::"
+                    ]
+                  ]
+                }
+              },
+              {
+                "Name": "DB_PASSWORD",
+                "ValueFrom": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Ref": "GatewayDatabaseSecretArn"
+                      },
+                      ":password::"
+                    ]
+                  ]
+                }
+              }
+            ],
+            "LogConfiguration": {
+              "LogDriver": "awslogs",
+              "Options": {
+                "awslogs-group": {
+                  "Ref": "GatewayLogs"
+                },
+                "awslogs-region": {
+                  "Ref": "AWS::Region"
+                },
+                "awslogs-stream-prefix": "gateway",
+                "mode": "non-blocking",
+                "max-buffer-size": "10m"
+              }
+            },
+            "MountPoints": [
+              {
+                "SourceVolume": "temp",
+                "ContainerPath": "/tmp",
+                "ReadOnly": false
+              }
+            ],
+            "HealthCheck": {
+              "Command": [
+                "CMD",
+                "/opt/oxagen/bin/oxagen",
+                "health",
+                "--component",
+                "gateway",
+                "--ready",
+                "--quiet"
+              ],
+              "Interval": 30,
+              "Timeout": 5,
+              "Retries": 3,
+              "StartPeriod": 30
+            },
+            "PortMappings": [
+              {
+                "ContainerPort": 8081,
+                "Protocol": "tcp"
+              }
+            ]
+          }
+        ],
+        "Volumes": [
+          {
+            "Name": "temp"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "WorkerLogs": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": {
+          "Fn::Sub": "/oxagen/${NamePrefix}/${Environment}/worker"
+        },
+        "KmsKeyId": {
+          "Ref": "LogsKmsKeyArn"
+        },
+        "RetentionInDays": {
+          "Ref": "LogRetentionDays"
+        },
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "WorkerExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole",
+              "Condition": {
+                "StringEquals": {
+                  "aws:SourceAccount": {
+                    "Ref": "AWS::AccountId"
+                  }
+                },
+                "ArnLike": {
+                  "aws:SourceArn": {
+                    "Fn::Sub": "arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:*"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "PullImageLogsAndOwnSecret",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecr:GetAuthorizationToken"
+                  ],
+                  "Resource": "*",
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:RequestedRegion": {
+                        "Ref": "AWS::Region"
+                      }
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecr:BatchCheckLayerAvailability",
+                    "ecr:GetDownloadUrlForLayer",
+                    "ecr:BatchGetImage"
+                  ],
+                  "Resource": {
+                    "Ref": "WorkerImageRepositoryArn"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "WorkerLogs",
+                      "Arn"
+                    ]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "secretsmanager:GetSecretValue"
+                  ],
+                  "Resource": [
+                    {
+                      "Ref": "WorkerRuntimeSecretArn"
+                    },
+                    {
+                      "Ref": "WorkerDatabaseSecretArn"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "kms:Decrypt"
+                  ],
+                  "Resource": {
+                    "Ref": "DataKmsKeyArn"
+                  },
+                  "Condition": {
+                    "StringEquals": {
+                      "kms:ViaService": {
+                        "Fn::Sub": "secretsmanager.${AWS::Region}.${AWS::URLSuffix}"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "WorkerTaskRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole",
+              "Condition": {
+                "StringEquals": {
+                  "aws:SourceAccount": {
+                    "Ref": "AWS::AccountId"
+                  }
+                },
+                "ArnLike": {
+                  "aws:SourceArn": {
+                    "Fn::Sub": "arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:*"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "ScopedApplicationData",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:GetObject",
+                    "s3:PutObject",
+                    "s3:GetObjectVersion"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "${Artifacts.Arn}/*"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:ListBucket"
+                  ],
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "Artifacts",
+                      "Arn"
+                    ]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "kms:Decrypt",
+                    "kms:GenerateDataKey"
+                  ],
+                  "Resource": {
+                    "Ref": "DataKmsKeyArn"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "sqs:ReceiveMessage",
+                    "sqs:DeleteMessage",
+                    "sqs:ChangeMessageVisibility",
+                    "sqs:GetQueueAttributes"
+                  ],
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "WorkQueue",
+                      "Arn"
+                    ]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "cloudwatch:PutMetricData"
+                  ],
+                  "Resource": "*",
+                  "Condition": {
+                    "StringEquals": {
+                      "cloudwatch:namespace": "Oxagen/Runtime",
+                      "aws:RequestedRegion": {
+                        "Ref": "AWS::Region"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "WorkerTaskDefinition": {
+      "Type": "AWS::ECS::TaskDefinition",
+      "Properties": {
+        "Family": {
+          "Fn::Sub": "${NamePrefix}-${Environment}-worker"
+        },
+        "Cpu": "512",
+        "Memory": "1024",
+        "NetworkMode": "awsvpc",
+        "RequiresCompatibilities": [
+          "FARGATE"
+        ],
+        "RuntimePlatform": {
+          "CpuArchitecture": "X86_64",
+          "OperatingSystemFamily": "LINUX"
+        },
+        "ExecutionRoleArn": {
+          "Fn::GetAtt": [
+            "WorkerExecutionRole",
+            "Arn"
+          ]
+        },
+        "TaskRoleArn": {
+          "Fn::GetAtt": [
+            "WorkerTaskRole",
+            "Arn"
+          ]
+        },
+        "ContainerDefinitions": [
+          {
+            "Name": "worker",
+            "Image": {
+              "Fn::Sub": "${WorkerImageRepositoryUri}@${WorkerImageDigest}"
+            },
+            "Essential": true,
+            "EntryPoint": [
+              "/opt/oxagen/bin/oxagen"
+            ],
+            "Command": [
+              "serve",
+              "worker"
+            ],
+            "ReadonlyRootFilesystem": true,
+            "User": "10001:10001",
+            "LinuxParameters": {
+              "InitProcessEnabled": true,
+              "Capabilities": {
+                "Drop": [
+                  "ALL"
+                ]
+              }
+            },
+            "StopTimeout": 60,
+            "Environment": [
+              {
+                "Name": "OXAGEN_ENVIRONMENT",
+                "Value": {
+                  "Ref": "Environment"
+                }
+              },
+              {
+                "Name": "DB_HOST",
+                "Value": {
+                  "Fn::GetAtt": [
+                    "Database",
+                    "Endpoint.Address"
+                  ]
+                }
+              },
+              {
+                "Name": "DB_PORT",
+                "Value": "5432"
+              },
+              {
+                "Name": "DB_NAME",
+                "Value": "oxagen"
+              },
+              {
+                "Name": "DB_SSLMODE",
+                "Value": "verify-full"
+              },
+              {
+                "Name": "ARTIFACT_BUCKET",
+                "Value": {
+                  "Ref": "Artifacts"
+                }
+              },
+              {
+                "Name": "WORK_QUEUE_URL",
+                "Value": {
+                  "Ref": "WorkQueue"
+                }
+              },
+              {
+                "Name": "RELEASE_IMAGE_DIGEST",
+                "Value": {
+                  "Ref": "WorkerImageDigest"
+                }
+              }
+            ],
+            "Secrets": [
+              {
+                "Name": "OXAGEN_RUNTIME_CONFIG",
+                "ValueFrom": {
+                  "Ref": "WorkerRuntimeSecretArn"
+                }
+              },
+              {
+                "Name": "DB_USER",
+                "ValueFrom": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Ref": "WorkerDatabaseSecretArn"
+                      },
+                      ":username::"
+                    ]
+                  ]
+                }
+              },
+              {
+                "Name": "DB_PASSWORD",
+                "ValueFrom": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Ref": "WorkerDatabaseSecretArn"
+                      },
+                      ":password::"
+                    ]
+                  ]
+                }
+              }
+            ],
+            "LogConfiguration": {
+              "LogDriver": "awslogs",
+              "Options": {
+                "awslogs-group": {
+                  "Ref": "WorkerLogs"
+                },
+                "awslogs-region": {
+                  "Ref": "AWS::Region"
+                },
+                "awslogs-stream-prefix": "worker",
+                "mode": "non-blocking",
+                "max-buffer-size": "10m"
+              }
+            },
+            "MountPoints": [
+              {
+                "SourceVolume": "temp",
+                "ContainerPath": "/tmp",
+                "ReadOnly": false
+              }
+            ],
+            "HealthCheck": {
+              "Command": [
+                "CMD",
+                "/opt/oxagen/bin/oxagen",
+                "health",
+                "--component",
+                "worker",
+                "--ready",
+                "--quiet"
+              ],
+              "Interval": 30,
+              "Timeout": 5,
+              "Retries": 3,
+              "StartPeriod": 30
+            }
+          }
+        ],
+        "Volumes": [
+          {
+            "Name": "temp"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "LoadBalancer": {
+      "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+      "Properties": {
+        "Scheme": "internet-facing",
+        "Type": "application",
+        "Subnets": {
+          "Ref": "PublicSubnetIds"
+        },
+        "SecurityGroups": [
+          {
+            "Ref": "AlbSecurityGroup"
+          }
+        ],
+        "LoadBalancerAttributes": [
+          {
+            "Key": "deletion_protection.enabled",
+            "Value": "true"
+          },
+          {
+            "Key": "routing.http.drop_invalid_header_fields.enabled",
+            "Value": "true"
+          },
+          {
+            "Key": "routing.http.desync_mitigation_mode",
+            "Value": "strictest"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "ApiTargetGroup": {
+      "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "Port": 8080,
+        "Protocol": "HTTP",
+        "TargetType": "ip",
+        "HealthCheckPath": "/health/ready",
+        "HealthCheckIntervalSeconds": 30,
+        "HealthyThresholdCount": 2,
+        "UnhealthyThresholdCount": 3,
+        "Matcher": {
+          "HttpCode": "200"
+        },
+        "TargetGroupAttributes": [
+          {
+            "Key": "deregistration_delay.timeout_seconds",
+            "Value": "30"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "GatewayTargetGroup": {
+      "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "Port": 8081,
+        "Protocol": "HTTP",
+        "TargetType": "ip",
+        "HealthCheckPath": "/health/ready",
+        "HealthCheckIntervalSeconds": 30,
+        "HealthyThresholdCount": 2,
+        "UnhealthyThresholdCount": 3,
+        "Matcher": {
+          "HttpCode": "200"
+        },
+        "TargetGroupAttributes": [
+          {
+            "Key": "deregistration_delay.timeout_seconds",
+            "Value": "30"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "HttpsListener": {
+      "Type": "AWS::ElasticLoadBalancingV2::Listener",
+      "Properties": {
+        "LoadBalancerArn": {
+          "Ref": "LoadBalancer"
+        },
+        "Port": 443,
+        "Protocol": "HTTPS",
+        "SslPolicy": "ELBSecurityPolicy-TLS13-1-2-2021-06",
+        "Certificates": [
+          {
+            "CertificateArn": {
+              "Ref": "CertificateArn"
+            }
+          }
+        ],
+        "DefaultActions": [
+          {
+            "Type": "forward",
+            "TargetGroupArn": {
+              "Ref": "ApiTargetGroup"
+            }
+          }
+        ]
+      }
+    },
+    "GatewayRoute": {
+      "Type": "AWS::ElasticLoadBalancingV2::ListenerRule",
+      "Properties": {
+        "ListenerArn": {
+          "Ref": "HttpsListener"
+        },
+        "Priority": 10,
+        "Conditions": [
+          {
+            "Field": "path-pattern",
+            "Values": [
+              "/gateway/*"
+            ]
+          }
+        ],
+        "Actions": [
+          {
+            "Type": "forward",
+            "TargetGroupArn": {
+              "Ref": "GatewayTargetGroup"
+            }
+          }
+        ]
+      }
+    },
+    "ApiCpuAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "Sustained ECS CPU pressure; capacity remains explicitly bounded",
+        "Namespace": "AWS/ECS",
+        "MetricName": "CPUUtilization",
+        "Dimensions": [
+          {
+            "Name": "ClusterName",
+            "Value": {
+              "Ref": "Cluster"
+            }
+          },
+          {
+            "Name": "ServiceName",
+            "Value": {
+              "Fn::Sub": "${NamePrefix}-${Environment}-api"
+            }
+          }
+        ],
+        "Statistic": "Average",
+        "Period": 60,
+        "EvaluationPeriods": 5,
+        "Threshold": 90,
+        "ComparisonOperator": "GreaterThanThreshold",
+        "TreatMissingData": "notBreaching",
+        "AlarmActions": [
+          {
+            "Ref": "Notifications"
+          }
+        ]
+      }
+    },
+    "ApiHeartbeatAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "Application must publish one sanitized health heartbeat per minute for this exact role/environment",
+        "Namespace": "Oxagen/Runtime",
+        "MetricName": "HealthyHeartbeat",
+        "Dimensions": [
+          {
+            "Name": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Name": "Service",
+            "Value": "api"
+          }
+        ],
+        "Statistic": "Sum",
+        "Period": 60,
+        "EvaluationPeriods": 3,
+        "Threshold": 1,
+        "ComparisonOperator": "LessThanThreshold",
+        "TreatMissingData": "breaching",
+        "AlarmActions": [
+          {
+            "Ref": "Notifications"
+          }
+        ]
+      },
+      "Condition": "RuntimeEnabled"
+    },
+    "ApiService": {
+      "Type": "AWS::ECS::Service",
+      "Properties": {
+        "ServiceName": {
+          "Fn::Sub": "${NamePrefix}-${Environment}-api"
+        },
+        "Cluster": {
+          "Ref": "Cluster"
+        },
+        "TaskDefinition": {
+          "Ref": "ApiTaskDefinition"
+        },
+        "DesiredCount": {
+          "Fn::If": [
+            "RuntimeEnabled",
+            {
+              "Ref": "ApiDesiredCount"
+            },
+            0
+          ]
+        },
+        "LaunchType": "FARGATE",
+        "PlatformVersion": "1.4.0",
+        "EnableExecuteCommand": false,
+        "EnableECSManagedTags": true,
+        "PropagateTags": "SERVICE",
+        "DeploymentController": {
+          "Type": "ECS"
+        },
+        "DeploymentConfiguration": {
+          "MinimumHealthyPercent": 100,
+          "MaximumPercent": 200,
+          "DeploymentCircuitBreaker": {
+            "Enable": true,
+            "Rollback": true
+          }
+        },
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "AssignPublicIp": "DISABLED",
+            "Subnets": {
+              "Ref": "PrivateSubnetIds"
+            },
+            "SecurityGroups": [
+              {
+                "Ref": "ApiSecurityGroup"
+              }
+            ]
+          }
+        },
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ],
+        "HealthCheckGracePeriodSeconds": 90,
+        "LoadBalancers": [
+          {
+            "ContainerName": "api",
+            "ContainerPort": 8080,
+            "TargetGroupArn": {
+              "Ref": "ApiTargetGroup"
+            }
+          }
+        ]
+      },
+      "DependsOn": [
+        "HttpsListener",
+        "GatewayRoute",
+        "DatabaseWriter"
+      ]
+    },
+    "GatewayCpuAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "Sustained ECS CPU pressure; capacity remains explicitly bounded",
+        "Namespace": "AWS/ECS",
+        "MetricName": "CPUUtilization",
+        "Dimensions": [
+          {
+            "Name": "ClusterName",
+            "Value": {
+              "Ref": "Cluster"
+            }
+          },
+          {
+            "Name": "ServiceName",
+            "Value": {
+              "Fn::Sub": "${NamePrefix}-${Environment}-gateway"
+            }
+          }
+        ],
+        "Statistic": "Average",
+        "Period": 60,
+        "EvaluationPeriods": 5,
+        "Threshold": 90,
+        "ComparisonOperator": "GreaterThanThreshold",
+        "TreatMissingData": "notBreaching",
+        "AlarmActions": [
+          {
+            "Ref": "Notifications"
+          }
+        ]
+      }
+    },
+    "GatewayHeartbeatAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "Application must publish one sanitized health heartbeat per minute for this exact role/environment",
+        "Namespace": "Oxagen/Runtime",
+        "MetricName": "HealthyHeartbeat",
+        "Dimensions": [
+          {
+            "Name": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Name": "Service",
+            "Value": "gateway"
+          }
+        ],
+        "Statistic": "Sum",
+        "Period": 60,
+        "EvaluationPeriods": 3,
+        "Threshold": 1,
+        "ComparisonOperator": "LessThanThreshold",
+        "TreatMissingData": "breaching",
+        "AlarmActions": [
+          {
+            "Ref": "Notifications"
+          }
+        ]
+      },
+      "Condition": "RuntimeEnabled"
+    },
+    "GatewayService": {
+      "Type": "AWS::ECS::Service",
+      "Properties": {
+        "ServiceName": {
+          "Fn::Sub": "${NamePrefix}-${Environment}-gateway"
+        },
+        "Cluster": {
+          "Ref": "Cluster"
+        },
+        "TaskDefinition": {
+          "Ref": "GatewayTaskDefinition"
+        },
+        "DesiredCount": {
+          "Fn::If": [
+            "RuntimeEnabled",
+            {
+              "Ref": "GatewayDesiredCount"
+            },
+            0
+          ]
+        },
+        "LaunchType": "FARGATE",
+        "PlatformVersion": "1.4.0",
+        "EnableExecuteCommand": false,
+        "EnableECSManagedTags": true,
+        "PropagateTags": "SERVICE",
+        "DeploymentController": {
+          "Type": "ECS"
+        },
+        "DeploymentConfiguration": {
+          "MinimumHealthyPercent": 100,
+          "MaximumPercent": 200,
+          "DeploymentCircuitBreaker": {
+            "Enable": true,
+            "Rollback": true
+          }
+        },
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "AssignPublicIp": "DISABLED",
+            "Subnets": {
+              "Ref": "PrivateSubnetIds"
+            },
+            "SecurityGroups": [
+              {
+                "Ref": "GatewaySecurityGroup"
+              }
+            ]
+          }
+        },
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ],
+        "HealthCheckGracePeriodSeconds": 90,
+        "LoadBalancers": [
+          {
+            "ContainerName": "gateway",
+            "ContainerPort": 8081,
+            "TargetGroupArn": {
+              "Ref": "GatewayTargetGroup"
+            }
+          }
+        ]
+      },
+      "DependsOn": [
+        "HttpsListener",
+        "GatewayRoute",
+        "DatabaseWriter"
+      ]
+    },
+    "WorkerCpuAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "Sustained ECS CPU pressure; capacity remains explicitly bounded",
+        "Namespace": "AWS/ECS",
+        "MetricName": "CPUUtilization",
+        "Dimensions": [
+          {
+            "Name": "ClusterName",
+            "Value": {
+              "Ref": "Cluster"
+            }
+          },
+          {
+            "Name": "ServiceName",
+            "Value": {
+              "Fn::Sub": "${NamePrefix}-${Environment}-worker"
+            }
+          }
+        ],
+        "Statistic": "Average",
+        "Period": 60,
+        "EvaluationPeriods": 5,
+        "Threshold": 90,
+        "ComparisonOperator": "GreaterThanThreshold",
+        "TreatMissingData": "notBreaching",
+        "AlarmActions": [
+          {
+            "Ref": "Notifications"
+          }
+        ]
+      }
+    },
+    "WorkerHeartbeatAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "Application must publish one sanitized health heartbeat per minute for this exact role/environment",
+        "Namespace": "Oxagen/Runtime",
+        "MetricName": "HealthyHeartbeat",
+        "Dimensions": [
+          {
+            "Name": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Name": "Service",
+            "Value": "worker"
+          }
+        ],
+        "Statistic": "Sum",
+        "Period": 60,
+        "EvaluationPeriods": 3,
+        "Threshold": 1,
+        "ComparisonOperator": "LessThanThreshold",
+        "TreatMissingData": "breaching",
+        "AlarmActions": [
+          {
+            "Ref": "Notifications"
+          }
+        ]
+      },
+      "Condition": "RuntimeEnabled"
+    },
+    "WorkerService": {
+      "Type": "AWS::ECS::Service",
+      "Properties": {
+        "ServiceName": {
+          "Fn::Sub": "${NamePrefix}-${Environment}-worker"
+        },
+        "Cluster": {
+          "Ref": "Cluster"
+        },
+        "TaskDefinition": {
+          "Ref": "WorkerTaskDefinition"
+        },
+        "DesiredCount": {
+          "Fn::If": [
+            "RuntimeEnabled",
+            {
+              "Ref": "WorkerDesiredCount"
+            },
+            0
+          ]
+        },
+        "LaunchType": "FARGATE",
+        "PlatformVersion": "1.4.0",
+        "EnableExecuteCommand": false,
+        "EnableECSManagedTags": true,
+        "PropagateTags": "SERVICE",
+        "DeploymentController": {
+          "Type": "ECS"
+        },
+        "DeploymentConfiguration": {
+          "MinimumHealthyPercent": 100,
+          "MaximumPercent": 200,
+          "DeploymentCircuitBreaker": {
+            "Enable": true,
+            "Rollback": true
+          }
+        },
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "AssignPublicIp": "DISABLED",
+            "Subnets": {
+              "Ref": "PrivateSubnetIds"
+            },
+            "SecurityGroups": [
+              {
+                "Ref": "WorkerSecurityGroup"
+              }
+            ]
+          }
+        },
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      },
+      "DependsOn": [
+        "HttpsListener",
+        "GatewayRoute",
+        "DatabaseWriter"
+      ]
+    },
+    "QueueDepthAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "Namespace": "AWS/SQS",
+        "MetricName": "ApproximateNumberOfMessagesVisible",
+        "Dimensions": [
+          {
+            "Name": "QueueName",
+            "Value": {
+              "Fn::GetAtt": [
+                "DeadLetterQueue",
+                "QueueName"
+              ]
+            }
+          }
+        ],
+        "Statistic": "Maximum",
+        "Period": 60,
+        "EvaluationPeriods": 1,
+        "Threshold": 0,
+        "ComparisonOperator": "GreaterThanThreshold",
+        "TreatMissingData": "notBreaching",
+        "AlarmActions": [
+          {
+            "Ref": "Notifications"
+          }
+        ]
+      }
+    },
+    "Budget": {
+      "Type": "AWS::Budgets::Budget",
+      "Properties": {
+        "Budget": {
+          "BudgetName": {
+            "Fn::Sub": "${NamePrefix}-${Environment}-monthly"
+          },
+          "BudgetType": "COST",
+          "TimeUnit": "MONTHLY",
+          "BudgetLimit": {
+            "Amount": {
+              "Ref": "MonthlyBudgetUsd"
+            },
+            "Unit": "USD"
+          },
+          "CostTypes": {
+            "IncludeTax": true,
+            "IncludeSubscription": true,
+            "IncludeSupport": true
+          }
+        },
+        "NotificationsWithSubscribers": [
+          {
+            "Notification": {
+              "NotificationType": "ACTUAL",
+              "ComparisonOperator": "GREATER_THAN",
+              "Threshold": 80,
+              "ThresholdType": "PERCENTAGE"
+            },
+            "Subscribers": [
+              {
+                "SubscriptionType": "EMAIL",
+                "Address": {
+                  "Ref": "NotificationEmail"
+                }
+              }
+            ]
+          },
+          {
+            "Notification": {
+              "NotificationType": "FORECASTED",
+              "ComparisonOperator": "GREATER_THAN",
+              "Threshold": 100,
+              "ThresholdType": "PERCENTAGE"
+            },
+            "Subscribers": [
+              {
+                "SubscriptionType": "EMAIL",
+                "Address": {
+                  "Ref": "NotificationEmail"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "NotificationPolicy": {
+      "Type": "AWS::SNS::TopicPolicy",
+      "Properties": {
+        "Topics": [
+          {
+            "Ref": "Notifications"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "cloudwatch.amazonaws.com"
+              },
+              "Action": "sns:Publish",
+              "Resource": {
+                "Ref": "Notifications"
+              },
+              "Condition": {
+                "StringEquals": {
+                  "aws:SourceAccount": {
+                    "Ref": "AWS::AccountId"
+                  }
+                },
+                "ArnEquals": {
+                  "aws:SourceArn": [
+                    {
+                      "Fn::GetAtt": [
+                        "QueueDepthAlarm",
+                        "Arn"
+                      ]
+                    },
+                    {
+                      "Fn::GetAtt": [
+                        "ApiCpuAlarm",
+                        "Arn"
+                      ]
+                    },
+                    {
+                      "Fn::GetAtt": [
+                        "GatewayCpuAlarm",
+                        "Arn"
+                      ]
+                    },
+                    {
+                      "Fn::GetAtt": [
+                        "WorkerCpuAlarm",
+                        "Arn"
+                      ]
+                    },
+                    {
+                      "Fn::If": [
+                        "RuntimeEnabled",
+                        {
+                          "Fn::GetAtt": [
+                            "ApiHeartbeatAlarm",
+                            "Arn"
+                          ]
+                        },
+                        {
+                          "Ref": "AWS::NoValue"
+                        }
+                      ]
+                    },
+                    {
+                      "Fn::If": [
+                        "RuntimeEnabled",
+                        {
+                          "Fn::GetAtt": [
+                            "GatewayHeartbeatAlarm",
+                            "Arn"
+                          ]
+                        },
+                        {
+                          "Ref": "AWS::NoValue"
+                        }
+                      ]
+                    },
+                    {
+                      "Fn::If": [
+                        "RuntimeEnabled",
+                        {
+                          "Fn::GetAtt": [
+                            "WorkerHeartbeatAlarm",
+                            "Arn"
+                          ]
+                        },
+                        {
+                          "Ref": "AWS::NoValue"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "DeploymentRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Ref": "ControllerPrincipalArn"
+                }
+              },
+              "Action": "sts:AssumeRole"
+            },
+            {
+              "Fn::If": [
+                "UseGitHubOidc",
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Federated": {
+                      "Ref": "GitHubOidcProviderArn"
+                    }
+                  },
+                  "Action": "sts:AssumeRoleWithWebIdentity",
+                  "Condition": {
+                    "StringEquals": {
+                      "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+                      "token.actions.githubusercontent.com:sub": {
+                        "Fn::Sub": "repo:${GitHubRepository}:environment:${Environment}"
+                      }
+                    }
+                  }
+                },
+                {
+                  "Ref": "AWS::NoValue"
+                }
+              ]
+            }
+          ]
+        },
+        "MaxSessionDuration": 3600,
+        "Policies": [
+          {
+            "PolicyName": "ExactEnvironmentRelease",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecs:DescribeServices",
+                    "ecs:UpdateService"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:service/${NamePrefix}-${Environment}/${NamePrefix}-${Environment}-api"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:service/${NamePrefix}-${Environment}/${NamePrefix}-${Environment}-gateway"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:service/${NamePrefix}-${Environment}/${NamePrefix}-${Environment}-worker"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecs:DescribeTaskDefinition"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/${NamePrefix}-${Environment}-api:*"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/${NamePrefix}-${Environment}-gateway:*"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/${NamePrefix}-${Environment}-worker:*"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/${NamePrefix}-${Environment}-compatibility:*"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecs:RegisterTaskDefinition"
+                  ],
+                  "Resource": "*",
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:RequestedRegion": {
+                        "Ref": "AWS::Region"
+                      }
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecs:DescribeTasks",
+                    "ecs:ListTasks"
+                  ],
+                  "Resource": "*",
+                  "Condition": {
+                    "ArnEquals": {
+                      "ecs:cluster": {
+                        "Fn::GetAtt": [
+                          "Cluster",
+                          "Arn"
+                        ]
+                      }
+                    },
+                    "StringEquals": {
+                      "aws:RequestedRegion": {
+                        "Ref": "AWS::Region"
+                      }
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecs:TagResource"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/${NamePrefix}-${Environment}-api:*"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/${NamePrefix}-${Environment}-gateway:*"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/${NamePrefix}-${Environment}-worker:*"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/${NamePrefix}-${Environment}-compatibility:*"
+                    }
+                  ],
+                  "Condition": {
+                    "StringEquals": {
+                      "ecs:CreateAction": "RegisterTaskDefinition"
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "iam:PassRole"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::GetAtt": [
+                        "ApiTaskRole",
+                        "Arn"
+                      ]
+                    },
+                    {
+                      "Fn::GetAtt": [
+                        "ApiExecutionRole",
+                        "Arn"
+                      ]
+                    },
+                    {
+                      "Fn::GetAtt": [
+                        "GatewayTaskRole",
+                        "Arn"
+                      ]
+                    },
+                    {
+                      "Fn::GetAtt": [
+                        "GatewayExecutionRole",
+                        "Arn"
+                      ]
+                    },
+                    {
+                      "Fn::GetAtt": [
+                        "WorkerTaskRole",
+                        "Arn"
+                      ]
+                    },
+                    {
+                      "Fn::GetAtt": [
+                        "WorkerExecutionRole",
+                        "Arn"
+                      ]
+                    }
+                  ],
+                  "Condition": {
+                    "StringEquals": {
+                      "iam:PassedToService": "ecs-tasks.amazonaws.com"
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecr:DescribeImages",
+                    "ecr:BatchGetImage",
+                    "ecr:GetDownloadUrlForLayer"
+                  ],
+                  "Resource": [
+                    {
+                      "Ref": "ApiImageRepositoryArn"
+                    },
+                    {
+                      "Ref": "GatewayImageRepositoryArn"
+                    },
+                    {
+                      "Ref": "WorkerImageRepositoryArn"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "elasticloadbalancing:DescribeTargetHealth"
+                  ],
+                  "Resource": "*",
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:RequestedRegion": {
+                        "Ref": "AWS::Region"
+                      }
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "cloudwatch:DescribeAlarms"
+                  ],
+                  "Resource": "*",
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:RequestedRegion": {
+                        "Ref": "AWS::Region"
+                      }
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:DescribeTable",
+                    "dynamodb:GetItem",
+                    "dynamodb:PutItem",
+                    "dynamodb:UpdateItem",
+                    "dynamodb:DeleteItem"
+                  ],
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "DeploymentLocks",
+                      "Arn"
+                    ]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "rds:DescribeDBClusters",
+                    "rds:DescribeDBInstances",
+                    "rds:DescribeDBClusterSnapshots"
+                  ],
+                  "Resource": "*",
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:RequestedRegion": {
+                        "Ref": "AWS::Region"
+                      }
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "rds:CreateDBClusterSnapshot"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::GetAtt": [
+                        "Database",
+                        "DBClusterArn"
+                      ]
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:cluster-snapshot:${NamePrefix}-${Environment}-release-*"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "rds:RestoreDBClusterFromSnapshot"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:cluster-snapshot:${NamePrefix}-${Environment}-release-*"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:cluster:${NamePrefix}-${Environment}-rehearsal-*"
+                    },
+                    {
+                      "Fn::GetAtt": [
+                        "DbSubnetGroup",
+                        "DBSubnetGroupArn"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "rds:CreateDBInstance",
+                    "rds:DeleteDBInstance"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:cluster:${NamePrefix}-${Environment}-rehearsal-*"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:db:${NamePrefix}-${Environment}-rehearsal-*"
+                    },
+                    {
+                      "Fn::GetAtt": [
+                        "DbSubnetGroup",
+                        "DBSubnetGroupArn"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "rds:ModifyDBCluster",
+                    "rds:DeleteDBCluster",
+                    "rds:EnableHttpEndpoint"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:cluster:${NamePrefix}-${Environment}-rehearsal-*"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "rds:AddTagsToResource"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:cluster:${NamePrefix}-${Environment}-rehearsal-*"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:db:${NamePrefix}-${Environment}-rehearsal-*"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:cluster-snapshot:${NamePrefix}-${Environment}-release-*"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "rds:ListTagsForResource"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::GetAtt": [
+                        "Database",
+                        "DBClusterArn"
+                      ]
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:cluster:${NamePrefix}-${Environment}-rehearsal-*"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:db:${NamePrefix}-${Environment}-rehearsal-*"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:cluster-snapshot:${NamePrefix}-${Environment}-release-*"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "rds:DeleteDBClusterSnapshot"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:cluster-snapshot:${NamePrefix}-${Environment}-release-*"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "rds-data:ExecuteStatement",
+                    "rds-data:BatchExecuteStatement",
+                    "rds-data:BeginTransaction",
+                    "rds-data:CommitTransaction",
+                    "rds-data:RollbackTransaction"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::GetAtt": [
+                        "Database",
+                        "DBClusterArn"
+                      ]
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:cluster:${NamePrefix}-${Environment}-rehearsal-*"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "secretsmanager:GetSecretValue"
+                  ],
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "Database",
+                      "MasterUserSecret.SecretArn"
+                    ]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "secretsmanager:GetSecretValue"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:rds!cluster-*"
+                  },
+                  "Condition": {
+                    "StringLike": {
+                      "aws:ResourceTag/aws:rds:primarydbclusterarn": {
+                        "Fn::Sub": "arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:cluster:${NamePrefix}-${Environment}-rehearsal-*"
+                      }
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "kms:Decrypt",
+                    "kms:DescribeKey",
+                    "kms:GenerateDataKey"
+                  ],
+                  "Resource": {
+                    "Ref": "DataKmsKeyArn"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "kms:CreateGrant"
+                  ],
+                  "Resource": {
+                    "Ref": "DataKmsKeyArn"
+                  },
+                  "Condition": {
+                    "Bool": {
+                      "kms:GrantIsForAWSResource": "true"
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "iam:PassRole"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::GetAtt": [
+                        "RehearsalTaskRole",
+                        "Arn"
+                      ]
+                    },
+                    {
+                      "Fn::GetAtt": [
+                        "RehearsalExecutionRole",
+                        "Arn"
+                      ]
+                    }
+                  ],
+                  "Condition": {
+                    "StringEquals": {
+                      "iam:PassedToService": "ecs-tasks.amazonaws.com"
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecs:RunTask"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/${NamePrefix}-${Environment}-compatibility:*"
+                  },
+                  "Condition": {
+                    "ArnEquals": {
+                      "ecs:cluster": {
+                        "Fn::GetAtt": [
+                          "Cluster",
+                          "Arn"
+                        ]
+                      }
+                    },
+                    "StringEquals": {
+                      "aws:RequestTag/oxagen:purpose": "compatibility"
+                    },
+                    "StringLike": {
+                      "aws:RequestTag/oxagen:release": "?*"
+                    },
+                    "ForAllValues:StringEquals": {
+                      "aws:TagKeys": [
+                        "oxagen:purpose",
+                        "oxagen:release"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecs:StopTask"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:task/${NamePrefix}-${Environment}/*"
+                  },
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:ResourceTag/oxagen:purpose": "compatibility"
+                    },
+                    "StringLike": {
+                      "aws:ResourceTag/oxagen:release": "?*"
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecs:TagResource"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:task/${NamePrefix}-${Environment}/*"
+                  },
+                  "Condition": {
+                    "StringEquals": {
+                      "ecs:CreateAction": "RunTask",
+                      "aws:RequestTag/oxagen:purpose": "compatibility"
+                    },
+                    "StringLike": {
+                      "aws:RequestTag/oxagen:release": "?*"
+                    },
+                    "ForAllValues:StringEquals": {
+                      "aws:TagKeys": [
+                        "oxagen:purpose",
+                        "oxagen:release"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "secretsmanager:CreateSecret",
+                    "secretsmanager:TagResource"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:rds!cluster-*"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "secretsmanager:DescribeSecret"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::GetAtt": [
+                        "Database",
+                        "MasterUserSecret.SecretArn"
+                      ]
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:rds!cluster-*"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "RehearsalDatabaseSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Isolated schema compatibility rehearsal",
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "127.0.0.1/32"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "RehearsalTaskSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Isolated schema compatibility rehearsal",
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "127.0.0.1/32"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "RehearsalDbIngress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "RehearsalDatabaseSecurityGroup"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "RehearsalTaskSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 5432,
+        "ToPort": 5432
+      }
+    },
+    "RehearsalDatabaseEgress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "RehearsalTaskSecurityGroup"
+        },
+        "DestinationSecurityGroupId": {
+          "Ref": "RehearsalDatabaseSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 5432,
+        "ToPort": 5432
+      }
+    },
+    "RehearsalEndpointsEgress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "RehearsalTaskSecurityGroup"
+        },
+        "DestinationSecurityGroupId": {
+          "Ref": "EndpointSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 443,
+        "ToPort": 443
+      }
+    },
+    "RehearsalEndpointIngress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "EndpointSecurityGroup"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "RehearsalTaskSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 443,
+        "ToPort": 443
+      }
+    },
+    "RehearsalS3Egress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "RehearsalTaskSecurityGroup"
+        },
+        "DestinationPrefixListId": {
+          "Ref": "S3PrefixListId"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 443,
+        "ToPort": 443
+      }
+    },
+    "RehearsalLogs": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "KmsKeyId": {
+          "Ref": "LogsKmsKeyArn"
+        },
+        "RetentionInDays": {
+          "Ref": "LogRetentionDays"
+        },
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "RehearsalTaskRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole",
+              "Condition": {
+                "StringEquals": {
+                  "aws:SourceAccount": {
+                    "Ref": "AWS::AccountId"
+                  }
+                },
+                "ArnLike": {
+                  "aws:SourceArn": {
+                    "Fn::Sub": "arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:*"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    },
+    "RehearsalExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole",
+              "Condition": {
+                "StringEquals": {
+                  "aws:SourceAccount": {
+                    "Ref": "AWS::AccountId"
+                  }
+                },
+                "ArnLike": {
+                  "aws:SourceArn": {
+                    "Fn::Sub": "arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:*"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "OnlyPullLogsAndDatabaseCredentials",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecr:GetAuthorizationToken"
+                  ],
+                  "Resource": "*",
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:RequestedRegion": {
+                        "Ref": "AWS::Region"
+                      }
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecr:BatchCheckLayerAvailability",
+                    "ecr:GetDownloadUrlForLayer",
+                    "ecr:BatchGetImage"
+                  ],
+                  "Resource": [
+                    {
+                      "Ref": "ApiImageRepositoryArn"
+                    },
+                    {
+                      "Ref": "GatewayImageRepositoryArn"
+                    },
+                    {
+                      "Ref": "WorkerImageRepositoryArn"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "RehearsalLogs",
+                      "Arn"
+                    ]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "secretsmanager:GetSecretValue"
+                  ],
+                  "Resource": [
+                    {
+                      "Ref": "ApiDatabaseSecretArn"
+                    },
+                    {
+                      "Ref": "GatewayDatabaseSecretArn"
+                    },
+                    {
+                      "Ref": "WorkerDatabaseSecretArn"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "kms:Decrypt"
+                  ],
+                  "Resource": {
+                    "Ref": "DataKmsKeyArn"
+                  },
+                  "Condition": {
+                    "StringEquals": {
+                      "kms:ViaService": {
+                        "Fn::Sub": "secretsmanager.${AWS::Region}.${AWS::URLSuffix}"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "oxagen"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "ClusterName": {
+      "Value": {
+        "Ref": "Cluster"
+      },
+      "Description": "ECS cluster name"
+    },
+    "ClusterArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "Cluster",
+          "Arn"
+        ]
+      },
+      "Description": "ECS cluster ARN"
+    },
+    "DeploymentRoleArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "DeploymentRole",
+          "Arn"
+        ]
+      },
+      "Description": "Only the configured environment release authority"
+    },
+    "LoadBalancerDnsName": {
+      "Value": {
+        "Fn::GetAtt": [
+          "LoadBalancer",
+          "DNSName"
+        ]
+      },
+      "Description": "Create the declared hostname alias to this ALB"
+    },
+    "LoadBalancerHostedZoneId": {
+      "Value": {
+        "Fn::GetAtt": [
+          "LoadBalancer",
+          "CanonicalHostedZoneID"
+        ]
+      },
+      "Description": "DNS alias target zone"
+    },
+    "HealthUrl": {
+      "Value": {
+        "Fn::Sub": "https://${PublicHostname}/health/ready"
+      },
+      "Description": "Hostname must resolve and be covered by certificate"
+    },
+    "GatewayHealthUrl": {
+      "Value": {
+        "Fn::Sub": "https://${PublicHostname}/gateway/health/ready"
+      },
+      "Description": "Gateway must handle the preserved path prefix"
+    },
+    "DatabaseClusterIdentifier": {
+      "Value": {
+        "Ref": "Database"
+      },
+      "Description": "Aurora cluster identifier"
+    },
+    "DatabaseClusterArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "Database",
+          "DBClusterArn"
+        ]
+      },
+      "Description": "Aurora Data API authority"
+    },
+    "DatabaseEndpoint": {
+      "Value": {
+        "Fn::GetAtt": [
+          "Database",
+          "Endpoint.Address"
+        ]
+      },
+      "Description": "Private PostgreSQL endpoint"
+    },
+    "DatabaseName": {
+      "Value": "oxagen",
+      "Description": "Database name"
+    },
+    "DatabaseEngineVersion": {
+      "Value": {
+        "Ref": "PostgresEngineVersion"
+      },
+      "Description": "Pinned Aurora engine version; updates require reviewed maintenance"
+    },
+    "DatabaseMasterSecretArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "Database",
+          "MasterUserSecret.SecretArn"
+        ]
+      },
+      "Description": "Trusted migration authority only; never mount into app tasks"
+    },
+    "DatabaseSubnetGroupName": {
+      "Value": {
+        "Ref": "DbSubnetGroup"
+      },
+      "Description": "Rehearsal restore subnet group"
+    },
+    "DatabaseSecurityGroupId": {
+      "Value": {
+        "Ref": "DatabaseSecurityGroup"
+      },
+      "Description": "Private DB ingress group"
+    },
+    "DataKmsKeyArn": {
+      "Value": {
+        "Ref": "DataKmsKeyArn"
+      },
+      "Description": "Encryption key for DB, records and deployment lock"
+    },
+    "PrivateSubnetIds": {
+      "Value": {
+        "Fn::Join": [
+          ",",
+          {
+            "Ref": "PrivateSubnetIds"
+          }
+        ]
+      },
+      "Description": "Approved private task subnets"
+    },
+    "ArtifactBucketName": {
+      "Value": {
+        "Ref": "Artifacts"
+      },
+      "Description": "Encrypted, versioned org record objects"
+    },
+    "DeploymentLockTableName": {
+      "Value": {
+        "Ref": "DeploymentLocks"
+      },
+      "Description": "PK release_scope; no TTL: uncertain deployments keep their lock"
+    },
+    "RehearsalPrefix": {
+      "Value": {
+        "Fn::Sub": "${NamePrefix}-${Environment}-rehearsal-"
+      },
+      "Description": "Only this temporary DB prefix is mutable by deploy role"
+    },
+    "SnapshotPrefix": {
+      "Value": {
+        "Fn::Sub": "${NamePrefix}-${Environment}-release-"
+      },
+      "Description": "Only this release snapshot prefix is mutable by deploy role"
+    },
+    "ApiImageRepositoryUri": {
+      "Value": {
+        "Ref": "ApiImageRepositoryUri"
+      },
+      "Description": "Api pinned image repository"
+    },
+    "ApiImageRepositoryArn": {
+      "Value": {
+        "Ref": "ApiImageRepositoryArn"
+      },
+      "Description": "Api image repository ARN"
+    },
+    "ApiDatabaseSecretArn": {
+      "Value": {
+        "Ref": "ApiDatabaseSecretArn"
+      },
+      "Description": "Api scoped database secret"
+    },
+    "ApiServiceName": {
+      "Value": {
+        "Fn::GetAtt": [
+          "ApiService",
+          "Name"
+        ]
+      },
+      "Description": "Api ServiceName"
+    },
+    "ApiServiceArn": {
+      "Value": {
+        "Ref": "ApiService"
+      },
+      "Description": "Api ServiceArn"
+    },
+    "ApiTaskDefinitionArn": {
+      "Value": {
+        "Ref": "ApiTaskDefinition"
+      },
+      "Description": "Api TaskDefinitionArn"
+    },
+    "ApiTaskRoleArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "ApiTaskRole",
+          "Arn"
+        ]
+      },
+      "Description": "Api TaskRoleArn"
+    },
+    "ApiExecutionRoleArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "ApiExecutionRole",
+          "Arn"
+        ]
+      },
+      "Description": "Api ExecutionRoleArn"
+    },
+    "ApiSecurityGroupId": {
+      "Value": {
+        "Ref": "ApiSecurityGroup"
+      },
+      "Description": "Api SecurityGroupId"
+    },
+    "ApiLogGroupName": {
+      "Value": {
+        "Ref": "ApiLogs"
+      },
+      "Description": "Api LogGroupName"
+    },
+    "ApiTargetGroupArn": {
+      "Value": {
+        "Ref": "ApiTargetGroup"
+      },
+      "Description": "Api health target group"
+    },
+    "GatewayImageRepositoryUri": {
+      "Value": {
+        "Ref": "GatewayImageRepositoryUri"
+      },
+      "Description": "Gateway pinned image repository"
+    },
+    "GatewayImageRepositoryArn": {
+      "Value": {
+        "Ref": "GatewayImageRepositoryArn"
+      },
+      "Description": "Gateway image repository ARN"
+    },
+    "GatewayDatabaseSecretArn": {
+      "Value": {
+        "Ref": "GatewayDatabaseSecretArn"
+      },
+      "Description": "Gateway scoped database secret"
+    },
+    "GatewayServiceName": {
+      "Value": {
+        "Fn::GetAtt": [
+          "GatewayService",
+          "Name"
+        ]
+      },
+      "Description": "Gateway ServiceName"
+    },
+    "GatewayServiceArn": {
+      "Value": {
+        "Ref": "GatewayService"
+      },
+      "Description": "Gateway ServiceArn"
+    },
+    "GatewayTaskDefinitionArn": {
+      "Value": {
+        "Ref": "GatewayTaskDefinition"
+      },
+      "Description": "Gateway TaskDefinitionArn"
+    },
+    "GatewayTaskRoleArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "GatewayTaskRole",
+          "Arn"
+        ]
+      },
+      "Description": "Gateway TaskRoleArn"
+    },
+    "GatewayExecutionRoleArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "GatewayExecutionRole",
+          "Arn"
+        ]
+      },
+      "Description": "Gateway ExecutionRoleArn"
+    },
+    "GatewaySecurityGroupId": {
+      "Value": {
+        "Ref": "GatewaySecurityGroup"
+      },
+      "Description": "Gateway SecurityGroupId"
+    },
+    "GatewayLogGroupName": {
+      "Value": {
+        "Ref": "GatewayLogs"
+      },
+      "Description": "Gateway LogGroupName"
+    },
+    "GatewayTargetGroupArn": {
+      "Value": {
+        "Ref": "GatewayTargetGroup"
+      },
+      "Description": "Gateway health target group"
+    },
+    "WorkerImageRepositoryUri": {
+      "Value": {
+        "Ref": "WorkerImageRepositoryUri"
+      },
+      "Description": "Worker pinned image repository"
+    },
+    "WorkerImageRepositoryArn": {
+      "Value": {
+        "Ref": "WorkerImageRepositoryArn"
+      },
+      "Description": "Worker image repository ARN"
+    },
+    "WorkerDatabaseSecretArn": {
+      "Value": {
+        "Ref": "WorkerDatabaseSecretArn"
+      },
+      "Description": "Worker scoped database secret"
+    },
+    "WorkerServiceName": {
+      "Value": {
+        "Fn::GetAtt": [
+          "WorkerService",
+          "Name"
+        ]
+      },
+      "Description": "Worker ServiceName"
+    },
+    "WorkerServiceArn": {
+      "Value": {
+        "Ref": "WorkerService"
+      },
+      "Description": "Worker ServiceArn"
+    },
+    "WorkerTaskDefinitionArn": {
+      "Value": {
+        "Ref": "WorkerTaskDefinition"
+      },
+      "Description": "Worker TaskDefinitionArn"
+    },
+    "WorkerTaskRoleArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "WorkerTaskRole",
+          "Arn"
+        ]
+      },
+      "Description": "Worker TaskRoleArn"
+    },
+    "WorkerExecutionRoleArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "WorkerExecutionRole",
+          "Arn"
+        ]
+      },
+      "Description": "Worker ExecutionRoleArn"
+    },
+    "WorkerSecurityGroupId": {
+      "Value": {
+        "Ref": "WorkerSecurityGroup"
+      },
+      "Description": "Worker SecurityGroupId"
+    },
+    "WorkerLogGroupName": {
+      "Value": {
+        "Ref": "WorkerLogs"
+      },
+      "Description": "Worker LogGroupName"
+    },
+    "RehearsalDatabaseSecurityGroupId": {
+      "Value": {
+        "Ref": "RehearsalDatabaseSecurityGroup"
+      },
+      "Description": "Only the compatibility clone may use this scope"
+    },
+    "RehearsalTaskSecurityGroupId": {
+      "Value": {
+        "Ref": "RehearsalTaskSecurityGroup"
+      },
+      "Description": "Only the compatibility clone may use this scope"
+    },
+    "RehearsalTaskRoleArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "RehearsalTaskRole",
+          "Arn"
+        ]
+      },
+      "Description": "No runtime data or provider permissions"
+    },
+    "RehearsalExecutionRoleArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "RehearsalExecutionRole",
+          "Arn"
+        ]
+      },
+      "Description": "Pull approved images, logs and scoped DB credentials only"
+    },
+    "RehearsalLogGroupName": {
+      "Value": {
+        "Ref": "RehearsalLogs"
+      },
+      "Description": "Compatibility command logs"
+    },
+    "CompatibilityTaskFamily": {
+      "Value": {
+        "Fn::Sub": "${NamePrefix}-${Environment}-compatibility"
+      },
+      "Description": "Only this task family can run as rehearsal"
+    }
+  }
+}

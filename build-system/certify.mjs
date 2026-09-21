@@ -10,7 +10,8 @@ try{
  assert(payloadFile&&keyFile&&outputFile,'Usage: node certify.mjs REVIEWED_PAYLOAD.json PRIVATE_KEY.pem CERTIFICATE.json');
  assert(!fs.existsSync(outputFile),'Certificate output already exists; review replacement separately');
  const payload=JSON.parse(fs.readFileSync(payloadFile));
- assert(payload.scope==='phase-zero'&&payload.planDigest&&payload.inputsDigest&&payload.profileDigest&&Object.keys(payload.files||{}).length>=3,'Incomplete reviewed local profile payload');
+ assert(payload.scope==='phase-zero'&&payload.planDigest&&payload.inputsDigest&&Object.keys(payload.files||{}).length>=3,'Incomplete reviewed payload');
+ assert(payload.profileDigest===undefined||typeof payload.profileDigest==='string'&&payload.profileDigest.length===64,'profileDigest, when present, must be the local execution profile digest');
  assert(Number.isFinite(Date.parse(payload.expiresAt))&&Date.parse(payload.expiresAt)>Date.now(),'Set a future expiry in the reviewed payload before signing');
  assert((fs.statSync(keyFile).mode&0o077)===0,'Signing key must be private to the certifier');
  const key=crypto.createPrivateKey(fs.readFileSync(keyFile));assert(key.asymmetricKeyType==='ed25519','Use an Ed25519 signing key');

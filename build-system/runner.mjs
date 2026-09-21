@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
-import {assert,canonical,digest,hashFile,within,validatePlan,Journal,processJSON,certificationSnapshot,invokeRollbackStage,requestRetry,reconcileNoEffect,adoptLocalReceipt,installationDigest,executionProfileDigest} from './lib/core.mjs';
+import {assert,canonical,digest,hashFile,within,validatePlan,Journal,processJSON,certificationSnapshot,invokeRollbackStage,requestRetry,reconcileNoEffect,adoptLocalReceipt,completeRollback,installationDigest,executionProfileDigest} from './lib/core.mjs';
 import {Engine} from './lib/engine.mjs';
 const [command='help',...args]=process.argv.slice(2);
 function option(name){const at=args.indexOf('--'+name);return at<0?null:args[at+1]}
@@ -23,16 +24,20 @@ try{
  for(const key of ['phaseZeroCertificate','certifierPublicKey'])assert(within(root,path.resolve(config[key])),'Certification files must stay under protected control root');
  assert(config.hook?.command&&path.isAbsolute(config.hook.command),'Configure absolute trusted hook executable');assert(within(root,fs.realpathSync(config.hook.command)),'Trusted hook executable must be installed in control root');
  const lock=path.join(root,'controller.lock');
- if(fs.existsSync(lock)){const owner=Number(fs.readFileSync(lock,'utf8'));let live=true;try{process.kill(owner,0)}catch(e){if(e.code==='ESRCH')live=false}assert(command==='reconcile'&&!live,'Controller is locked; reconcile only after prior process is confirmed dead');fs.unlinkSync(lock)}
- const fd=fs.openSync(lock,'wx',0o600);fs.writeSync(fd,String(process.pid));fs.closeSync(fd);
- const hook=request=>processJSON(config.hook.command,config.hook.args||[],request,{timeoutSeconds:Math.min(request.timeoutSeconds||60,config.hook.maxSeconds||14400),cancelFile:['reconcile','rollback'].includes(command)?null:path.join(root,'CANCEL'),env:config.hook.env||{},cwd:root});
+ if(fs.existsSync(lock)){let owner=null;try{owner=JSON.parse(fs.readFileSync(lock,'utf8'))}catch{owner=null}
+  // An empty or unparsable lock is a crash between create and write, not a live owner. A lock from another
+  // host cannot be probed here, so it is treated as live until an operator removes it.
+  let live;if(!owner||!Number.isSafeInteger(owner.pid)||owner.pid<=0)live=false;else if(owner.hostname!==os.hostname())live=true;else{live=true;try{process.kill(owner.pid,0)}catch(e){if(e.code==='ESRCH')live=false}}
+  assert(command==='reconcile'&&!live,'Controller is locked; reconcile only after prior process is confirmed dead');fs.unlinkSync(lock)}
+ const fd=fs.openSync(lock,'wx',0o600);fs.writeSync(fd,JSON.stringify({pid:process.pid,hostname:os.hostname(),startedAt:new Date().toISOString()}));fs.fsyncSync(fd);fs.closeSync(fd);
+ const hook=request=>processJSON(config.hook.command,config.hook.args||[],request,{timeoutSeconds:Math.min(request.timeoutSeconds||60,config.hook.maxSeconds||14400),killGraceMs:config.hook.killGraceMs||30000,cancelFile:['reconcile','rollback'].includes(command)?null:path.join(root,'CANCEL'),env:config.hook.env||{},cwd:root});
  try{
   // Mutating commands must read durable state only after taking the exclusive lock.
   journal=new Journal(path.join(root,'state'),digest(plan));
   if(command==='reconcile'){
-   const active=journal.state.active;assert(active,'No uncertain in-flight operation');const r=await hook({id:crypto.randomUUID(),kind:'reconcile',operation:active});if(config.adapter==='local'&&r.completedReceipt){adoptLocalReceipt(journal,r.completedReceipt);console.log('Adopted the protected adapter’s saved result. Run resumes at its original transition.');}else{reconcileNoEffect(journal,r);console.log('Confirmed no effect and no charge. Any prior rollback requirement remains in force.');}
+   const active=journal.state.active;assert(active,'No uncertain in-flight operation');const r=await hook({id:crypto.randomUUID(),kind:'reconcile',operation:active,timeoutSeconds:Math.min(config.local?.deployment?.timeoutSeconds||300,14400)});if(config.adapter==='local'&&r.completedReceipt){adoptLocalReceipt(journal,r.completedReceipt);console.log('Adopted the protected adapter’s saved result. Run resumes at its original transition.');}else{reconcileNoEffect(journal,r);console.log('Confirmed no effect and no charge. Any prior rollback requirement remains in force.');}
   }else if(command==='rollback'){
-   assert(!journal.state.active&&journal.state.blocked?.rollbackRequired,'Rollback requires a known failed health gate, not an unknown deployment');const batchId=journal.state.blocked.batchId;const record=journal.state.batches[batchId];const operation={id:crypto.randomUUID(),kind:'rollback',batchId,payload:{head:record.head,targets:config.targets,receipts:record.receipts,failedHealth:journal.state.pendingReceipt?.result}};const r=await invokeRollbackStage(journal,operation,()=>hook(operation));assert(r.costCents===0&&r.authorized&&r.restored&&r.healthy&&r.restoredArtifactDigest&&r.target,'Rollback lacks trusted target, authorization, and health proof');assert([config.targets.staging,config.targets.production].includes(r.target),'Rollback target mismatch');journal.record('rollback.completed',{...journal.state,active:null,blocked:{batchId,reason:'Rollback complete. A new reviewed release plan is required.'},rollbackReceipt:r});console.log('Rollback confirmed. Release remains stopped.');
+   assert(!journal.state.active&&journal.state.blocked?.rollbackRequired,'Rollback requires a known failed health gate, not an unknown deployment');const batchId=journal.state.blocked.batchId;const record=journal.state.batches[batchId];const operation={id:crypto.randomUUID(),kind:'rollback',batchId,maxCostCents:0,timeoutSeconds:Math.min(config.local?.deployment?.timeoutSeconds||3600,14400),payload:{head:record.head,executionHead:record.mergedHead||record.head,certificateDigest:record.certificateDigest,targets:config.targets,receipts:record.receipts,failedHealth:journal.state.pendingReceipt?.result}};const r=await invokeRollbackStage(journal,operation,()=>hook(operation));completeRollback(journal,r);console.log('Rollback confirmed. Release remains stopped.');
   }else if(command==='retry'){
    requestRetry(journal,plan,option('batch'));
   }else if(command==='preflight'){

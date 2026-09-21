@@ -26,7 +26,9 @@ Read the surface requirements in [Desktop app spec](ARP-Desktop-app-spec.md), [W
 
 ## 2. The workspace is mission control
 
-The Oxagen web app is the main place to run an agent team. An **operator** is a person who gives agents work and follows it. A **team supervisor** is a person who leads the operators. The **Oxagen Supervisor** is a different role. It is the protected program that guards a run.
+The Oxagen web app is the main place to run an agent team. An **operator** is a person who gives agents work and follows it. A **team supervisor** is a person who leads the operators. The **desktop guard** is the protected program that guards a run on a device. Earlier drafts called it the Oxagen Supervisor, the local guard, the protected service, or the desktop gateway. Those names mean the desktop guard. The word supervisor now refers only to the person. The [brand glossary](ARP-Brand-spec.md#names-and-words) is the one list of names every surface uses.
+
+An **org** is the customer account. Identifiers call it `org_id`, the database schema is `org`, and the table is `org.organizations`. Where older text says company or customer, it means the org.
 
 An operator can send work to any supported harness registered in the workspace that they may use. They can pick one target, a saved group, or all matching targets. Work may run on their laptop, another approved device, or a private worker. Each target still needs its own access check.
 
@@ -111,7 +113,7 @@ If a provider runs tools inside its system, Oxagen must approve each action firs
 
 In strict mode, **every model call goes through an Oxagen proxy**. A proxy receives a request, checks it, and sends it on. The reply comes back through it. This includes calls from child agents, retries, and small calls to make a title or shorten a chat.
 
-The required desktop app runs a protected local gateway. It checks and cleans the full request before any content leaves the machine. It then sends that clean request to the tenant's model gateway. That gateway checks access and cost, saves the clean request, and calls the model with a key the agent cannot read. The gateway may run in Oxagen's cloud or inside the customer's network.
+The required desktop app runs a protected local gateway. It checks and cleans the full request before any content leaves the machine. It then sends that clean request to the org's model gateway. That gateway checks access and cost, saves the clean request, and calls the model with a key the agent cannot read. The gateway may run in Oxagen's cloud or inside the customer's network.
 
 Hooks and adapters also have a job. They link each harness to Oxagen, carry steering, and report safe pause points. They help build the tool belt and context. The local guard blocks other network and tool paths. Hooks alone do not give strict control. A tool built into the harness still needs a check before it runs.
 
@@ -119,9 +121,9 @@ Build the final model request locally after all due context and steering arrive.
 
 If a harness hides calls or cannot use this route, list it as observed or unsupported for strict mode. Being registered is not proof of control. Each harness version and feature set needs tests.
 
-![Oxagen prepares allowed run context and steering. A harness adapter or custom SDK puts them into the next supported step. Hooks report events and help with steering, but are not the security boundary. The harness sends model, tool, and context requests through a protected desktop gateway outside the agent process and separate from the app UI. The local gateway scans the full assembled request, history, tool data, and attachments under workspace rules. It blocks, redacts, or replaces sensitive content before remote egress and blocks a send if required content cannot be checked. It also prevents direct network and credential bypass. Only cleaned requests reach the tenant model proxy, which authorizes each call, holds provider keys, and sends approved requests to models. Each tenant gate checks the ScanReceipt that binds the exact cleaned request to the current workspace scan policy. A missing, stale, or mismatched receipt blocks the request. Remote tool and context gates also check operations and record rights. Only cleaned evidence enters Oxagen records. Strict mode refuses any required route that cannot be guarded or disabled. A removable hook alone cannot stop bypass.](diagrams/gateway.svg)
+![Oxagen prepares allowed run context and steering. A harness adapter or custom SDK puts them into the next supported step. Hooks report events and help with steering, but are not the security boundary. The harness sends model, tool, and context requests through a protected desktop gateway outside the agent process and separate from the app UI. The local gateway scans the full assembled request, history, tool data, and attachments under workspace rules. It blocks, redacts, or replaces sensitive content before remote egress and blocks a send if required content cannot be checked. It also prevents direct network and credential bypass. Only cleaned requests reach the org model proxy, which authorizes each call, holds provider keys, and sends approved requests to models. Each org gate checks the ScanReceipt that binds the exact cleaned request to the current workspace scan policy. A missing, stale, or mismatched receipt blocks the request. Remote tool and context gates also check operations and record rights. Only cleaned evidence enters Oxagen records. Strict mode refuses any required route that cannot be guarded or disabled. A removable hook alone cannot stop bypass.](diagrams/gateway.svg)
 
-*The protected desktop gateway is separate from the app UI. It scans the full outgoing request and applies workspace rules before data leaves the device. Only cleaned requests reach the tenant model proxy, tool and context gates, or Oxagen records. Adapters and hooks add context and steering but do not enforce this boundary.*
+*The protected desktop gateway is separate from the app UI. It scans the full outgoing request and applies workspace rules before data leaves the device. Only cleaned requests reach the org model proxy, tool and context gates, or Oxagen records. Adapters and hooks add context and steering but do not enforce this boundary.*
 
 The main services have clear jobs:
 
@@ -154,9 +156,9 @@ New raw copies stay only in brief local memory by default. Do not upload raw mat
 
 The [Desktop app spec](ARP-Desktop-app-spec.md) defines setup, screens, the protected service, local scans, updates, failures, and recovery. The [API spec](ARP-API-spec.md) defines the shared request contract. The exact data-protection fields remain in chapter 23.
 
-![Raw prompt text, full history, tool inputs and results, tool schemas, files, images, attachments, URLs, and request headers enter the protected local desktop gateway. The service is separate from the app UI and protected from the controlled agent. The workspace scanner checks the full assembled outgoing request and every required attachment. Workspace rules may block the send, redact content, or replace sensitive values. If required content cannot be checked, the send is blocked. The blocked path does not upload raw content or raw evidence. The allowed path carries only the cleaned full request and a minimal ScanReceipt without raw text. This receipt binds the exact cleaned request digest and workspace scan-policy version. The tenant gateway checks the receipt and blocks missing, stale, or mismatched receipts. Changed requests are rechecked under current access and policy. Only this cleaned form reaches the tenant gateway, approved model or tool, and sanitized Oxagen evidence records. The same path applies to outgoing reports and telemetry. No raw request, raw evidence, or replacement mapping may take a separate cloud path.](diagrams/data_protection.svg)
+![Raw prompt text, full history, tool inputs and results, tool schemas, files, images, attachments, URLs, and request headers enter the protected local desktop gateway. The service is separate from the app UI and protected from the controlled agent. The workspace scanner checks the full assembled outgoing request and every required attachment. Workspace rules may block the send, redact content, or replace sensitive values. If required content cannot be checked, the send is blocked. The blocked path does not upload raw content or raw evidence. The allowed path carries only the cleaned full request and a minimal ScanReceipt without raw text. This receipt binds the exact cleaned request digest and workspace scan-policy version. The org gateway checks the receipt and blocks missing, stale, or mismatched receipts. Changed requests are rechecked under current access and policy. Only this cleaned form reaches the org gateway, approved model or tool, and sanitized Oxagen evidence records. The same path applies to outgoing reports and telemetry. No raw request, raw evidence, or replacement mapping may take a separate cloud path.](diagrams/data_protection.svg)
 
-*A protected desktop gateway scans the full assembled request under workspace rules. It may block, redact, or replace content. Only the cleaned form can reach tenant gateways, approved models, or Oxagen records. The app UI and harness cannot use a raw-to-cloud route.*
+*A protected desktop gateway scans the full assembled request under workspace rules. It may block, redact, or replace content. Only the cleaned form can reach org gateways, approved models, or Oxagen records. The app UI and harness cannot use a raw-to-cloud route.*
 
 ## 4. Enroll devices and bind workspaces
 
@@ -174,15 +176,29 @@ Each device has a time-limited presence record. The app shows online, stale, or 
 
 ### First workspace and first run
 
-This walkthrough specifies the setup flow to build. The commands are proposed, not a released CLI. Names such as `support` and `local-codex` are example aliases. Oxagen resolves them to stable IDs after checking the signed-in tenant. The sample files contain invented IDs, not live access.
+This walkthrough specifies the setup flow to build. The commands are proposed, not a released CLI. Names such as `support` and `local-codex` are example aliases. Oxagen resolves them to stable IDs after checking the signed-in org. The sample files contain invented IDs, not live access.
+
+#### The quick start must reach a first run in one command
+
+The six-step walkthrough below is the reference path. It has about twenty decisions across the web app and the CLI before the first model call. A person trying Oxagen for the first time must not need all of them. The product must also ship a one-command path:
+
+```bash
+oxagen quickstart
+```
+
+Quick start runs the same gates as the reference path. It asks nothing it can decide safely. It signs the person in, enrolls the device, and creates a personal workspace when the person has none. It makes that person the workspace owner and operator. It detects an installed supported harness in the current checkout, registers it, links the checkout, and writes the `.oxagen` files. It applies the org's default data-protection template, a read-only work order, and a small spend cap of a few dollars. It then submits one read-only task and prints the run start receipt.
+
+Quick start may not weaken any control. It cannot skip the local scanner, create a write-capable work order, raise a cap above the org default, or register a harness the adapter does not support. When a required piece is missing, it stops at that step, names the step, and prints the exact command to continue. A solo developer with no admin reaches a governed first run alone. A person in a managed org gets the same flow inside the limits their admin published. The full walkthrough stays as the reference for teams that want each step explicit.
 
 #### 1. Create the workspace in the web app
 
-Sign in, select the organization, and create a workspace called **Support**. The owner needs the right to create workspaces and use the chosen data plane. Being an owner of a different organization grants nothing here.
+Sign in, select the organization, and create a workspace called **Support**. Whoever creates an organization is its first owner. That person holds the owner, operator, policy admin, and approver roles in every workspace they create until they delegate them, so a solo developer needs nobody else to finish this walkthrough. Sign-in supports email with a second factor; single sign-on is optional, not required. The data plane defaults to Oxagen-hosted and can be changed later. Being an owner of a different organization grants nothing here.
+
+Add a model route under **Policies → Model routes** before anything else. Paste a provider key or choose an Oxagen-managed model. The model proxy stores the key; the device never sees it. **Send work** stays disabled until one route exists and says so: “No model route yet. Add a provider key to send work.”
 
 Connect the example repo `acme/support-app`. Choose **main** as this workspace's default branch. This is an explicit setting, not an assumption that every repo uses main. Reports compare the work branch with the exact commit on this configured target. Save the repository and settings revision.
 
-Choose the tenant's approved data plane and confirm where cleaned records will live. Set Data protection rules before accepting prompts or attachments. Set allowed model routes and a shared operator budget. Publish the policy revision. Targets must confirm that revision before strict work starts.
+Choose the org's approved data plane and confirm where cleaned records will live. Set Data protection rules before accepting prompts or attachments. Set allowed model routes and a shared operator budget. Publish the policy revision. Targets must confirm that revision before strict work starts.
 
 Create or select the **support-builder** agent and its **code** mode. Assign its tools, skills, and allowed context. For the first run, use a work order named **first-doc-check** that permits reading the repo, forbids writes, and has a small approved spend cap. The amount must fit the available model price bounds; a cap is not a promise that work will fit.
 
@@ -200,7 +216,7 @@ oxagen agent use support-builder --mode code
 oxagen status --json
 ```
 
-The repo link uses the connected repository identity and trusted local evidence. A changed Git remote or copied config cannot switch tenants. Register the enrolled harness first; it stays unbound and cannot launch. Linking the checkout then establishes its repo scope. Registration checks the exact harness and adapter version. Do not mark it strict merely because its name is Codex. An unsupported adapter blocks this walkthrough until an approved version is used.
+The repo link uses the connected repository identity and trusted local evidence. A changed Git remote or copied config cannot switch orgs. Register the enrolled harness first; it stays unbound and cannot launch. Linking the checkout then establishes its repo scope. Registration checks the exact harness and adapter version. Do not mark it strict merely because its name is Codex. An unsupported adapter blocks this walkthrough until an approved version is used.
 
 The protected service holds device keys and grants outside the checkout. It maintains its outbound control link after the browser closes. If web prompts or attachments will be used, pair that browser with the authenticated local bridge before entering sensitive content.
 
@@ -269,7 +285,7 @@ oxagen run steer <active-run-id> --message-file steering-note.md
 
 For a live run, steering without `--interrupt` joins the next eligible boundary. Add `--interrupt` only when a confirmed pause and restart are intended. A finished run cannot be silently restarted by steering.
 
-The report shows the repo, work and configured target branch, exact compared commits, permitted diff and files, persona name and ID, tool-use counts, and PR/CI state. For this read-only assignment, no changes and `PR: not_created` may be the correct result. Confirm that the report is durably saved in the chosen tenant store. Pending sync is not a central save.
+The report shows the repo, work and configured target branch, exact compared commits, permitted diff and files, persona name and ID, tool-use counts, and PR/CI state. For this read-only assignment, no changes and `PR: not_created` may be the correct result. Confirm that the report is durably saved in the chosen org store. Pending sync is not a central save.
 
 #### Sources, updates, and conflicts
 
@@ -326,6 +342,18 @@ Split queues and workers by company and workspace. Set fair limits on queued wor
 
 The live dashboard shows saved records the viewer has rights to see. Show when it was last updated and whether data is missing. A stale chart cannot grant access, confirm a pause, or let a run exceed its budget. The trusted gates and budget records make those choices.
 
+### The device pulls work through three named operations
+
+The desktop guard's outbound link is the load-bearing connection of the product, so its contract is explicit. Three trusted worker operations drive the `queue_deliveries` lease state in the schema:
+
+| Operation | What it does |
+|---|---|
+| `work.claim` | The guard asks for deliveries addressed to its targets. Each claim returns a lease with an owner epoch and an expiry. A lease that expires unrenewed returns the delivery to the queue. |
+| `work.extend` | The guard renews a lease it still holds, naming the lease epoch. A renewal with a stale epoch is refused. |
+| `work.start_ack` | The guard reports the recorded run start for one delivery. The request is marked started only after this record exists. |
+
+Each target has its own event stream, so a device receives only events for runs it owns, not every event in the workspace. A guard that reconnects after a gap does not replay the stream or poll each run. It calls one `target.control_snapshot` operation that returns, for every run the target owns, the current authority epoch, any pending pause, stop, or revoke command, and the steering inbox high-water mark. The guard applies that snapshot before it admits any further step.
+
 ### Steer runs that are already active
 
 When an owner clicks **Steer**, Oxagen saves the message and a fixed list of matching runs. That list includes their delegated work. It also records who sent the message, its expiry, and whether it should interrupt.
@@ -343,6 +371,8 @@ After Oxagen orders the steering message into a run's control inbox, the current
 Each next-step gate must check the authoritative inbox. Sending a push message is not enough. Oxagen records which came first: the new steering or permission to start the next step. If steering came first, the next step must use it. If the step was approved first, it may finish, then steering applies.
 
 In strict mode, work waits when the gate cannot sync with the inbox. A mode that allows old cached instructions while offline must state its weaker timing promise.
+
+The gate does not make a control-plane round trip before every step. Oxagen pushes inbox changes over the target's control connection with a monotonic high-water mark and a short lease. While the lease is valid, the gate admits the next step locally against the mark it holds. When the lease lapses or the connection drops, the gate waits for a fresh mark. The bounded staleness is the lease length, and the design states it as a number in the capability profile so a fifty-tool-call turn does not pay fifty round trips.
 
 Tool calls proposed under the old context wait too. They must not run ahead of the model seeing the new direction. Oxagen records whether they were dropped or chosen again with fresh permission. If the current step never ends, steering stays queued until an owner interrupts it.
 
@@ -390,6 +420,10 @@ The pause record lists its scope, workers, and access versions. It records the c
 Delivery to the harness, model context, and active UI streams must check the access version too. A response not released for delivery before the old gate closed stays evidence-only. This holds even if its acceptance was saved earlier. It cannot drain into the resumed run on its own. If delivery had started, the pause record must show what was actually applied.
 
 The harness may have hidden buffered state. If that state is uncertain, isolate it or rebuild from a known state. Do that before calling the pause complete.
+
+### A stuck pause has a defined exit
+
+A pause that cannot be confirmed must not hold a concurrency slot forever. One hung connector would otherwise occupy an operator's or workspace's capacity until someone edits the database. An operator with the right access may **abandon** the run. Abandon records every unresolved effect as unknown, keeps every hold, revokes the run's credentials and treats that revocation as proof of isolation, moves the run to **outcome unknown**, and releases the counted slot. The run cannot resume. Its evidence stays. This is the only transition into outcome unknown from pausing, and the state machine in this chapter includes it.
 
 ![A pause request holds new actions and late results. All workers must acknowledge the hold or be proved isolated. Local files and active context must stop changing. Unknown outside writes keep the run pausing. A confirmed saved boundary allows the paused state. Late replies go to evidence only and can enter a future run only through a separate checked adoption.](diagrams/pause.svg)
 
@@ -617,9 +651,9 @@ A model may spot drift and suggest a pause or correction. It cannot create right
 
 Save one decision ID with the identity, action, target, scope, rule versions, and reasons. Check that access is still current when data is released or work is sent. Apply this to people as well as agents.
 
-![Human and agent identities are first-class principals in the same canonical IAM and RBAC system. They have distinct identities, roles, and record grants; an agent also has an accountable operator. One authorization service composes identity, role and record rights, workspace scope, and current policy into an allow, deny, or approval-required decision. A person is asked only when the rule requires it. Only allowed requests may proceed through tool, context, model, and web or API gates. Data queries also enforce tenant and workspace boundaries through SQL row-level security where SQL is used. Application-level record checks still apply. Object and file stores, search indexes, and their gateways separately enforce tenant and per-record rights. SQL row-level security does not cover non-SQL stores by itself.](diagrams/iam.svg)
+![Human and agent identities are first-class principals in the same canonical IAM and RBAC system. They have distinct identities, roles, and record grants; an agent also has an accountable operator. One authorization service composes identity, role and record rights, workspace scope, and current policy into an allow, deny, or approval-required decision. A person is asked only when the rule requires it. Only allowed requests may proceed through tool, context, model, and web or API gates. Data queries also enforce org and workspace boundaries through SQL row-level security where SQL is used. Application-level record checks still apply. Object and file stores, search indexes, and their gateways separately enforce org and per-record rights. SQL row-level security does not cover non-SQL stores by itself.](diagrams/iam.svg)
 
-*People and agents have their own identities. One shared identity and access service checks their roles, record grants, and current policy. Its decision reaches each request gate. SQL row rules add tenant and workspace checks. File and search services enforce their own record checks.*
+*People and agents have their own identities. One shared identity and access service checks their roles, record grants, and current policy. Its decision reaches each request gate. SQL row rules add org and workspace checks. File and search services enforce their own record checks.*
 
 ### Keep keys outside agent code
 
@@ -635,7 +669,7 @@ An access request names the task, system, resource, time needed, reason, and run
 
 Older systems may need fixed keys. Put them only in a dedicated connector and rotate them. If agent-owned code must get a secret, show the weaker protection. Limit that secret's scope and life. Code can read its own environment variables.
 
-With MCP, check each link's access on its own. Check the client to Oxagen first. Then check Oxagen to the provider. A token for one service must not simply pass to another. [MCP authorization](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization)
+With MCP, check each link's access on its own. Check the client to Oxagen first. Then check Oxagen to the provider. A token for one service must not simply pass to another. [MCP authorization](https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization)
 
 ## 11. Protect every record and its history
 
@@ -712,6 +746,8 @@ Use IDs and receipts from the trusted connector. An agent's claim, or a match on
 This would let a user ask why a refund happened, which agent caused it, and which code or tests support its rule.
 
 Build the graph records, access checks, version links, sync rules, and stable IDs now. Business connectors, real business-record ingestion, and screens for these future questions come later. This document specifies that foundation; it does not claim these features exist today.
+
+The graph is required in the architecture, not on the critical path of a first run. A new workspace has an empty graph. The first-run path resolves context from the explicit source references in the `.oxagen` files and the Context Gateway's direct source fetch. Graph ingestion fills in behind that first run. No gate may wait on graph freshness to admit a model call, and an empty or stale graph must never turn into a denial by itself.
 
 ![Version-control, CRM, and other source systems remain authoritative for their own records. Oxagen keeps stable source and record IDs, versions, permission references, sanitized data, and provenance links in its shared context graph. Foundational IDs and provenance synchronization belong to the initial design. The Context Gateway is the shared route for context access. A common MCP catalog discovers allowed tools and context routes but grants no extra rights. Identity, per-record rights, policy, and local data scanning still apply. Code, tools, context, tests, and reusable policy versions can be linked through the graph. The future business-record section is explicitly not an implemented connector or ingestion feature in this phase. It shows a possible provenance chain from Run and ToolAction to PolicyVersion and Decision, to an optional approval if required, to ConnectorReceipt, to the external Refund record, then its Order and Customer records. Receipts point to exact external source versions when available. Unknown source versions remain marked unknown. An approval is optional only when the policy does not require it; missing required proof never counts as success. Source permissions and freshness remain attached to all links. The graph stores authorized links and sanitized fields, not a copy that overrides the source system or bypasses record access.](diagrams/knowledge_graph.svg)
 
@@ -816,15 +852,15 @@ Use trusted IDs to link each record to its company, workspace, repo, device, per
 
 Do not store keys or sign-in headers in run history. Mark gaps, missing data, hidden text, and cut-off text. If content was removed, say the record is less complete. A provider's hidden prompts and private reasoning are outside the visible capture promise. Local source files stay in place. Cleaned remote snapshots cannot promise an exact copy of removed local data.
 
-In strict mode, save a request before sending it. Save results before any work that depends on them. Stream chunks may be saved in groups only after the local scan proves a safe boundary. Otherwise buffer the whole reply before release. State the extra delay. If safe storage fails, stop new work. A faster mode that allows gaps must show its weaker capture level.
+In strict mode, save a request before sending it. Save results before any work that depends on them. Stream chunks may be saved in groups only after the local scan proves a safe boundary. Otherwise buffer the whole reply before release. State the extra delay. Chunks append to one evidence object per attempt, never one object per chunk. A group is at least 16 KB or two seconds of stream, whichever comes first, so a long reply costs tens of durable writes rather than thousands. If safe storage fails, stop new work. A faster mode that allows gaps must show its weaker capture level.
 
 Each adapter must prove coverage of model calls, tools, children, and background work. Samples alone cannot prove full capture.
 
-### Save a work report in the tenant's chosen store
+### Save a work report in the org's chosen store
 
 Oxagen must save a **work report** for each run. For repo work, keep one report per linked repo. The report comes from trusted run records and approved VCS and CI connections. Scan its paths, patches, job text, and other fields before remote storage. Save cleaned views and mark removed parts; the report requirement never grants permission to export raw secrets. It must not depend on what the agent says in its final reply.
 
-**Write the report to the same tenant-configured data store that the Oxagen web app uses.** The tenant is the customer account. Its **data plane** is the set of services that handles its work and stored data. That setup may live in Oxagen's cloud or inside the customer's network. Trusted services choose the store from the tenant's saved settings. The agent cannot choose a different store.
+**Write the report to the same org-configured data store that the Oxagen web app uses.** The org is the customer account. Its **data plane** is the set of services that handles its work and stored data. That setup may live in Oxagen's cloud or inside the customer's network. Trusted services choose the store from the org's saved settings. The agent cannot choose a different store.
 
 The report must contain these fields:
 
@@ -853,13 +889,13 @@ Keep every CI job's status, including jobs still waiting, skipped jobs, failed j
 
 A new commit, branch move, PR event, CI result, or changed default-branch setting creates a new report version. Keep the old version as evidence. Old CI results stay tied to the old code. Keep collecting PR and CI updates after the run ends while that PR is tracked. Those updates do not resume the agent on their own.
 
-![The trusted run guard supplies the approved persona ID and name, run identity, and per-tool call counts. Version-control and pull-request connectors supply repository and workspace identity, the configured default branch and its exact base revision, the working branch and head commit, the changed-file list and diff, and any pull-request number and link. CI connectors supply every job status with the commit it checked. The protected local gateway scans report text, files, and references before any upload. Only cleaned report data is persisted through the tenant-selected data service into the same record store and file references used by the Oxagen web app. That data service may be SaaS or customer-private. It checks access to each record when writing and reading. The web app shows observation time, freshness, and field status. No PR, unknown PR state, missing or redacted data, running jobs, and failed jobs stay distinct. An old commit’s CI result does not prove the current head passed. Every required field has a value or an explicit status. A model summary does not replace these trusted records.](diagrams/reporting.svg)
+![The trusted run guard supplies the approved persona ID and name, run identity, and per-tool call counts. Version-control and pull-request connectors supply repository and workspace identity, the configured default branch and its exact base revision, the working branch and head commit, the changed-file list and diff, and any pull-request number and link. CI connectors supply every job status with the commit it checked. The protected local gateway scans report text, files, and references before any upload. Only cleaned report data is persisted through the org-selected data service into the same record store and file references used by the Oxagen web app. That data service may be SaaS or customer-private. It checks access to each record when writing and reading. The web app shows observation time, freshness, and field status. No PR, unknown PR state, missing or redacted data, running jobs, and failed jobs stay distinct. An old commit’s CI result does not prove the current head passed. Every required field has a value or an explicit status. A model summary does not replace these trusted records.](diagrams/reporting.svg)
 
-*Trusted run records and code, PR, and CI connectors supply the required report fields. Reports link branches, persona, tool counts, and each CI result to the exact work. The local gateway cleans report data before the tenant-selected data service saves it for the Oxagen web app. Record rights, freshness, and field status stay visible.*
+*Trusted run records and code, PR, and CI connectors supply the required report fields. Reports link branches, persona, tool counts, and each CI result to the exact work. The local gateway cleans report data before the org-selected data service saves it for the Oxagen web app. Record rights, freshness, and field status stay visible.*
 
 “Collected” and “saved” are separate states. Oxagen marks a report saved only after the chosen store confirms the write. If it must wait in an approved local buffer, show that it is waiting to sync. Loss of a private store must not cause a silent copy to public cloud storage. Strict recording rules stop new governed work when required records cannot be saved.
 
-The web app reads those saved reports with the same record permissions as other tenant data. If there is no PR yet, say so. If no repo applies, record that reason. If a source cannot be read, mark it unknown. Do not invent an ID or treat missing facts as success.
+The web app reads those saved reports with the same record permissions as other org data. If there is no PR yet, say so. If no repo applies, record that reason. If a source cannot be read, mark it unknown. Do not invent an ID or treat missing facts as success.
 
 CI, tool, and context callbacks follow the same scan rule as model replies. A remote service may relay raw text through brief memory buffers to the local scanner. It may not save that text in a queue or log first. If the scanner is offline, keep only safe status and opaque IDs. Fetch and scan the content later. Show the report as pending or stale.
 
@@ -875,9 +911,33 @@ Compare similar work and show missing data. Tokens, lines of code, and time onli
 
 ### Turn records into useful guidance
 
-Run analysis may find repeated failed calls, needless retries, repeat file reads, unused context, or slow steps. It may compare cost with a result checked by an outside test. Each suggestion links to its evidence and states which part is a measure and which part is a judgment.
+Oxagen must show how agents and operators spend tokens. For each call, save input and output counts, prompt-cache reads and writes, other billed units, the price basis, and gaps in the data. Use the provider's rules so input subsets are not counted twice. Show totals by operator, agent, harness, custom SDK agent, model, run, turn, and tool. Include the cost of retries, summaries, and Oxagen's own coaching.
 
-Look at the task, context, and result before judging how well time or money was used. Fewer tokens do not always mean better work. The analysis must obey the same read and model-export rules as the agent. It must not pool private customer text without rights to do so. A suggestion does not become a rule on its own.
+Link the cleaned request to its parts: human text, history, context, skills, files, tool menus, and tool results. Show how often each part was sent again. Count cache reuse from reported usage, not from a guess that two prompts look alike. Cache reuse does not prove useful work. Separate measured counts, local token estimates, and unknown fields.
+
+Run analysis may find repeated failed calls, needless retries, repeat file reads, large trace files, or slow steps. Each suggestion links to its evidence and states which part is a measure and which part is a judgment. An estimated saving must name the affected calls, price, assumptions, range, and costs added by the proposed change.
+
+For example, suggest a local trace-file path and a focused read when the agent can reach that file. A path saves nothing if the tool then returns the whole file. Include extra calls, returned text, cache effects, and output before claiming a dollar saving. The [performance specification](ARP-Performance-spec.md) gives the full rules and an illustrative calculation.
+
+Look at the task, context, and result before judging how well time or money was used. Fewer tokens do not always mean better work. Analysis obeys the same read, scan, export, and budget rules as the agent. Advice becomes a change only through a permitted action. These core usage and loop checks require no witness or DoD feature.
+
+![A governed request passes a full local scan and the model gateway before provider usage is saved as a safe linked record. Observed token, cache and cost facts and SDK events support a proposed change. The operator reviews it, may approve a later run, and measures the change. Estimated costs and savings remain separate from facts; metrics contain no prompt bodies or secrets.](diagrams/efficiency.svg)
+
+*Proposed flow: scanned requests and safe usage records support suggestions. Operators review changes, and later runs measure the result.*
+
+### Enroll a custom agent with the SDK
+
+The main JavaScript and TypeScript entry point is:
+
+```javascript
+const result = await oxagen.register({your_agent}).run("prompt");
+```
+
+This is a proposed SDK, not a package that exists today. Registration binds a supported agent adapter to the configured workspace, operator, approved identity, and rules. Each model and tool call passes the protected gateway. A wrapper around opaque code cannot prove control; strict mode blocks if the needed routes cannot be guarded.
+
+The SDK records which step requested a tool, which result the next request used, what work is still open, and why a retry happened. Oxagen can then flag broken call/result pairs, unknown writes retried, stale replies reused, or work declared complete while required steps are still running. Repeated work may be a useful clue, but it is not proof of an error.
+
+The [SDK specification](ARP-SDK-spec.md) defines enrollment, run handles, streams, pause and resume, language bindings, and checks for custom loops. Use the Fleet, Spend, Run, and Operator coaching screens of `apps/web`, which follow the oxagen-roadmap Mission Control v2 layout, for these views. Add the missing controls within that design.
 
 ## 15. Give each governed action a clear state
 
@@ -909,6 +969,8 @@ Trusted records link each bill to the operator and any parent that gave access. 
 
 A central Budget Authority holds money before calls and settles bills after them. OPA may check spending rules. The budget ledger keeps the balance. It must put requests from many devices in one safe order.
 
+One organization-wide budget is one ledger row. Every model call, child agent, title call, summary, and embedding in the organization would otherwise lock that row twice, once to hold and once to settle, and the row would become the ceiling on throughput. To keep the invariant without the bottleneck, a model proxy may **lease** a bounded block from a parent period and sub-allocate from that block locally. The lease is itself a hold on the parent, so the parent's arithmetic never changes. The proxy settles the block back when it drains or expires. Unused lease is released only after the proxy proves it is closed. The device escrow in this chapter is the same mechanism at the device level.
+
 Before every paid call, hold its defensible maximum cost in every budget that applies. Either all those holds succeed or none do. Use exact money units and round maximum holds up.
 
 ```text
@@ -924,6 +986,8 @@ A large agent budget cannot override a smaller operator budget. Each hold names 
 ### A hard cap needs a true maximum cost
 
 The hold must cover every allowed charge. Count input, output, and paid hidden tokens. Assume the worst allowed cache cost. Add server tools, fixed fees, and all enabled extras. Put supported usage limits in the actual provider request.
+
+The gateway sets the provider's output limit itself, so the maximum is a number it controls, not a guess. When the remaining budget cannot cover the full default limit, the gateway may lower that output limit to what the budget can cover and record the lower limit in the hold. A nearly spent budget then degrades to shorter replies before it blocks. The gateway must not lower the limit below the floor the work order names, and it must never raise a cap to fit a call.
 
 An estimate plus a margin is not a hard ceiling. Strict mode must block routes with no defensible upper cost. Or Oxagen may quote a binding maximum customer charge and pay any supplier overage itself. That caps the customer's Oxagen bill. It does not cap the supplier's bill. [Claude token counts](https://platform.claude.com/docs/en/build-with-claude/token-counting), [Claude tool pricing](https://platform.claude.com/docs/en/about-claude/pricing), [OpenAI cost controls](https://developers.openai.com/api/docs/guides/reasoning)
 
@@ -1122,7 +1186,7 @@ A lost link cannot promise instant remote control. Record when a command is acce
 | Record | Required contents |
 |---|---|
 | `PluginManifest` | Plugin and publisher IDs, fixed version and package digest, profile versions, hooks, requested rights, declared effects, runtime options, configuration schema, and size limits. |
-| `PluginInstallation` | Tenant and workspace, pinned manifest, distinct workload identity, current grant version, allowed records and endpoints, event filters, seat rules, expiry, quotas, and payer. |
+| `PluginInstallation` | Org and workspace, pinned manifest, distinct workload identity, current grant version, allowed records and endpoints, event filters, seat rules, expiry, quotas, and payer. |
 | `PluginHookRequest` | Request and event IDs, installation and grant, hook name, target run and turn, candidate or boundary reference, allowed evidence references, deadline, and causal parent. |
 | `CompletionProposal` | Proposal ID and digest, target kind `turn` or `run`, run ID, turn ID when required, round, control revision and epoch, candidate and context digests, candidate-affecting frontier, effects, policy and grant versions, fixed seats, and deadlines. |
 | `ActionGateProposal` | Target kind `action`, run and action IDs, exact action digest, current policy and grants, fixed seats, and deadline. Uses the same reply rules but controls action admission, not turn completion. |
@@ -1132,7 +1196,7 @@ A lost link cannot promise instant remote control. Record when a command is acce
 | `PluginContextOffer` | Offer ID, target boundary, content reference and digest, sources, trust labels, relevance claim, expiry, and declared data use. |
 | `PluginJobRequest` | Job and parent IDs, remote agent identity, task, fixed inputs, allowed outputs and effects, dependency on completion, limits, payer, and callback contract. |
 
-Trusted ingress derives tenant and actor identity. A caller-supplied field alone proves neither. Record references do not grant read access. Payload bytes use ARP's protected artifact store and retention rules. Signatures bind source and bytes. They do not prove that a plugin's claim is true.
+Trusted ingress derives org and actor identity. A caller-supplied field alone proves neither. Record references do not grant read access. Payload bytes use ARP's protected artifact store and retention rules. Signatures bind source and bytes. They do not prove that a plugin's claim is true.
 
 ### Hooks, operations, and events
 
@@ -1217,6 +1281,8 @@ Witness verification with an oracle is one possible future use of this interface
 
 Link each record to a content fingerprint and sign saved points. This helps show that records have not changed. Give customers proof that an event is in the log and that new history extends the old log. Send log roots to a customer-owned or outside log observer. This helps detect two conflicting versions of history. A blockchain is not required. [Merkle log foundations](https://www.rfc-editor.org/rfc/rfc9162.html)
 
+That promise needs a mechanism, and the first draft had none. The schema now carries it: every run event is a leaf with a leaf hash and index in `audit_log_leaves`, and `audit_log_checkpoints` holds a signed tree size and root hash, with the observer's acknowledgement when one exists. Two operations serve the proofs: `audit.inclusion_proof` shows that one event is under a checkpoint, and `audit.consistency_proof` shows that a newer checkpoint extends an older one. Without those tables and operations, the claim is only "signed records", and the documentation must say so.
+
 Keep three claims separate: the record is unchanged, a trusted part saw it, and all relevant events were saved. A signature helps the first claim. Trusted gates and coverage tests support the other two.
 
 Encrypt stored data and use separate customer keys. Protect the keys with a managed key service. Cover databases, files, backups, queues, local buffers, and snapshots. Protect data while it moves too. Bind each encrypted item to its company, object, and version. Do not put secrets in the labels sent to the key service. Some services log those labels as plain text. [AWS KMS context](https://docs.aws.amazon.com/kms/latest/developerguide/encrypt_context.html)
@@ -1227,13 +1293,13 @@ Keep a small audit record separate from encrypted content that can be deleted. S
 
 If a secret enters a record by mistake, block access and rotate it. Save a safe note about the removal, not the secret. Follow incident and deletion rules for any copy already retained. This is a response to a failure, not permission to upload raw content.
 
-## 19. Tenant isolation, RLS, and private networks
+## 19. Org isolation, RLS, and private networks
 
-Keep each customer's data, keys, and work apart. Apply this to storage, queues, caches, search, services, and workers. A company ID column alone is not enough. Use trusted sign-in facts to set the company for every job and request. Check rights in the app and in database row rules. Give service accounts only the rights they need. [SaaS isolation guidance](https://docs.aws.amazon.com/wellarchitected/latest/saas-lens/preventing-cross-tenant-access.html)
+Keep each customer's data, keys, and work apart. Apply this to storage, queues, caches, search, services, and workers. A company ID column alone is not enough. Use trusted sign-in facts to set the company for every job and request. Check rights in the app and in database row rules. Give service accounts only the rights they need. [SaaS isolation guidance](https://docs.aws.amazon.com/wellarchitected/latest/saas-lens/preventing-cross-org-access.html)
 
 Keep a bounded group of customers and their workers, data, and keys in each region. A small global service routes requests without needing prompt text. Give one customer its own group when needed. It can use the same protocol.
 
-The tenant’s data-plane setting selects the store used by the web app and work-report writers. Use that same store for required repo, diff, PR, CI, persona, and tool-use records. The browser talks through checked services. Agents never choose a database route.
+The org’s data-plane setting selects the store used by the web app and work-report writers. Use that same store for required repo, diff, PR, CI, persona, and tool-use records. The browser talks through checked services. Agents never choose a database route.
 
 Start with PostgreSQL for records and action state. Include typed graph nodes and links, source versions, and sync records from the start. A graph search service may use a separate store as needs grow. It must keep the same rights and source links. Encrypt large files in object storage. Add a saved send queue, protected workers, and a search view. Add larger stores for events and reports as use grows. Access checks must not rely on a stale copy built for reports.
 
@@ -1245,9 +1311,13 @@ Keep large model streams outside the workflow engine's own history. Link to save
 
 **Row-level security**, or **RLS**, makes the database check which rows a request may read or change. Each private row carries a company ID and, where needed, a workspace ID. Missing or invalid scope must deny access. A caller cannot choose its company by typing an ID into a request.
 
-RLS enforces the scope from the same IAM system. It is not a second place for customers to manage rights. Roles, record grants, and policy still govern each action. A tenant check alone does not grant access to every record in that tenant.
+RLS enforces the scope from the same IAM system. It is not a second place for customers to manage rights. Roles, record grants, and policy still govern each action. An org check alone does not grant access to every record in that org.
 
 Trusted services set the scope for each database task. Normal app services must use accounts that cannot bypass RLS. Keep stronger maintenance accounts separate and audit their use. Background tasks, such as CI updates, need scoped service identities too. [PostgreSQL row security](https://www.postgresql.org/docs/current/ddl-rowsecurity.html)
+
+Scope has two verified shapes. A run or workspace task names one workspace and sees only that workspace. An org-level task, such as the workspace picker, a cross-workspace spend view, or an org policy template, names the org and no workspace. The service sets that org shape only after checking an org-level grant. A session with neither shape sees no rows. Set the scope per transaction, never per connection, and pool connections in transaction mode. A scope that survives on a pooled connection is a cross-organization leak. Background relays, such as the outbox publisher, run once per organization under the same scope. There is no global poller that reads every organization's rows.
+
+State the threat model honestly. Row rules keyed on a transaction setting stop application code that forgets a filter. They do not stop SQL injection run with the runtime role, because an injected statement can set the scope itself. The defense against injection is parameterized statements only, no SQL built from input, and a lint gate that rejects dynamic SQL. The design does not claim that row rules defend against injection.
 
 RLS only protects database rows. Files, search results, queues, caches, downloads, and exports need the same IAM checks. A private row must not point to a public file. Test both human and agent requests that try to cross company or workspace lines.
 
@@ -1270,6 +1340,28 @@ Local customer root rules cannot be overridden by cloud steering. A cloud comman
 Offline use needs signed local rules and proof of who may act. Both must expire. Keep secrets and evidence locally too. Later sync sends only approved data and keeps each event's first ID. Agreed offline use must not rely on hidden license checks or calls that report data.
 
 Ship signed releases that rebuild to the same output from the same source. List the software parts and their sources. Include steps to upgrade, roll back, and move stored data to new formats. Document data reporting and backup. Let customers manage keys without changing ARP's core records.
+
+### First hosted release: AWS ECS with Fargate
+
+The first hosted release uses **Amazon ECS with Fargate**. AWS runs three small groups of containers: the web app and API, the gateway, and background workers. Each has its own access role. Add more services only when there is a clear need.
+
+Use separate AWS accounts for staging and production. Staging is where a release is tested before it reaches customers. Each account has its own keys, database, file store, secrets and access roles. Private services sit behind an HTTPS entry point. They do not expose their own public network addresses.
+
+Use Aurora PostgreSQL Serverless v2 for the first hosted database and S3 for files. Aurora runs PostgreSQL and is managed by AWS. Set bounds on database size and compute, service counts and log retention. Keep encrypted backups and test restores. SQL row rules and Oxagen's shared IAM checks still apply; choosing AWS does not supply those product controls by itself.
+
+A release starts from the exact merged commit that passed CI. Build the images once. Check their fingerprints in both accounts. Test the same images in staging, then require signed approval for that exact release before production. A changed image or commit needs new evidence.
+
+Before a database change, make a snapshot, restore a private test copy, and test the change there. Check that both the old and new app can still use it. The supplied release path accepts only its small set of safe, added schema changes. It rejects other changes. A failed update may restore the old app only while it still fits the data. Never overwrite the live database with an old snapshot just to undo an app update.
+
+![After design certification, the exact merged commit must pass CI. A protected builder makes API, gateway and worker images once and checks their digests in separate staging and production registries. Each environment restores a database snapshot into a private test copy, applies the supported migration and tests old and new app compatibility. Staging deploys those images and must pass health checks. A human signs approval for the exact source, artifact and production target. Production deploys the same digests. Failed health keeps release stopped; the old app may return only if compatible with the current data. Unknown writes keep their records and locks until reconciled. The live database is not automatically rewound.](diagrams/aws_release.svg)
+
+*The selected AWS release path uses separate accounts, exact images, restored database tests, health checks and signed approval. Unknown results remain blocked. This drawing describes the implemented release controls; cloud qualification and product certification are still required.*
+
+Use Docker Compose for local development only. It runs the reviewed app images with local PostgreSQL and a local file store. It is not a production install or proof that the protected build runner works on a Mac. That runner still requires its qualified Linux setup. Kubernetes is deferred until a measured need justifies it. The private-customer design keeps its own deployment options; ARP does not depend on AWS.
+
+The package includes configurable AWS templates and release code. It does not include a running product or provisioned cloud resources. Account, region, network, domain, certificate, image and access settings must come from the operator. Design, full API and schema certification still comes before product implementation. See the [build plan](ARP-Build-plan.md) and [AWS release setup](build-system/RELEASE-SETUP.md).
+
+AWS cost alerts are alerts. They do not enforce a hard cloud bill cap. Finite run deadlines and fixed resource bounds limit a release's work. Running databases and services keep costing money until they are changed or stopped. Model-call budgets remain a separate, enforced limit in Oxagen.
 
 ### Start the SOC 2 work on day one
 
@@ -1318,7 +1410,7 @@ The product promises need these tests:
 1. Send new work to several registered targets. Race duplicate delivery, cancellation, expiry, worker takeover, and reconnect against startup. Prove one child request creates at most one active run, with no cross-workspace delivery. Then steer several devices and harnesses from one workspace. Get proof for each target. Send nothing to another workspace. Show idle, ended, and offline sessions correctly.
 2. Race steering against a model reply and a group of tool calls. The saved order must decide which step sees the message. No next step may skip pending steering.
 3. Use two agents in two workspaces at one MCP address. Each sees only its assigned tools. Deny guessed, stale, renamed, and revoked tools. Try a false mode change, a reused list page, a native tool, and another MCP server. A lost list-change notice must not let a denied call run. Also test a Bash rule within its stated scope. No part of a matching call may run, including pipelines and later shell input.
-4. Check that all required work-report fields reach the tenant’s configured store. Use a workspace default that differs from the provider default and PR target. Test new commits, moving targets, stale CI, reruns, persona changes, and duplicate tool reports. Prove a private-store failure cannot send the report to public storage. Compare known inputs with their expected cleaned records and model requests. Prove planted secrets do not reach any model, log, report, upload, or sync path. Include long results, failures, summaries, children, and delayed streams. Check access to analysis. Stop strict work when capture fails.
+4. Check that all required work-report fields reach the org’s configured store. Use a workspace default that differs from the provider default and PR target. Test new commits, moving targets, stale CI, reruns, persona changes, and duplicate tool reports. Prove a private-store failure cannot send the report to public storage. Compare known inputs with their expected cleaned records and model requests. Prove planted secrets do not reach any model, log, report, upload, or sync path. Include long results, failures, summaries, children, and delayed streams. Check access to analysis. Stop strict work when capture fails.
 5. Race paid calls from devices and agents sharing a budget. Keep spent and held funds within every limit. Test retries, fallbacks, cancellation, missing bills, new months, lower limits, and offline funds.
 6. Try direct model access, other keys, and unsupported hosted paths. Strict control must block them or reject the setup.
 
@@ -1358,8 +1450,8 @@ These names are proposed ARP interfaces. The explanations below guide implementa
 | `GovernedAction` / `ActionAuthorization` | One checked operation and the single-use approval for an exact attempt, with current scope, request, budget, and expiry. |
 | `AgentDefinition` | Purpose, owner, instructions, tool allow and deny lists, approved modes, limits, and dependencies. |
 | `AgentRelease` | A fixed version of an agent and its dependencies. |
-| `WorkReport` / `WorkReportRevision` | Required repo, branch, file, diff, PR, CI, persona, and tool-use records saved in the tenant’s configured store. |
-| `TenantDataPlaneBinding` / `ReportStoreReceipt` | The trusted storage route and proof that required report data was saved there. |
+| `WorkReport` / `WorkReportRevision` | Required repo, branch, file, diff, PR, CI, persona, and tool-use records saved in the org’s configured store. |
+| `OrgDataPlaneBinding` / `ReportStoreReceipt` | The trusted storage route and proof that required report data was saved there. |
 | `WorkOrder` / `WorkOrderRevision` | The assigned job, owners, scope, access ceiling, tool/context limits, policy and budget links, expiry, and review points. |
 | `SkillPackage` | Instructions and optional code, with source, tests, required access, and a content fingerprint. |
 | `PolicyTemplate` / `ExceptionGrant` | Reusable rule forms and explicit, bounded approval of an overridable threshold. |
@@ -1399,7 +1491,7 @@ These are proposed ARP records and operations. They reuse the existing run, poli
 
 | Record | Required meaning |
 |---|---|
-| `HarnessTarget` | Stable target ID, tenant/workspace, owning person or team, enrolled device/runner, adapter version, repo bindings, approved releases, placement rules, capacity, presence, and supported controls. Registration alone grants no right to launch. |
+| `HarnessTarget` | Stable target ID, org/workspace, owning person or team, enrolled device/runner, adapter version, repo bindings, approved releases, placement rules, capacity, presence, and supported controls. Registration alone grants no right to launch. |
 | `WorkOrderRevision` | Immutable assignment, issuer, accountable operator, authorized agent and modes, scope, context/tool constraints, policy links, budget references, placement, required capture, expiry, review points, and optional completion conditions. |
 | `WorkOrderEnforcementReceipt` | Target, work order revision, effective control sequence/epoch, gates covered, activation outcome, and evidence. A draft or published record is distinct from active enforcement. |
 | `WorkRequest` | Submitter, accountable operator, exact agent release/mode/work order, prompt and input references, workspace/repo state, placement options, fixed target set, payer/budget references, queue expiry, start deadline, and required controls. |
@@ -1432,7 +1524,7 @@ Work orders reference the agent-definition ceiling and cannot widen it. Compose 
 
 Publish work order changes through the existing versioned policy path. Check the issuer before closing gates. Revoke old authority at the effective boundary and record enforcement per target. Stop new spending if a lowered cap is below settled plus held cost, retain outstanding liabilities, and show the excess. A changed operator or agent label does not create a new billing identity. Ongoing work orders use review points and expiry without requiring a false terminal result. The plugin system is optional. When enabled, applicable workspace policy and the work order determine the required seats for an actual completion proposal. A work order cannot omit or waive a seat required by workspace policy.
 
-Partition durable dispatch queues, connection routing, event streams, and report workers by tenant and workspace. Bound queue size, fan-out, active work, and stream traffic. Use fair scheduling and backpressure, with a separate priority path for authorized stop/revoke commands. No global ordering across all customers is required. Keep authoritative order for each assignment/run and atomic reservations across shared budget accounts. Route large encrypted prompt and output payloads by references instead of through the connection broker. Customer-local services apply local root rules and export only permitted fields in hybrid mode.
+Partition durable dispatch queues, connection routing, event streams, and report workers by org and workspace. Bound queue size, fan-out, active work, and stream traffic. Use fair scheduling and backpressure, with a separate priority path for authorized stop/revoke commands. No global ordering across all customers is required. Keep authoritative order for each assignment/run and atomic reservations across shared budget accounts. Route large encrypted prompt and output payloads by references instead of through the connection broker. Customer-local services apply local root rules and export only permitted fields in hybrid mode.
 
 Dashboards are permission-filtered read views. Each shows freshness, capture gaps, scope, and definitions of its measures. Distinguish settled cost, reserved liability, available funds, unpriced usage, and forecasts. Count each charge once across child/parent views. Measure accepted outputs, rework, retries, waiting time, run time, review time, and cost under stated task filters. Record who or what accepted an output and which checks were used. Cached chart data cannot authorize work, release holds, prove a pause, or decide completion. UI actions go back through current checks and expected-version control commands.
 
@@ -1442,11 +1534,11 @@ Acceptance cases must cover multi-harness dispatch, per-target authorization, pr
 
 ### Required work-report profile
 
-`WorkReport` is a first-class ARP record, with immutable revisions and a current read view for each run/repository pair. It MUST be persisted through the tenant's configured data service into the same authoritative store used for that tenant's Oxagen web-app records. An agent summary, dashboard-only cache, or unacknowledged event queue is not a saved report. This is a proposed protocol requirement, not a claim that a collector is implemented.
+`WorkReport` is a first-class ARP record, with immutable revisions and a current read view for each run/repository pair. It MUST be persisted through the org's configured data service into the same authoritative store used for that org's Oxagen web-app records. An agent summary, dashboard-only cache, or unacknowledged event queue is not a saved report. This is a proposed protocol requirement, not a claim that a collector is implemented.
 
 | Record or field group | Required contents |
 |---|---|
-| `WorkReportRevision` | Report ID/revision, tenant/workspace, work request, run/branch/turn scope, accountable operator, work-order revision, data-plane binding revision, source frontier, source observation times, save receipt, completeness, and supersession links. |
+| `WorkReportRevision` | Report ID/revision, org/workspace, work request, run/branch/turn scope, accountable operator, work-order revision, data-plane binding revision, source frontier, source observation times, save receipt, completeness, and supersession links. |
 | `WorkspaceRepoBinding` | Workspace's linked repo ID, VCS type, provider/host, stable repo ID, safe URL/name, configured default-branch name, settings revision, and rights to resolve that branch. Keep fork/head repo identity separately from the base repo. |
 | `BranchComparison` | Work-branch name and commit ID, target branch from the workspace setting and resolved commit ID, comparison kind, file list, patch object reference/digest, collection tool/version/options, capture times, fetch state, and known gaps. |
 | `ChangedFile` | Repo-relative path, change type, prior/new path for a rename, old/new blob IDs or captured content references, file modes, binary/submodule markers, and diff completeness. Counts alone cannot replace the list or patch. |
@@ -1454,7 +1546,7 @@ Acceptance cases must cover multi-harness dispatch, per-target authorization, pr
 | `CIJobObservation` | Provider/source ID, job/check ID and name, workflow/run ID, attempt, matrix identity, URL, native status/conclusion, mapped status, start/end/observation times, actual tested commit/ref, test scope, PR association, and update/version evidence. |
 | `PersonaUsageSegment` | Approved persona ID, name at use, persona revision, agent ID/release, active mode, runtime, access epoch, and first/last action frontier. A rename or mode change cannot rewrite prior attribution. |
 | `ToolUsageRollup` | Unique tool names, confirmed-use totals by name, binding/source/revision breakdown, persona segments, distinct logical action and execution-attempt IDs, and separate denied, sent, successful, failed, and uncertain-start counts. |
-| `ReportStoreReceipt` | Tenant/workspace, report/event IDs, configured data-plane/store binding and revision, committed sequence, durable acknowledgement time, artifact references, and integrity data. |
+| `ReportStoreReceipt` | Org/workspace, report/event IDs, configured data-plane/store binding and revision, committed sequence, durable acknowledgement time, artifact references, and integrity data. |
 
 **Data protection.** Scan report payloads locally before remote storage, including patches, paths, URLs, CI text, persona names, and tool labels. Store only cleaned fields and allowed identifiers, with explicit redaction/coverage markers. Required full patches mean full permitted patches, not a right to export secrets. Raw source remains in the local repo; no cloud raw archive or raw content digest is created. Mark exact restoration unavailable when required data was removed.
 
@@ -1478,11 +1570,11 @@ Store the actual commit tested. PR checks can run on a synthetic merge commit, a
 
 Duplicate event delivery, replay, and stream chunks never add uses. A newly executed retry has a new attempt ID and adds one. The unique-name view sums those facts across binding rows, retains the name used at the time, and exposes each binding/source/revision behind a collision. Whole-tree summaries count each underlying attempt once and label whether child runs are included. Persona-segment totals must reconcile with the same run totals. Reports contain no bearer tokens.
 
-**Storage and updates.** `TenantDataPlaneBinding` is trusted tenant configuration, with backend namespace, region, service identity, key policy, routing version, and approved buffering rules. Web-app writes and report ingest resolve the same binding through trusted services. Database rows and large patch artifacts may use different storage components within that configured data plane. Their references remain tenant-scoped. A private deployment keeps code, paths, diffs, persona details, counts, and CI records in its configured store unless an explicit export rule allows a copy elsewhere.
+**Storage and updates.** `OrgDataPlaneBinding` is trusted org configuration, with backend namespace, region, service identity, key policy, routing version, and approved buffering rules. Web-app writes and report ingest resolve the same binding through trusted services. Database rows and large patch artifacts may use different storage components within that configured data plane. Their references remain org-scoped. A private deployment keeps code, paths, diffs, persona details, counts, and CI records in its configured store unless an explicit export rule allows a copy elsewhere.
 
 Save source events and artifact bytes before committing a report revision that relies on them. The durable acknowledgement must cover required artifacts as well as metadata. Build the current read view through a recoverable transaction/outbox or equivalent. Distinguish `collected`, `pending_sync`, `durably_saved`, and `projected`; the UI reports its last applied sequence. Missing required persistence stops new strict-mode dispatch under the existing capture rule. An approved encrypted local spool is bounded and visible as pending. It is not permission to report a central save or silently change storage destination.
 
-Storage changes use an authorized versioned cutover that preserves record IDs, deduplication, ordering, and one authoritative write destination. Delayed callbacks cannot choose a stale or cross-tenant store. Report reads, exports, diffs, names, and counts obey record and source permissions. Refresh on file boundaries, tool/persona events, commits, branch/default-setting changes, pushes, PR lifecycle events, CI updates, and run end. Continue PR/CI tracking after run completion until its stated retention/tracking rule ends, then expose the cutoff. Later facts update the report without silently reopening completed agent work.
+Storage changes use an authorized versioned cutover that preserves record IDs, deduplication, ordering, and one authoritative write destination. Delayed callbacks cannot choose a stale or cross-org store. Report reads, exports, diffs, names, and counts obey record and source permissions. Refresh on file boundaries, tool/persona events, commits, branch/default-setting changes, pushes, PR lifecycle events, CI updates, and run end. Continue PR/CI tracking after run completion until its stated retention/tracking rule ends, then expose the cutoff. Later facts update the report without silently reopening completed agent work.
 
 A missing PR is `not_created` or `unknown`, as supported by evidence. No applicable repo is `not_applicable` with a reason. A CI outage marks freshness and coverage; it does not claim a passing result. Which missing facts block further work is determined by the current work order and policy. Required report persistence cannot be bypassed by a plugin completion vote.
 
@@ -1524,7 +1616,7 @@ Reconcile external refunds too. Strict global limits require source-system enfor
 
 An `ExceptionGrant` binds the authorized approver, exact action/facts, named overridable threshold, maximum amount, scope, expiry, reason, and policy revision. It cannot waive an absolute prohibition or higher hard cap. Pending approval creates no right to dispatch. Any temporary hold remains explicit and expiring; after approval recheck facts, rights, policy, periods, and available capacity before acquiring or confirming all holds.
 
-The trusted tool/connector service enforces these checks before the payment API call. Protect its credentials and block alternate refund routes. Model-call proxying does not enforce business-tool effects by itself. The app shows effective sources, used/held/remaining values, freshness, scope, and safe denial explanations. Save decision and settlement evidence in the tenant's configured store under the local data-protection rules.
+The trusted tool/connector service enforces these checks before the payment API call. Protect its credentials and block alternate refund routes. Model-call proxying does not enforce business-tool effects by itself. The app shows effective sources, used/held/remaining values, freshness, scope, and safe denial explanations. Save decision and settlement evidence in the org's configured store under the local data-protection rules.
 
 ### Required knowledge graph and source contract
 
@@ -1534,13 +1626,13 @@ Define the following records now:
 
 | Record | Required content |
 | --- | --- |
-| `GraphEntity` / `GraphEntityRevision` | Tenant-scoped opaque ID, entity type, immutable revision, source authority and binding, exact source version, safe source reference, classification, source-permission dependencies, trust state, observed time, validity time, transformation references. |
-| `GraphRelation` / `GraphRelationRevision` | Tenant-scoped ID; exact endpoint revisions; typed relationship; provenance and evidence; proposed, inferred, or verified status; independent field/edge access restrictions. |
+| `GraphEntity` / `GraphEntityRevision` | Org-scoped opaque ID, entity type, immutable revision, source authority and binding, exact source version, safe source reference, classification, source-permission dependencies, trust state, observed time, validity time, transformation references. |
+| `GraphRelation` / `GraphRelationRevision` | Org-scoped ID; exact endpoint revisions; typed relationship; provenance and evidence; proposed, inferred, or verified status; independent field/edge access restrictions. |
 | `GraphProjectionState` | Source binding, requested and applied source versions, checkpoint, sync state, observation time, safe error code, policy/access epoch, deletion state. |
 | `OntologyRevision` | Versioned entity/relationship definitions, source-field mappings, validation rules, ownership, and approved migration plan. |
 | `BusinessActionCorrelation` | Run/trace, governed action and execution-attempt IDs; decision/policy references; applicable approval; trusted connector binding and receipt; source-native record identity/version; correlation provenance and status. |
 
-IDs are scoped by tenant and source installation. A provider record ID alone is not globally unique. Preserve source-native identity inside permissioned bindings rather than exposing it in public URLs. Code entities bind repository identity, commit, path, and symbol identity; retain rename/move lineage without claiming symbols have universally stable identifiers. Context records bind authoritative revisions and any sanitized derivative separately. An unavailable source version remains unavailable, not silently replaced with current content.
+IDs are scoped by org and source installation. A provider record ID alone is not globally unique. Preserve source-native identity inside permissioned bindings rather than exposing it in public URLs. Code entities bind repository identity, commit, path, and symbol identity; retain rename/move lineage without claiming symbols have universally stable identifiers. Context records bind authoritative revisions and any sanitized derivative separately. An unavailable source version remains unavailable, not silently replaced with current content.
 
 ### Projection, access, and retrieval
 
@@ -1548,7 +1640,7 @@ Use durable change events plus reconciliation to update projections. Make consum
 
 Oxagen MCP discovery uses the Context Gateway and graph. Authorize the query, search permitted scope, check nodes/edges/properties and derived results, dereference allowed source versions, then apply final disclosure/export checks. Reuse the existing ARP–CGP binding for returned frames and retrieval/composition receipts; do not invent a replacement CGP wire protocol. The graph store API remains an Oxagen internal contract, while CGP exchanges selected context.
 
-Use the same human/agent IAM principal, RBAC grants, resource permissions, purpose, destination, and authorization epoch throughout. Tenant/workspace row-level security provides a database floor where applicable; graph traversals and non-SQL indexes still need explicit scope enforcement. Protect counts, existence, path explanations, and edge properties. Derived access is no broader than the allowed intersection of its sources. Filter within the trusted boundary before external embeddings, ranking, or models see data. Recheck before response delivery; a cached graph path is not a reusable access grant.
+Use the same human/agent IAM principal, RBAC grants, resource permissions, purpose, destination, and authorization epoch throughout. Org/workspace row-level security provides a database floor where applicable; graph traversals and non-SQL indexes still need explicit scope enforcement. Protect counts, existence, path explanations, and edge properties. Derived access is no broader than the allowed intersection of its sources. Filter within the trusted boundary before external embeddings, ranking, or models see data. Recheck before response delivery; a cached graph path is not a reusable access grant.
 
 Only allowed sanitized derivatives enter the graph. Local protection precedes network export, indexing, telemetry, and remote buffering. Node labels, source references, fingerprints, diagnostic fields, and correlation metadata must not carry prohibited originals. Use opaque local receipt references when raw-content hashes would disclose protected content. Retain transformation provenance without claiming raw replay or preserving a signature over changed bytes.
 
@@ -1560,7 +1652,7 @@ Future connectors ingest actual `Refund`, `Order`, and `Customer` instances unde
 
 Correlation requires a trusted connector-returned source identity or verified source event joined to a recorded idempotency/correlation key. Agent assertions and approximate amount/time matching remain unverified proposals. Track requested, pending, failed, and confirmed states per attempt; a tool's success text alone does not prove an external refund. Reconcile later provider updates, including reversal or cancellation, as new evidence. Preserve the policy evaluated when execution occurred and the separate current policy.
 
-Scope now: mandatory graph/discovery contracts, stable identifiers, version/provenance records, access enforcement, safe projection events, and correlation slots. Future scope: business connector implementations, ontology-instance ingestion, business reconciliation workflows, and outcome analysis screens. Test tenant isolation, denied edges/counts, stale-policy rejection, projection lag, duplicate/out-of-order events, revoked sources, forged correlations, and sanitized-only indexing before claiming support.
+Scope now: mandatory graph/discovery contracts, stable identifiers, version/provenance records, access enforcement, safe projection events, and correlation slots. Future scope: business connector implementations, ontology-instance ingestion, business reconciliation workflows, and outcome analysis screens. Test org isolation, denied edges/counts, stale-policy rejection, projection lag, duplicate/out-of-order events, revoked sources, forged correlations, and sanitized-only indexing before claiming support.
 
 ### Desktop gateway and local data protection profile
 
@@ -1570,26 +1662,26 @@ Status: proposed architecture. `GovernedAction` names a checked execution. Its a
 
 `DesktopUI` signs people in, selects an enrolled workspace, and displays safe status. `DesktopGatewayService` runs independently under a protected service identity. It holds a hardware-backed device key where supported, authenticates local IPC, validates callers and workspace/run bindings, verifies signed policy and update packages, and operates bounded scanners. Agent-controlled processes cannot change its code, rules, identity, or network enforcement.
 
-Enrollment issues a revocable device identity and connects the device to a tenant, permitted workspaces, human principal, and agent runtime. IAM authorizes enrollment and every operation. The UI is not the root of authority. Signed updates require approved publisher identity, version policy, staged rollout, and an atomic rollback or closed state. Disable remote error-upload defaults in service dependencies.
+Enrollment issues a revocable device identity and connects the device to an org, permitted workspaces, human principal, and agent runtime. IAM authorizes enrollment and every operation. The UI is not the root of authority. Signed updates require approved publisher identity, version policy, staged rollout, and an atomic rollback or closed state. Disable remote error-upload defaults in service dependencies.
 
-The adapter integrates turn boundaries and tool dispatch. The Supervisor enforces process, file, credential, and network controls. Provider traffic must pass through the local gateway and the tenant's model proxy. Block alternate HTTPS routes, child processes, direct uploads, other proxies, uncontrolled native tools, and unrelated credential sources. Certify this claim per platform and harness version. A host administrator outside the managed boundary can defeat it; do not imply otherwise.
+The adapter integrates turn boundaries and tool dispatch. The Supervisor enforces process, file, credential, and network controls. Provider traffic must pass through the local gateway and the org's model proxy. Block alternate HTTPS routes, child processes, direct uploads, other proxies, uncontrolled native tools, and unrelated credential sources. Certify this claim per platform and harness version. A host administrator outside the managed boundary can defeat it; do not imply otherwise.
 
 **Data path and order**
 
-1. Resolve tenant/workspace/run/principal identity from trusted enrollment and IAM state.
+1. Resolve org/workspace/run/principal identity from trusted enrollment and IAM state.
 2. Read the signed `DataProtectionPolicy` revision. Missing, stale, unverified, or incomplete policy denies egress.
 3. Accept raw local content into bounded memory. The first outbound boundary is the local scanner, including any Oxagen API submission or telemetry path.
 4. Parse and classify each field and attachment locally. Apply block, redact, or safe replacement. Check the transformed result again.
 5. Compose the complete provider request locally, including authorized history, system context, memory, tool schemas, steering, files, and remote context. Scan the assembled request and the final serialized fields. Gateway-added prompt content must return to this check. A transport credential is provided separately by the trusted proxy and never becomes model-visible content or evidence.
 6. Produce an immutable `SanitizedRequest` and cleaned artifact references. Count tokens, resolve price bounds, reserve budget, and create the GovernedAction authorization from those exact bytes and references.
-7. Record the sanitized evidence and consume the authorization atomically at the dispatch gate. Send only this approved request to the tenant proxy, then provider. No component may change model-visible content after this point without a new check and authorization.
+7. Record the sanitized evidence and consume the authorization atomically at the dispatch gate. Send only this approved request to the org proxy, then provider. No component may change model-visible content after this point without a new check and authorization.
 8. Apply local outbound checks again before publishing tool output, inbound response excerpts, reports, diffs, or plugin messages. Later content is a new disclosure, not covered by an earlier prompt scan.
 
 If browser-originated work can contain raw sensitive data, the browser must use an authenticated local bridge or an approved local preflight before submitting content to Oxagen. A raw POST to the web app cannot later be described as locally protected before egress. Use a companion-paired bridge with caller authentication, allowed browser origins, CSRF defenses, and a narrow API; being on loopback is not authentication. Disable raw form submission, autosave, upload, session replay, and analytics before this route exists. Do not rely on the user remembering to preclean an ordinary cloud form.
 
 **Policy and transformations**
 
-`DataProtectionPolicy` contains policy ID/revision, tenant/workspace, principal/run applicability, effective and expiry times, classification rules, local detector versions, action per finding, allowed formats, parsing limits, replacement rules, retention controls, and signature. A workspace can narrow inherited rules, not remove a required organization restriction. An urgent revision closes affected admissions and invalidates stale pending authorizations.
+`DataProtectionPolicy` contains policy ID/revision, org/workspace, principal/run applicability, effective and expiry times, classification rules, local detector versions, action per finding, allowed formats, parsing limits, replacement rules, retention controls, and signature. A workspace can narrow inherited rules, not remove a required organization restriction. An urgent revision closes affected admissions and invalidates stale pending authorizations.
 
 `SanitizationResult` contains outcome, scanner/policy revisions, safe finding codes and counts, transformed field references, coverage status, and timestamps. Omit matched text, raw offsets if revealing, raw names, raw content digests, scanner excerpts, and unsanitized exceptions. Hash only cleaned bytes for evidence. Keep any replacement map local and transient by default; use workspace/run-scoped non-meaningful identifiers and never upload a raw lookup map.
 
@@ -1601,7 +1693,7 @@ Scan every included field, including URLs, filename and path metadata, schema de
 
 Use sandboxed local parsers and local OCR. Bound bytes, pages, nesting, decompression ratio, output size, memory, CPU, and elapsed time. Archives require complete member coverage within these bounds. Unknown formats, encrypted files, parse failure, unsupported image/audio/video content, active content, incomplete coverage, or detector failure deny by default. Password-assisted unpacking can occur only locally through a protected approved flow, followed by complete scanning. No cloud OCR, remote scanning API, or model-assisted remote detector receives raw input. Detection remains fallible; supported coverage is not proof that a file contains no sensitive information.
 
-A `CleanArtifact` binds cleaned bytes, tenant/workspace, policy/scanner versions, scope, and immutable artifact identity. Create provider file uploads and prompt caches exclusively from these artifacts. Provider IDs are scoped handles, not proof of safety. Reject unproven IDs, raw external upload handles, and stale handles invalidated by new policy. A changed policy may require recheck and regeneration before reuse.
+A `CleanArtifact` binds cleaned bytes, org/workspace, policy/scanner versions, scope, and immutable artifact identity. Create provider file uploads and prompt caches exclusively from these artifacts. Provider IDs are scoped handles, not proof of safety. Reject unproven IDs, raw external upload handles, and stale handles invalidated by new policy. A changed policy may require recheck and regeneration before reuse.
 
 Full-message buffering is the default for outgoing content. A bounded streaming mode requires a supported parser and a rule set proving that already released bytes cannot become a later match. Chunk-by-chunk scanning without cross-boundary protection is forbidden. Cancellation clears raw buffers and leaves only safe status. Metadata sent before body approval must itself pass checks.
 
@@ -1611,15 +1703,15 @@ Default: no new raw gateway copies or unmanaged harness transcript persistence. 
 
 Optional quarantine is explicit, local-only, encrypted under separate keys, scoped by IAM, time-limited, and excluded from sync and automatic diagnostics. Off by default. Record safe access events. Raw diagnostic exports are a distinct exceptional operation, never an implied consequence of enabling telemetry.
 
-Separate workspace queues, keys, caches, replacement state, parser jobs, and artifacts. Recheck the authenticated scope at dispatch. A blocked request can emit a safe decision event, never the original payload. Persist cleaned evidence in the tenant's configured data plane; no public-cloud fallback for private-store failure. This covers VCS diffs, paths, work reports, and portable snapshots. Mark sanitization gaps and reduced replay fidelity; required reporting does not authorize exporting raw source. Gateway-held authentication secrets are used only in authorized transport/connector paths and are excluded from content scans' diagnostic output and all evidence.
+Separate workspace queues, keys, caches, replacement state, parser jobs, and artifacts. Recheck the authenticated scope at dispatch. A blocked request can emit a safe decision event, never the original payload. Persist cleaned evidence in the org's configured data plane; no public-cloud fallback for private-store failure. This covers VCS diffs, paths, work reports, and portable snapshots. Mark sanitization gaps and reduced replay fidelity; required reporting does not authorize exporting raw source. Gateway-held authentication secrets are used only in authorized transport/connector paths and are excluded from content scans' diagnostic output and all evidence.
 
 
 
-The tenant proxy must not persist an unscanned model response in a remote log or trace. Relay it through bounded transient buffers to the enrolled local gateway for the required scan. Commit only the cleaned response and safe usage metadata to remote evidence before dependent execution. If that path is unavailable, hold or stop delivery under the capture rules. This requirement includes provider errors and streamed replies; raw debug capture must remain disabled. The customer controls provider-side retention separately; local filtering cannot erase information already held by an external provider.
+The org proxy must not persist an unscanned model response in a remote log or trace. Relay it through bounded transient buffers to the enrolled local gateway for the required scan. Commit only the cleaned response and safe usage metadata to remote evidence before dependent execution. If that path is unavailable, hold or stop delivery under the capture rules. This requirement includes provider errors and streamed replies; raw debug capture must remain disabled. The customer controls provider-side retention separately; local filtering cannot erase information already held by an external provider.
 
 
 
-**Proof of local inspection.** A signed `ScanReceipt` binds the enrolled gateway identity, trusted workspace/run scope, policy and detector revisions, complete-coverage status, final cleaned request digest, immutable cleaned artifact references, destination, and expiry. The tenant proxy requires a current receipt from an authorized gateway and checks it against the received request. A caller-supplied `scanned: true` flag is never proof. Reusing a receipt for changed bytes or a new unauthorized scope fails. Signature validity proves the named scanner reported the result, not that detection is infallible. Device management and platform checks establish the trusted scanner boundary. No raw content digest enters this receipt.
+**Proof of local inspection.** A signed `ScanReceipt` binds the enrolled gateway identity, trusted workspace/run scope, policy and detector revisions, complete-coverage status, final cleaned request digest, immutable cleaned artifact references, destination, and expiry. The org proxy requires a current receipt from an authorized gateway and checks it against the received request. A caller-supplied `scanned: true` flag is never proof. Reusing a receipt for changed bytes or a new unauthorized scope fails. Signature validity proves the named scanner reported the result, not that detection is infallible. Device management and platform checks establish the trusted scanner boundary. No raw content digest enters this receipt.
 
 **Desktop lifecycle.** Certify macOS, Windows, and Linux builds separately. A required-platform capability failure prevents strict launch. Remote/headless runners install the equivalent protected gateway on the data's host. Enrollment, workspace selection, repo binding, target registration, data-rule preview, access requests, health, and signed updates are required UI/API flows. The local preview never uploads its original. Leaving a workspace revokes local grants and clears scoped transient state. Service failure leaves egress closed; recovery reconciles prior sends. Managed uninstall stops or isolates governed work before removing controls. An offline status cannot prove a confirmed pause.
 
@@ -1629,7 +1721,7 @@ Test secrets across chunks, fields, encodings, filenames, tool schemas, history,
 
 ### Shared IAM, model gateway, and row security
 
-**One permission contract.** `Principal` is a first-class tenant-bound record with human, agent, and service types. Each has a stable ID, lifecycle state, owner where applicable, roles, record grants, and revocation history. Agent identity, persona ID/name/revision, agent release, active mode, runtime identity, accountable operator, and delegation chain are separate fields. A persona label or caller-supplied tenant field is not identity proof.
+**One permission contract.** `Principal` is a first-class org-bound record with human, agent, and service types. Each has a stable ID, lifecycle state, owner where applicable, roles, record grants, and revocation history. Agent identity, persona ID/name/revision, agent release, active mode, runtime identity, accountable operator, and delegation chain are separate fields. A persona label or caller-supplied org field is not identity proof.
 
 One authorization service owns the canonical grants and decision contract. The web app, public API, model/tool/context gates, local brokers, plugin seam, background workers, and record service all use it. RBAC provides scoped roles. Record grants and relationships narrow the resources a principal can reach. A delegated action cannot exceed the delegator's grant or the agent definition. Agents do not inherit all operator rights. Service agents need an explicit owner and service grant; they need not depend on a human browser session. Revocation invalidates grants and dependent delegations under a recorded rule.
 
@@ -1639,23 +1731,23 @@ Every decision records principal, delegation, action, resource, purpose, scope, 
 
 **Real gateway path.** In strict mode the complete, locally inspected provider request passes through the Oxagen model proxy for every governed model call. This includes retries, child agents, summaries, title generation, embeddings, and other background model work. Provider-internal execution is not claimed as visible; admit only features whose access and maximum cost can be bounded. Disable provider-hosted tools that cannot be checked before each action.
 
-The required desktop service assembles and scans the request before remote transmission. The tenant gateway verifies that exact cleaned request, current authority, destination, and budget; persists permitted evidence; consumes the approval once; and dispatches using broker-held credentials. Tenant deployment determines whether that proxy is in SaaS or the customer's private network. Routing must not add content after local inspection. If new content, fields, file bytes, or tool results are introduced, assemble and inspect again locally before release. Safe sign-in headers are added only by the trusted connector and excluded from content records.
+The required desktop service assembles and scans the request before remote transmission. The org gateway verifies that exact cleaned request, current authority, destination, and budget; persists permitted evidence; consumes the approval once; and dispatches using broker-held credentials. Org deployment determines whether that proxy is in SaaS or the customer's private network. Routing must not add content after local inspection. If new content, fields, file bytes, or tool results are introduced, assemble and inspect again locally before release. Safe sign-in headers are added only by the trusted connector and excluded from content records.
 
 Adapters and hooks translate harness events, steering, tool menus, context, and pause boundaries. A before-tool hook enforces a gate only if it covers the path and the governed workload cannot bypass it. After-action hooks only observe. A protected service, sandbox, and network controls block alternate model routes, native tools, other MCP servers, child processes, and credential theft. The app window is not this security boundary. Certify harness/version/feature combinations; an opaque or bypassable route cannot claim strict support. Enforcement on an unmanaged host does not constrain a hostile host administrator.
 
-**RLS and tenant isolation.** Enable PostgreSQL RLS and `FORCE ROW LEVEL SECURITY` on tenant-owned tables. Use a non-owner runtime role without superuser, `BYPASSRLS`, or permission to assume such roles. Keep migration and emergency identities separate and audited. `FORCE` does not stop superusers or `BYPASSRLS` roles. Withhold whole-table privileges such as `TRUNCATE` from normal services. [PostgreSQL row security](https://www.postgresql.org/docs/current/ddl-rowsecurity.html)
+**RLS and org isolation.** Enable PostgreSQL RLS and `FORCE ROW LEVEL SECURITY` on org-owned tables. Use a non-owner runtime role without superuser, `BYPASSRLS`, or permission to assume such roles. Keep migration and emergency identities separate and audited. `FORCE` does not stop superusers or `BYPASSRLS` roles. Withhold whole-table privileges such as `TRUNCATE` from normal services. [PostgreSQL row security](https://www.postgresql.org/docs/current/ddl-rowsecurity.html)
 
-Resolve tenant, workspace, principal, and request scope from authenticated server state. Missing scope denies. Set that scope transaction-locally on every pooled connection, including background work. Test commit, rollback, savepoint, error, reconnect, and pool reuse. Do not give agents arbitrary SQL through the application database role: callers able to change session variables can defeat a naïve tenant-variable check. [PostgreSQL transaction-local settings](https://www.postgresql.org/docs/current/sql-set.html)
+Resolve org, workspace, principal, and request scope from authenticated server state. Missing scope denies. Set that scope transaction-locally on every pooled connection, including background work. Test commit, rollback, savepoint, error, reconnect, and pool reuse. Do not give agents arbitrary SQL through the application database role: callers able to change session variables can defeat a naïve org-variable check. [PostgreSQL transaction-local settings](https://www.postgresql.org/docs/current/sql-set.html)
 
-Use `USING` for existing rows and `WITH CHECK` for inserted or changed rows. The tenant constraint must remain mandatory when policies compose. PostgreSQL combines permissive policies with OR and restrictive policies with AND; test the full policy set. Prevent tenant changes and unauthorized workspace moves. Use tenant-aware joins and foreign keys. Put shared catalogs in deliberately separate tables. [PostgreSQL policy rules](https://www.postgresql.org/docs/current/sql-createpolicy.html)
+Use `USING` for existing rows and `WITH CHECK` for inserted or changed rows. The org constraint must remain mandatory when policies compose. PostgreSQL combines permissive policies with OR and restrictive policies with AND; test the full policy set. Prevent org changes and unauthorized workspace moves. Use org-aware joins and foreign keys. Put shared catalogs in deliberately separate tables. [PostgreSQL policy rules](https://www.postgresql.org/docs/current/sql-createpolicy.html)
 
 Use caller-rights views where intended and review privileged functions, triggers, and export paths. A view owned by a stronger role must not silently bypass expected scope. [PostgreSQL view security](https://www.postgresql.org/docs/current/sql-createview.html)
 
-RLS provides a tenant/workspace floor. Fine-grained record and purpose checks remain in the shared authorization service and its trusted query filters; a tenant predicate is not a full OPA policy implementation. The browser uses checked data APIs. It has no privileged database session. Background jobs use scoped service principals; split cross-tenant work into separate authorized tasks. CI ingestion derives scope from a verified connector installation and repository binding, not a workspace value in an event payload.
+RLS provides an org/workspace floor. Fine-grained record and purpose checks remain in the shared authorization service and its trusted query filters; an org predicate is not a full OPA policy implementation. The browser uses checked data APIs. It has no privileged database session. Background jobs use scoped service principals; split cross-org work into separate authorized tasks. CI ingestion derives scope from a verified connector installation and repository binding, not a workspace value in an event payload.
 
-Apply equivalent checks to object storage, signed links, search/vector indexes, caches, queues, reports, backups, and exports. These are not covered by database RLS. The tenant's configured data plane enforces the same contract in SaaS, hybrid, and private placements. The web app reads the same authorized records used by report writers.
+Apply equivalent checks to object storage, signed links, search/vector indexes, caches, queues, reports, backups, and exports. These are not covered by database RLS. The org's configured data plane enforces the same contract in SaaS, hybrid, and private placements. The web app reads the same authorized records used by report writers.
 
-Required tests include human and agent cross-tenant reads/writes, a permitted tool touching a forbidden record, scope leakage across pooled connections, privileged views, stale grants, forged webhooks, unchecked native tools, direct model egress, and a request changed after local scanning.
+Required tests include human and agent cross-org reads/writes, a permitted tool touching a forbidden record, scope leakage across pooled connections, privileged views, stale grants, forged webhooks, unchecked native tools, direct model egress, and a request changed after local scanning.
 
 ### Agent tool policy and one shared MCP endpoint
 
@@ -1699,7 +1791,7 @@ modes:
     deny: []
 ```
 
-The catalog maps `customer_lookup@3` to the reviewed MCP name `lookup_customer`, its schema, and its route. A display name cannot establish identity. The binding also records the publisher, tenant/workspace scope, implementation digest or approved deployment revision, effects, resource constraints, credentials, and retry rules. Registering a replacement implementation requires a reviewed revision. Explicit assignment of a third-party or native binding does not bypass its required enforcement gate.
+The catalog maps `customer_lookup@3` to the reviewed MCP name `lookup_customer`, its schema, and its route. A display name cannot establish identity. The binding also records the publisher, org/workspace scope, implementation digest or approved deployment revision, effects, resource constraints, credentials, and retry rules. Registering a replacement implementation requires a reviewed revision. Explicit assignment of a third-party or native binding does not bypass its required enforcement gate.
 
 `RunContextBinding` binds the authenticated organization, workspace, operator, agent release, mode, runtime key, run, and authority epoch. A short-lived, audience-bound grant refers to it. The gateway verifies that binding on every request. Neither a tool argument nor a client-selected header is proof of scope. Keep the grant outside agent-readable memory where the enforced adapter supports that boundary. Never include bearer tokens in evidence.
 
@@ -1731,7 +1823,7 @@ Required tests include two agents and two workspaces sharing one endpoint; priva
 
 ### Governed action and approval fields
 
-A `GovernedAction` records one logical operation and its attempts. Each `ActionAuthorization` is a single-use approval. It binds tenant, logical agent, runtime key, run, branch, action, attempt, audience or receiving service, exact request digest, tool or connector version, resource constraints, policy revision, context revision, authority epoch, expiry, and consumption limit. Live single-use approvals are excluded from portable save bundles.
+A `GovernedAction` records one logical operation and its attempts. Each `ActionAuthorization` is a single-use approval. It binds org, logical agent, runtime key, run, branch, action, attempt, audience or receiving service, exact request digest, tool or connector version, resource constraints, policy revision, context revision, authority epoch, expiry, and consumption limit. Live single-use approvals are excluded from portable save bundles.
 
 ### Commands, events, and ordering
 

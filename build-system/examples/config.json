@@ -393,7 +393,9 @@
       }
     },
     "deployment": {
-      "status": "hosting_target_required"
+      "enabled": false,
+      "provider": "aws-ecs-fargate",
+      "status": "one_time_setup_required"
     }
   }
 }

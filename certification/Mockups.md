@@ -266,7 +266,7 @@ Removed raw values, raw hashes and replacement maps are absent. Receipt verifica
 
 ### Work report
 
-**Work recorded in the tenant store.** Private data plane · durable receipt store_391 · updated 10:42:08
+**Work recorded in the org store.** Private data plane · durable receipt store_391 · updated 10:42:08
 
 Entry: [Work report](Oxagen-web-mockups.html#report). Primary action: Inspect related records; opens graph.
 
@@ -315,7 +315,7 @@ Entry: [People & identities](Oxagen-web-mockups.html#iam). Primary action: View 
 | Local gateway | Service | Device-bound dispatch + scan |
 | Partner plugin | Plugin | Not installed · no grant |
 
-RBAC groups rights. Record grants narrow them. RLS protects tenant rows; object storage, search and graph enforce equivalent rules. Agents do not inherit every operator right.
+RBAC groups rights. Record grants narrow them. RLS protects org rows; object storage, search and graph enforce equivalent rules. Agents do not inherit every operator right.
 
 ### Data plane
 
@@ -361,7 +361,7 @@ Entry: [Enrollment](Oxagen-desktop-mockups.html#enroll). Primary action: Review 
 
 | Field | Example |
 |---|---|
-| Signed-in organization | Acme · allowed tenant |
+| Signed-in organization | Acme · allowed org |
 | Human identity | Maya Chen · Operator |
 | Device | Maya’s Mac · macOS |
 | Enrollment scope | Support workspace only |
@@ -482,7 +482,7 @@ Closing this window does not stop the guard. Use the run controls to request a b
 
 ### Pause requested
 
-**Pausing. One tool is still running..** New work and old-response admission are closed.
+**Pausing. One tool is still running.** New work and old-response admission are closed.
 
 Entry: [Pause requested](Oxagen-desktop-mockups.html#pausing). Primary action: View confirmed-boundary example; opens paused.
 
@@ -578,3 +578,21 @@ Offline is not paused. A restart reconciles past sends before retrying them. Sig
 Verify both complete happy paths and denied/unknown recovery: workspace → enrollment → unbound target → repo binding → sync → local scan → admission → actual start receipt → required work report. Review fleet steering, confirmed pause and late response as separate flows. Test keyboard navigation, screen-reader labels, focus, both themes and narrow screens. Global state fixtures show presentation, not real authorization or asynchronous behavior. A specialist should validate the platform-specific enrollment, scanner, native windows and assistive-technology experience before approving implementation.
 
 Only a complete, explicitly reviewed manifest may be certified. The manifest must include these HTML files, this full screen description, OpenAPI, data schemas, the architecture, brand guidance and acceptance criteria. A later material change invalidates that approval.
+
+## Retired
+
+The static HTML mockups in this folder are retired as of 2026-09-20. The mockups are now the working Next.js App Router app in `apps/web`, with a Storybook story per named state reading the shared fixtures. This inventory stays as the screen and flow description the app implements; the gap list below is the backlog for that app.
+
+## Gaps the 2026-09-20 review found in these mockups
+
+The current HTML fixtures do not yet meet the specs on these points. The next design batch must close them before certification.
+
+- **One generic empty, denied, and error fixture serves every screen.** Each screen needs its own empty state with one next action (Home: “Enroll a device”; Runs: “Send work”), and the four shared failure fixtures from the web spec: guard not running, browser unpaired, device revoked, harness not certified. The denied fixture must name the missing role and who can grant it.
+- **No unpaired Send-work state.** The prompt field is replaced by the pairing card described in the web spec; the rest of the form stays usable.
+- **No Stop control.** Run detail gets a Stop button distinct from Request pause, with a confirmation that names the affected scope, and the work-request list gets Cancel.
+- **Accessibility contract.** Each page has a skip link. Run state changes and steering receipts announce through one polite live region; only Urgent uses an assertive region. Pause requested → pausing → paused must be audible in VoiceOver without reading every stream chunk. Focus is visible on every control. The mockups currently have no live regions and no skip link.
+- **Raw identifiers in copy.** Replace “Closed admission epoch 7” with “Rules locked before pause (version 7)”, “workers_42” with “All 3 workers stopped”, “checkpoint_42” with “Saved point 42”, and the “Adoption” label with a button “Use this reply in the resumed run” and the state “Not used”. Identifiers stay available in mono as secondary text.
+- **Borrowed states.** A steering receipt shows “Delivered when device reconnects”, not the dispatch state “Waiting for device”. “Applied” reads as success; use “Delivered to model request 184”.
+- **One name for the first run.** “First docs check” everywhere; the run title is the work request title.
+- **State-dependent primary action on the desktop overview.** Unenrolled: “Connect this device”. No repo: “Link a repository”. Ready: “Send work”.
+- **Status colors.** Use the corrected dark Denied, Failed, and Urgent values from the brand spec; the previous ones fail 4.5:1 on raised rows.

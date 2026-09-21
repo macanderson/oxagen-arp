@@ -2,7 +2,7 @@
 
 The package now includes clickable product mockups, a proposed HTTP API contract, typed schema designs, and a runnable build controller. They are review candidates. **The user has not certified them, and the product build has not started.** No live agent build, PR, merge, or deployment ran in this task.
 
-The package now includes concrete local Codex/Claude execution, a local model budget broker, isolated test commands, and GitHub PR/CI/merge operations. They use a supported Linux Docker profile. No separate execution or Git service must be built. Live qualification is still required. **Deployment remains incomplete until the staging and production hosting target is chosen.**
+The package now includes concrete local Codex/Claude execution, a local model budget broker, isolated test commands, and GitHub PR/CI/merge operations. They use a supported Linux Docker profile. No separate execution or Git service must be built. Live qualification is still required. **The chosen release target is AWS ECS with Fargate in separate staging and production accounts.** The package now includes its artifact builder, deployment adapter and infrastructure templates. Setup, certification and live qualification are still required.
 
 The [review packet](certification/REVIEW-PACKET.md) links the concrete files, validation evidence, known gaps and unsigned file manifest.
 
@@ -45,7 +45,11 @@ Follow [the one-time setup](build-system/LOCAL-SETUP.md): pin the CLI and qualit
 
 The unpaid `preflight` command checks the actual container restrictions, pinned CLI versions and two-request synthetic model/tool loops. It reads GitHub identity and fetches the existing branch. It creates no PR or paid model request. A successful fixture is not a substitute for approved live-provider testing.
 
-The staging and production hosting target is not configured or invented. That choice is needed to implement the concrete release adapter.
+The hosting choice is settled: ECS with Fargate, Aurora PostgreSQL Serverless v2 and S3. Fill in real account, region, network and secret-reference settings using the [release setup](build-system/RELEASE-SETUP.md). The supplied example keeps release disabled. Docker Compose is only for local development; Kubernetes is deferred.
+
+## SDK and performance work still to build
+
+The [SDK](ARP-SDK-spec.md) and [usage and performance](ARP-Performance-spec.md) requirements are added product requirements. Their capabilities enter `packages/kernel/src/contracts` like every other capability, so the API, MCP, CLI, and app surfaces derive from one declaration and the parity gate covers them. Before their implementation, extend and review the shared contracts and data records, then build the language bindings and provider mappings against one conformance suite. Include enrollment, controlled custom loops, input/output/cache counts, stream corrections, privacy, and savings examples where a file path helps, makes no difference, or costs more. These requirements have not been implemented or covered by the build-system tests below.
 
 ## Certification is an exact gate
 
@@ -100,32 +104,50 @@ These two templates apply to every batch. The table below supplies the exact goa
 
 - **Every batch:** trace each delivered behavior to the approved source pack; report and resolve missing or conflicting requirements before claiming completion. Run and retain the batch-specific positive, denial, concurrency, timeout, and recovery checks. No required check may be missing or silently skipped.
 - **Design batches:** render and inspect every screen and state on narrow and wide layouts, or validate every API/schema example and reference, as applicable. Publish a coverage map naming all required workflows, operations, data fields, security decisions, and open gaps. Gaps block certification.
-- **Product batches:** honor the certified OpenAPI and schema contract. Prove current identity, tenant/workspace isolation, record access, and clean-data constraints for every new request path.
+- **Product batches:** honor the certified OpenAPI and schema contract. Prove current identity, org/workspace isolation, record access, and clean-data constraints for every new request path.
 - **Release batch:** pin one exact artifact digest and source head through staging, migration rehearsal, backup restore, health, authorization, production, and rollback proof.
 
-Each current example allows at most $20 across that batch's agent work, with at most $10 reserved for an individual implementation or review invocation. A stage has a two-hour ceiling, also bounded by the run deadline. Up to three implementation attempts are allowed only while money and time remain. These are editable planning ceilings, not permission to spend. The shipped run budget is zero.
+The plan carries no practical spending cap. Each batch's `maxCostCents` is set to the arithmetic ceiling the broker's nano-cent ledger can represent as a safe integer, about $9,000,000 per batch and $4,500,000 per invocation, so no batch is denied for money. Every stage has the four-hour maximum the controller allows, and five attempts. The owner chose this on 2026-09-20; the controller still records every settled cost and keeps every unknown liability, so spend is visible even though it is not bounded. Set `runBudgetCents` in the run configuration to the same ceiling before a live run.
 
 ## The actual 22 batches
 
-The current plan is deliberately sequential. Each row depends on the preceding named batch, so a partial or unreviewed result cannot become the next batch's base. This avoids shared-file races while the product contracts are being established.
+The plan is a dependency graph, not a chain. Each batch names only the batches whose output it needs, which yields thirteen waves for twenty-two batches:
+
+| Wave | Batches that can run together |
+|---|---|
+| 1 | desktop-mockups, web-mockups |
+| 2 | api-contracts |
+| 3 | design-certification-pack |
+| 4 | storage-iam |
+| 5 | control-records, private-deployment |
+| 6 | desktop-enrollment, tools-business-policies, context-graph, required-reporting |
+| 7 | local-data-gateway |
+| 8 | model-gateway |
+| 9 | steering-pause |
+| 10 | fork-portability, plugin-capability-stub, agent-adapters-sdks |
+| 11 | web-product, desktop-product, cli-administration |
+| 12 | system-qualification |
+| 13 | staging-release |
+
+A partial or unreviewed result still cannot become another batch's base, because a dependency must be `done` before a dependent starts. The controller today walks the list in order and runs one operation at a time, so the graph is not yet executed concurrently. Making it so is the next controller change: the journal must hold several active operations, implement and review and local quality stages of one wave run concurrently in their own worktrees, and the pull-request, CI, and merge stages serialize through one lane that rebases each later candidate onto the moved base and takes a fresh opposite-harness review before it merges. That lane exists because the plan's own rule forbids merging a candidate whose base moved. Product batches may not edit `.github/`, so an implementer cannot rewrite the CI check that gates its own merge; workflow changes need a separate reviewed control run.
 
 ### 1. desktop-mockups
 
 Phase: **design**. Depends on `approved source pack and configured phase-zero execution`. Implementer: **Codex**. Fresh reviewer: **Claude Code**.
 
-Produce complete clickable desktop-app mockups covering enrollment, workspace/repo binding, gateway health, local scan block/redact/replace, offline limits, steering, pause proof, credential requests, policy explanations, and errors. Include light/dark states, accessibility notes, and review evidence. Only phase0 design artifacts.
+Produce the desktop-app mockups as Storybook stories in `apps/web` (the same Next.js App Router, base-ui, Tailwind 4 and shadcn-style kit the web app uses), covering enrollment, workspace/repo binding, gateway health, local scan block/redact/replace, offline limits, steering, pause proof, credential requests, policy explanations, and errors. Every story reads `@oxagen-arp/fixtures`; no story carries its own data. Include light/dark states, accessibility notes, and review evidence. The static HTML mockups under `certification/` are retired; `phase0/desktop.html` is the built Storybook.
 
 ### 2. web-mockups
 
 Phase: **design**. Depends on `desktop-mockups`. Implementer: **Claude Code**. Fresh reviewer: **Codex**.
 
-Produce complete clickable web-app mockups for organization/workspace setup, identities and RBAC, agent Permissions & limits, policies and business-rule forms, work orders, dispatch, steering, cost reports, records, graph search, and private deployment setup. Include all empty/error/loading and narrow-screen states. Only phase0 design artifacts.
+Extend the working Next.js App Router mockup app in `apps/web` to every web screen: org/workspace setup, identities and RBAC, agent Permissions & limits, policies and business-rule forms, work orders, dispatch, steering, cost reports, records, graph search, and private deployment setup. Every page reads only through the `DataSource` port in `apps/web/src/data/ports.ts`, backed by `@oxagen-arp/fixtures` in this phase, so wiring the product is switching `OXAGEN_DATA_SOURCE` to `live`. Every screen has a story per named state, including empty, error, loading, denied, unpaired, and narrow-screen. `phase0/web.html` is the built app; the parity gate must pass in strict mode.
 
 ### 3. api-contracts
 
 Phase: **design**. Depends on `web-mockups`. Implementer: **Codex**. Fresh reviewer: **Claude Code**.
 
-Write the full OpenAPI 3.1 API contract and JSON Schemas for every proposed web, desktop, CLI, MCP control, ARP event, run action, policy, context, report, IAM, and plugin-stub operation. Define request/response/error/security/idempotency/cursor/version fields and cross-surface traceability. Validate all references and examples; no placeholder paths.
+Write every capability as a kernel contract in `packages/kernel/src/contracts` (one `registerCapability` declaration with Zod input and output and its `surfaces`), following the macanderson/oxagen kernel-and-invoke pattern, and generate the OpenAPI 3.1 document, the MCP tool list, and the CLI command table from the registry. No surface may carry a per-capability wrapper file; `tools/check-surface-parity.mjs --strict` must pass. Cover every web, desktop, CLI, MCP control, ARP event, run action, policy, context, report, IAM, and plugin-stub operation, with request/response/error/security/idempotency/cursor/version fields. Validate all references and examples; no placeholder paths.
 
 ### 4. design-certification-pack
 
@@ -137,13 +159,13 @@ Consolidate desktop and web mockups, the full OpenAPI contract, typed database s
 
 Phase: **product**. Depends on `design-certification-pack`. Implementer: **Codex**. Fresh reviewer: **Claude Code**.
 
-Build tenant/workspace storage, canonical human and agent identities, RBAC and per-record grants, SQL RLS, protected object registry, signed storage access, and audit migrations. Prove cross-tenant and forbidden-record denial.
+Build organization/workspace storage (`org`, `auth`, `workspace`, and `oxagen` schemas), canonical human and agent identities, RBAC and per-record grants, SQL RLS with the two scope shapes, protected object registry, signed storage access, organization encryption keys with `encryption_key_versions` and a re-wrap migration path, and audit migrations. Prove cross-organization and forbidden-record denial, and prove that a revoked principal, a decremented epoch, and a workspace move are rejected at the database.
 
 ### 6. control-records
 
 Phase: **product**. Depends on `storage-iam`. Implementer: **Claude Code**. Fresh reviewer: **Codex**.
 
-Build durable commands, events, transactional outbox, run/turn/action state machines, authority epochs, idempotency and reconciliation. Prove crash recovery and late-event handling.
+Build durable commands, events, transactional outbox with a per-organization relay, run/turn/action state machines, authority epochs and the run-control epoch fence, the scan-receipt and composition-receipt records that later batches fill, idempotency and reconciliation. Prove crash recovery and late-event handling. Run a synthetic load gate on event and ledger volume against the stated writes-per-turn budget before certification freezes the schema; a hot-row finding discovered in batch 21 would otherwise restart sixteen batches. Batches 8, 11, and 12 then supply the scanner engine, graph traversal, and steering delivery on top of records that already exist, so each can be tested on its own.
 
 ### 7. desktop-enrollment
 
@@ -191,7 +213,7 @@ Build safe checkpoints, capability manifests, allowed cleaned continuation snaps
 
 Phase: **product**. Depends on `fork-portability`. Implementer: **Claude Code**. Fresh reviewer: **Codex**.
 
-Build required trusted reports for branches/diffs, personas, tool counts, PRs, per-job CI commit binding, freshness, and record statuses in the selected tenant data service.
+Build required trusted reports for branches/diffs, personas, tool counts, PRs, per-job CI commit binding, freshness, and record statuses in the selected org data service.
 
 ### 15. agent-adapters-sdks
 
@@ -203,7 +225,7 @@ Build and certify Codex and Claude Code adapters plus custom-agent SDK contracts
 
 Phase: **product**. Depends on `agent-adapters-sdks`. Implementer: **Claude Code**. Fresh reviewer: **Codex**.
 
-Implement the certified web screens against real gated APIs, accessible controls, agent administration, policy editing, dispatch/steer, report inspection, graph views, and complete failure states.
+Wire the certified `apps/web` mockup to the live kernel: implement the live handlers and switch `OXAGEN_DATA_SOURCE` to `live`, leaving every page, story, and port unchanged. Accessible controls, agent administration, policy editing, dispatch/steer, report inspection, graph views, and complete failure states come from the certified screens; a page that needs a new read adds a port and a story first. The parity gate stays strict.
 
 ### 17. desktop-product
 
@@ -215,7 +237,7 @@ Implement the certified desktop screens against the protected service, with clea
 
 Phase: **product**. Depends on `desktop-product`. Implementer: **Claude Code**. Fresh reviewer: **Codex**.
 
-Build the operator CLI with consistent IAM, dry-run modes, stable machine output, per-workspace targeting, credentials through approved broker, and predictable errors.
+Complete the operator CLI as a binder over the kernel registry (`apps/cli`), never as per-command files: consistent IAM, dry-run modes, stable machine output, per-workspace targeting, credentials through the approved broker, the spec's exit codes, `quickstart` and `doctor`, and predictable errors. The same batch completes the MCP binder (`apps/mcp`) and the REST binder (`apps/api`) for every capability the registry declares; the parity gate proves coverage.
 
 ### 19. plugin-capability-stub
 
@@ -227,13 +249,13 @@ Build only the checked plugin capability interface seam, reserved schemas, mock 
 
 Phase: **product**. Depends on `plugin-capability-stub`. Implementer: **Claude Code**. Fresh reviewer: **Codex**.
 
-Build reproducible SaaS and customer-private placement, tenant keys, rotation, data retention/export, restore, regional controls, network policy, and auditable operational configuration.
+Build reproducible SaaS and customer-private placement, org keys, rotation, data retention/export, restore, regional controls, network policy, and auditable operational configuration.
 
 ### 21. system-qualification
 
 Phase: **product**. Depends on `private-deployment`. Implementer: **Codex**. Fresh reviewer: **Claude Code**.
 
-Run all four hard requirement scenarios and multi-tenant load, recovery, bypass, budget, auth, accessibility, portability, privacy, and storage consistency checks. Close all findings with fresh independent reviews.
+Run all four hard requirement scenarios and multi-org load, recovery, bypass, budget, auth, accessibility, portability, privacy, and storage consistency checks. Close all findings with fresh independent reviews.
 
 ### 22. staging-release
 
@@ -261,9 +283,19 @@ Live merges require measured classic branch protection: up-to-date checks pinned
 
 GitHub's merge request itself does not expose an expected-base compare-and-swap. The adapter still verifies parents and tree after the write. Changed or unproved policy and merge results stop all later work; a possibly completed merge is never reported as no effect.
 
-**The release implementation still needs one user decision: the staging and production hosting target.** The local adapter returns `HOSTING_TARGET_REQUIRED` before deployment. Choosing a platform will allow concrete build-artifact upload, rollout, health, migration/backup and rollback code to be added. No account or target is invented and no deployment is authorized by this document.
+The concrete target is **AWS ECS with Fargate**, with three services: app/API, gateway and workers. Staging and production use separate accounts, roles, keys, databases and object stores. The [AWS templates](build-system/infrastructure/aws/README.md) separate initial registry setup from environment setup, so no fake baseline app is needed. Initial product installation still needs certified code and schema, reviewed settings and a qualified baseline.
 
-The controller preserves the required release contract: bind one immutable artifact and actual checked source commit through staging, health, production approval, deployment and rollback. Failed health stops release. Unknown deployment effects require reconciliation. The existing mTLS client remains optional for organizations with compatible services; it is not used to claim the missing local release implementation is complete.
+The [artifact builder](build-system/adapters/local-artifacts.md) takes the actual CI-checked merged commit, builds three images once, and copies their exact digests to each account. The [release adapter](build-system/adapters/local-release.md) uses real AWS CLI operations. It creates and restores snapshots, checks a source-bound set of added schema changes, runs old/new image compatibility checks, updates ECS services, and checks tasks, load balancer targets and HTTPS readiness. These are implemented code paths, not calls to a service that someone still has to build.
+
+![After design certification, the exact merged commit must pass CI. A protected builder makes API, gateway and worker images once and checks their digests in separate staging and production registries. Each environment restores a database snapshot into a private test copy, applies the supported migration and tests old and new app compatibility. Staging deploys those images and must pass health checks. A human signs approval for the exact source, artifact and production target. Production deploys the same digests. Failed health keeps release stopped; the old app may return only if compatible with the current data. Unknown writes keep their records and locks until reconciled. The live database is not automatically rewound.](diagrams/aws_release.svg)
+
+*The selected AWS release path uses separate accounts, exact images, restored database tests, health checks and signed approval. Unknown results remain blocked. This drawing describes the implemented release controls; cloud qualification and product certification are still required.*
+
+Signed production approval binds that release's commit, images and target. The private approval key stays away from agents and the controller. Production writes recheck that approval. Application rollback keeps the current database and requires compatibility proof. Unsupported schema changes need a separate reviewed plan. Partial or unknown writes retain their records and locks for recovery. See [release setup](build-system/RELEASE-SETUP.md) for exact inputs and remaining cloud qualification.
+
+The cloud bill is separate from model-call limits. Fixed resource bounds and deadlines constrain work; AWS budget alerts do not impose a hard spend cap. No cloud provisioning, product build or live deployment ran here.
+
+The controller preserves the required release contract: bind one immutable artifact and actual checked source commit through staging, health, production approval, deployment and rollback. Failed health stops release. Unknown deployment effects require reconciliation. The existing mTLS client remains optional for organizations with compatible services. The supplied AWS path uses the concrete local modules.
 
 ## Checkpoints, cancellation, and unknown effects
 
@@ -282,12 +314,12 @@ The protected local adapter saves its own receipt before returning. If the wrapp
 
 A cancellation request is not a confirmed pause. It blocks new steps and signals the process group; container/remote evidence must confirm what stopped. An unproved result stays blocked. Do not clear holds or edit journals to force progress.
 
-The release state machine retains failed-health evidence across an interrupted rollback. Its local deployment and rollback commands remain disabled until the chosen target's adapter exists and is tested.
+The release state machine retains failed-health evidence across an interrupted rollback. The AWS adapter records write intent and exact resource IDs, then uses observed state for recovery. A completed rollback can be adopted after a lost reply, but the run stays stopped for a new reviewed release plan.
 
 ## What the tests check
 
-The [validation report](build-system/VALIDATION.md) records the current test count and scope. The suite includes real local Git worktrees and merge objects, HTTP over a Unix socket with a fake provider, money reservation/settlement, exact profile certificates, bounded repair, saved-result adoption, lock races, and container argv checks. GitHub command fixtures cover pagination, check producers, changed bases, actual merge trees, lost replies and reconciliation.
+The [validation report](build-system/VALIDATION.md) records the final 125 passing tests and their scope. Both AWS templates pass static validation. The suite includes real local Git worktrees and merge objects, HTTP over a Unix socket with a fake provider, money reservation/settlement, exact profile certificates, bounded repair, saved-result adoption, lock races, and container argv checks. GitHub command fixtures cover pagination, check producers, changed bases, actual merge trees, lost replies and reconciliation.
 
 The quality tests check exact-head snapshots, actual launcher result shapes, failed checks, cleanups and configured commands. The Linux preflight is implemented but was not run on this macOS host. No paid model, live GitHub write, cloud deployment or production restore was tested.
 
-Certification, live host/provider qualification, real migrations, tenant-isolation tests, budget races and staging/production drills remain release gates. The target-independent code is concrete. The release adapter remains open pending the hosting decision.
+Certification, live host/provider qualification, real migrations, org-isolation tests, budget races and staging/production drills remain release gates. The local runner and AWS release code are concrete within their documented profiles. Fixture and static checks do not prove real AWS behavior, image compatibility or customer readiness.
