@@ -47,6 +47,10 @@ The unpaid `preflight` command checks the actual container restrictions, pinned 
 
 The hosting choice is settled: ECS with Fargate, Aurora PostgreSQL Serverless v2 and S3. Fill in real account, region, network and secret-reference settings using the [release setup](build-system/RELEASE-SETUP.md). The supplied example keeps release disabled. Docker Compose is only for local development; Kubernetes is deferred.
 
+## SDK and performance work still to build
+
+The [SDK](ARP-SDK-spec.md) and [usage and performance](ARP-Performance-spec.md) requirements are added product requirements. Their capabilities enter `packages/kernel/src/contracts` like every other capability, so the API, MCP, CLI, and app surfaces derive from one declaration and the parity gate covers them. Before their implementation, extend and review the shared contracts and data records, then build the language bindings and provider mappings against one conformance suite. Include enrollment, controlled custom loops, input/output/cache counts, stream corrections, privacy, and savings examples where a file path helps, makes no difference, or costs more. These requirements have not been implemented or covered by the build-system tests below.
+
 ## Certification is an exact gate
 
 The first four batches refine and check the supplied review candidates. They stay local, with no PR or merge, and may edit only `phase0/`. They may produce prototypes, screens, contracts, and review evidence; they may not implement the product.

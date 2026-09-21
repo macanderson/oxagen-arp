@@ -4,8 +4,8 @@
 // product is switching OXAGEN_DATA_SOURCE, nothing else in a page changes.
 import type { z } from "zod";
 import type {
-  budgetStatus, deviceList, deviceRevoke, modelRouteList, runGet, runList, runPause, runResume, runSteer, runStop,
-  workCancel, workSubmit, workspaceList,
+  budgetStatus, deviceList, deviceRevoke, findingList, findingRespond, modelRouteList, runGet, runList, runPause, runResume,
+  runSteer, runStop, usageQuery, workCancel, workSubmit, workspaceList,
 } from "@oxagen-arp/kernel";
 import type { Read } from "./read.ts";
 
@@ -25,6 +25,8 @@ export interface DataSource {
   run(ctx: ViewerCtx, input: In<typeof runGet>): Promise<Read<Out<typeof runGet>>>;
   budget(ctx: ViewerCtx, input?: In<typeof budgetStatus>): Promise<Read<Out<typeof budgetStatus>>>;
   devices(ctx: ViewerCtx): Promise<Read<Out<typeof deviceList>>>;
+  usage(ctx: ViewerCtx, input?: In<typeof usageQuery>): Promise<Read<Out<typeof usageQuery>>>;
+  findings(ctx: ViewerCtx, input?: In<typeof findingList>): Promise<Read<Out<typeof findingList>>>;
   // Commands. Each takes an idempotency key the page mints once per intent.
   pauseRun(ctx: ViewerCtx, input: In<typeof runPause>): Promise<Read<Out<typeof runPause>>>;
   resumeRun(ctx: ViewerCtx, input: In<typeof runResume>): Promise<Read<Out<typeof runResume>>>;
@@ -33,6 +35,7 @@ export interface DataSource {
   submitWork(ctx: ViewerCtx, input: In<typeof workSubmit>): Promise<Read<Out<typeof workSubmit>>>;
   cancelWork(ctx: ViewerCtx, input: In<typeof workCancel>): Promise<Read<Out<typeof workCancel>>>;
   revokeDevice(ctx: ViewerCtx, input: In<typeof deviceRevoke>): Promise<Read<Out<typeof deviceRevoke>>>;
+  respondFinding(ctx: ViewerCtx, input: In<typeof findingRespond>): Promise<Read<Out<typeof findingRespond>>>;
 }
 
 /** Method name to capability name. The parity gate and both sources read this one table. */
@@ -50,4 +53,7 @@ export const portCapabilities = {
   submitWork: "work.submit",
   cancelWork: "work.cancel",
   revokeDevice: "device.revoke",
+  usage: "usage.query",
+  findings: "finding.list",
+  respondFinding: "finding.respond",
 } as const satisfies Record<keyof DataSource, string>;

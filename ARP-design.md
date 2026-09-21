@@ -911,9 +911,33 @@ Compare similar work and show missing data. Tokens, lines of code, and time onli
 
 ### Turn records into useful guidance
 
-Run analysis may find repeated failed calls, needless retries, repeat file reads, unused context, or slow steps. It may compare cost with a result checked by an outside test. Each suggestion links to its evidence and states which part is a measure and which part is a judgment.
+Oxagen must show how agents and operators spend tokens. For each call, save input and output counts, prompt-cache reads and writes, other billed units, the price basis, and gaps in the data. Use the provider's rules so input subsets are not counted twice. Show totals by operator, agent, harness, custom SDK agent, model, run, turn, and tool. Include the cost of retries, summaries, and Oxagen's own coaching.
 
-Look at the task, context, and result before judging how well time or money was used. Fewer tokens do not always mean better work. The analysis must obey the same read and model-export rules as the agent. It must not pool private customer text without rights to do so. A suggestion does not become a rule on its own.
+Link the cleaned request to its parts: human text, history, context, skills, files, tool menus, and tool results. Show how often each part was sent again. Count cache reuse from reported usage, not from a guess that two prompts look alike. Cache reuse does not prove useful work. Separate measured counts, local token estimates, and unknown fields.
+
+Run analysis may find repeated failed calls, needless retries, repeat file reads, large trace files, or slow steps. Each suggestion links to its evidence and states which part is a measure and which part is a judgment. An estimated saving must name the affected calls, price, assumptions, range, and costs added by the proposed change.
+
+For example, suggest a local trace-file path and a focused read when the agent can reach that file. A path saves nothing if the tool then returns the whole file. Include extra calls, returned text, cache effects, and output before claiming a dollar saving. The [performance specification](ARP-Performance-spec.md) gives the full rules and an illustrative calculation.
+
+Look at the task, context, and result before judging how well time or money was used. Fewer tokens do not always mean better work. Analysis obeys the same read, scan, export, and budget rules as the agent. Advice becomes a change only through a permitted action. These core usage and loop checks require no witness or DoD feature.
+
+![A governed request passes a full local scan and the model gateway before provider usage is saved as a safe linked record. Observed token, cache and cost facts and SDK events support a proposed change. The operator reviews it, may approve a later run, and measures the change. Estimated costs and savings remain separate from facts; metrics contain no prompt bodies or secrets.](diagrams/efficiency.svg)
+
+*Proposed flow: scanned requests and safe usage records support suggestions. Operators review changes, and later runs measure the result.*
+
+### Enroll a custom agent with the SDK
+
+The main JavaScript and TypeScript entry point is:
+
+```javascript
+const result = await oxagen.register({your_agent}).run("prompt");
+```
+
+This is a proposed SDK, not a package that exists today. Registration binds a supported agent adapter to the configured workspace, operator, approved identity, and rules. Each model and tool call passes the protected gateway. A wrapper around opaque code cannot prove control; strict mode blocks if the needed routes cannot be guarded.
+
+The SDK records which step requested a tool, which result the next request used, what work is still open, and why a retry happened. Oxagen can then flag broken call/result pairs, unknown writes retried, stale replies reused, or work declared complete while required steps are still running. Repeated work may be a useful clue, but it is not proof of an error.
+
+The [SDK specification](ARP-SDK-spec.md) defines enrollment, run handles, streams, pause and resume, language bindings, and checks for custom loops. Use the Fleet, Spend, Run, and Operator coaching screens of `apps/web`, which follow the oxagen-roadmap Mission Control v2 layout, for these views. Add the missing controls within that design.
 
 ## 15. Give each governed action a clear state
 

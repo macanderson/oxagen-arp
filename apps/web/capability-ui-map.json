@@ -11,5 +11,8 @@
   "work.cancel": { "page": "app/runs/page.tsx" },
   "budget.status": { "page": "app/spend/page.tsx", "also": ["app/send/page.tsx"] },
   "device.list": { "page": "app/devices/page.tsx" },
-  "device.revoke": { "page": "app/devices/page.tsx" }
+  "device.revoke": { "page": "app/devices/page.tsx" },
+  "usage.query": { "page": "app/coaching/page.tsx", "also": ["app/spend/page.tsx"] },
+  "finding.list": { "page": "app/coaching/page.tsx" },
+  "finding.respond": { "page": "app/coaching/page.tsx" }
 }

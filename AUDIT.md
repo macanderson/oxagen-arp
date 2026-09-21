@@ -35,7 +35,7 @@ This file records what was checked, what was found, and what changed. Every chan
 | Two concurrent holds for the last 100 minor units across two buckets | One `COMMIT`, one `LIMIT_EXCEEDED`; both periods consistent, one hold |
 | `build-system` test suite on Node 24, before and after changes | 79 pass; 81 pass, 0 fail |
 | Brand status colors, WCAG contrast on canvas, panel, and raised row | Three dark values and one light value below 4.5:1; corrected |
-| 60 context records in `.oxagen/rules/` | TOML parses; `record_id` and `record_hash` recompute; stamping reproduces a published product record exactly |
+| 70 context records in `.oxagen/rules/` | TOML parses; `record_id` and `record_hash` recompute; stamping reproduces a published product record exactly |
 
 ## Findings and changes
 
@@ -111,7 +111,7 @@ This file records what was checked, what was found, and what changed. Every chan
 
 ## Context records for builders
 
-`.oxagen/` holds 60 context records in `context-record/v0.1`, the format the current Oxagen product reads from a linked repository. Each file is one lineage under `.oxagen/rules/`, with `record_id` and `record_hash` stamped the way the product's `context.steering.file.ts` and Stella stamp them; the stamper reproduced a published record from the main product repository byte for byte. `workspace.toml` binds this repository to the `oxagen/product` workspace as a linked repo, so records carry `sharing_scope = "repository"`. `governance.toml` is `solo`.
+`.oxagen/` holds 70 context records in `context-record/v0.1`, the format the current Oxagen product reads from a linked repository. Each file is one lineage under `.oxagen/rules/`, with `record_id` and `record_hash` stamped the way the product's `context.steering.file.ts` and Stella stamp them; the stamper reproduced a published record from the main product repository byte for byte. `workspace.toml` binds this repository to the `oxagen/product` workspace as a linked repo, so records carry `sharing_scope = "repository"`. `governance.toml` is `solo`.
 
 The records carry every rule above that a builder must not lose while turning these plans into code, plus the housekeeping rules of this repository.
 
@@ -122,6 +122,8 @@ The records carry every rule above that a builder must not lose while turning th
 - **Sibling snapshot absorbed.** The `oxagen-arp 2` directory was a later generator snapshot. It was merged three-way against the original import: 35 new files (artifact and release adapters, release approval tool, AWS ECS Fargate and local compose infrastructure, independent review, release setup, a release drawing, five test files) plus its document edits, with the review's changes kept on every conflict. The build-system suite is now 127 tests.
 - **Mockups as a working app.** The static HTML mockups are retired in favor of `apps/web`: Next.js App Router, base-ui, Tailwind 4, a shadcn-style kit, and Storybook, with eight routes and stories for the states the specs name. Fixtures live only in `packages/fixtures` and validate against the contracts; `apps/web/src/data` is the seam that swaps fixtures for live endpoints by one environment variable.
 - **Kernel and invoke with parity.** `packages/kernel` follows the macanderson/oxagen pattern: one `CapabilityDeclaration` per capability with its `surfaces`, one registry, one `invoke()`. `apps/api`, `apps/mcp`, and `apps/cli` are binders derived from the registry with no per-capability files. `tools/check-surface-parity.mjs --strict` and the `Surfaces` workflow enforce it. Thirteen ARP capabilities are registered; tests cover the kernel, fixtures, each binder, and the data seam.
+
+- **SDK, usage, coaching, and cost savings absorbed from the Codex outputs run.** `ARP-SDK-spec.md`, `ARP-Performance-spec.md`, and the efficiency drawing are in; the matching sections went into the design, web, API, schema, short guide, drawings, build plan, and certification blockers. The import feature, the plugin protocol, and the prose audit from that run were left out on purpose. The specs are made concrete in the kernel: `usage.query`, `finding.list`, and `finding.respond` contracts, fixtures that encode the trace-file example with a range that can be negative and an overlap group, a Coaching page and stories, and the parity gate covering all sixteen capabilities. That run also recorded the owner's choice of the oxagen-roadmap Mission Control v2 layout as the web direction; `apps/web` follows it.
 
 ## Left open
 

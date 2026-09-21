@@ -103,3 +103,9 @@ Each drawing can be opened as an SVG. The HTML reader also offers full-screen vi
 ![After design certification, the exact merged commit must pass CI. A protected builder makes API, gateway and worker images once and checks their digests in separate staging and production registries. Each environment restores a database snapshot into a private test copy, applies the supported migration and tests old and new app compatibility. Staging deploys those images and must pass health checks. A human signs approval for the exact source, artifact and production target. Production deploys the same digests. Failed health keeps release stopped; the old app may return only if compatible with the current data. Unknown writes keep their records and locks until reconciled. The live database is not automatically rewound.](diagrams/aws_release.svg)
 
 *The selected AWS release path uses separate accounts, exact images, restored database tests, health checks and signed approval. Unknown results remain blocked. This drawing describes the implemented release controls; cloud qualification and product certification are still required.*
+
+## 18. Use real usage to improve the next run
+
+![A governed request passes a full local scan and the model gateway before provider usage is saved as a safe linked record. Observed token, cache and cost facts and SDK events support a proposed change. The operator reviews it, may approve a later run, and measures the change. Estimated costs and savings remain separate from facts; metrics contain no prompt bodies or secrets.](diagrams/efficiency.svg)
+
+*Proposed flow: scanned requests and safe usage records support suggestions. Operators review changes, and later runs measure the result.*

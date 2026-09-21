@@ -1,0 +1,19 @@
+schema = "context-record/v0.1"
+set_id = "macanderson.oxagen-arp"
+
+[[record]]
+lineage_id = "ctx.arp.no-double-counted-input"
+record_id = "rec_arp_no_double_counted_input_6c7561c66870"
+record_hash = "sha256:a43be2bb803b27ad27b6966a0999dc6c4f0becadc6bf6243b7fe8a4ecaae47fe"
+kind = "rule"
+statement = "Cached input is part of the provider's input total under a pinned per-provider mapping; never add a subset to its parent, never average per-call cache percentages, and compute token reuse as summed known cache-read tokens over summed known input tokens with the denominator shown."
+origin = "user"
+sharing_scope = "repository"
+status = "active"
+
+[record.provenance]
+source_kind = "document"
+source_uri = "ARP-Performance-spec.md"
+
+[record.steering]
+force = "must"

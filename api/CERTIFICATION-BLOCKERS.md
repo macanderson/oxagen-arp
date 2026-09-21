@@ -39,3 +39,5 @@ The OpenAPI and reference describe a proposed HTTP contract. They do not certify
 ## Validation performed for this artifact
 
 Read [validation-report.json](validation-report.json) for the actual checks. Local references, unique operation IDs, path parameters, required authentication/idempotency/scan declarations, component JSON Schema structure and representative positive/negative payloads are checked. The official OpenAPI structural schema is used when retrievable. No live service, generated SDK, provider adapter, database, race test or end-to-end security test is claimed here.
+
+The SDK and performance requirements in `ARP-SDK-spec.md`, `ARP-Performance-spec.md`, and the API and schema addenda need kernel contracts, generated OpenAPI components, database migrations, and conformance tests before certification. The generated OpenAPI and its validation report predate these additions. No SDK or usage/loop-diagnostic implementation is certified by the existing structural checks.
