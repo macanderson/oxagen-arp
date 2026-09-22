@@ -1,0 +1,18 @@
+---
+schema: context-record/v0.2
+set_id: macanderson.oxagen-arp
+lineage_id: ctx.arp.plain-language-prose
+record_id: rec_arp_plain_language_prose_767a3b1ea48d
+record_hash: sha256:1faa06c287d99bedeb7c35303c8513ee4b4c51fe9537deb46dc12ea9115ab35c
+kind: preference
+origin: user
+sharing_scope: repository
+status: active
+provenance:
+  source_kind: document
+  source_uri: ARP-Brand-spec.md
+steering:
+  force: should
+---
+
+Write specification prose in short plain sentences that define each term on first use, name the exact file or command only when the reader must go there, and keep numbers in tables rather than in sentences.

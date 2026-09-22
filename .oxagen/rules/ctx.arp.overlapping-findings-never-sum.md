@@ -1,0 +1,18 @@
+---
+schema: context-record/v0.2
+set_id: macanderson.oxagen-arp
+lineage_id: ctx.arp.overlapping-findings-never-sum
+record_id: rec_arp_overlapping_findings_never_sum_9ac106497c70
+record_hash: sha256:61383b56b36da51acc0c1a646840f723c4a8d3735e6b263bba07ac470e39fed7
+kind: rule
+origin: user
+sharing_scope: repository
+status: active
+provenance:
+  source_kind: document
+  source_uri: packages/kernel/src/contracts/index.ts
+steering:
+  force: must
+---
+
+Findings that remove the same tokens or calls share an overlap group and their savings are never added together.

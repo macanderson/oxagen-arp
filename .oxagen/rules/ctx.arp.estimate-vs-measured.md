@@ -1,0 +1,18 @@
+---
+schema: context-record/v0.2
+set_id: macanderson.oxagen-arp
+lineage_id: ctx.arp.estimate-vs-measured
+record_id: rec_arp_estimate_vs_measured_39bebf9ceb15
+record_hash: sha256:01ab1d5c69cea7a93414e2febbf730877588d206a4de88c75829a7e6cada24bb
+kind: rule
+origin: user
+sharing_scope: repository
+status: active
+provenance:
+  source_kind: document
+  source_uri: ARP-Performance-spec.md
+steering:
+  force: must
+---
+
+An estimated saving names the affected calls, price basis, assumptions, coverage, and a range that may be negative; it is shown apart from a measured reduction, which names the comparison, sample size, and conditions.

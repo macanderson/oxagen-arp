@@ -1,0 +1,18 @@
+---
+schema: context-record/v0.2
+set_id: macanderson.oxagen-arp
+lineage_id: ctx.arp.build-system-tests-must-pass
+record_id: rec_arp_build_system_tests_must_pass_1cad1b2a7797
+record_hash: sha256:4e2b1709990a7a1dd9dddb28e4a40611ee824376734ce24c3578e4803597f303
+kind: procedure
+origin: user
+sharing_scope: repository
+status: active
+provenance:
+  source_kind: document
+  source_uri: build-system/README.md
+steering:
+  force: must
+---
+
+Run node --test test/*.test.mjs inside build-system on Node 22 or newer before committing any change under build-system; the suite has no npm dependencies and must stay green.

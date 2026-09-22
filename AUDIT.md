@@ -111,7 +111,7 @@ This file records what was checked, what was found, and what changed. Every chan
 
 ## Context records for builders
 
-`.oxagen/` holds 70 context records in `context-record/v0.1`, the format the current Oxagen product reads from a linked repository. Each file is one lineage under `.oxagen/rules/`, with `record_id` and `record_hash` stamped the way the product's `context.steering.file.ts` and Stella stamp them; the stamper reproduced a published record from the main product repository byte for byte. `workspace.toml` binds this repository to the `oxagen/product` workspace as a linked repo, so records carry `sharing_scope = "repository"`. `governance.toml` is `solo`.
+`.oxagen/` holds 70 context records in `context-record/v0.2`, the frontmatter markdown format the current Oxagen product reads from a linked repository (they were written as `context-record/v0.1` TOML and re-encoded by the product's migration script, which kept every `record_id` and `record_hash`). Each file is one lineage under `.oxagen/rules/<lineage>.md`, with `record_id` and `record_hash` stamped the way the product's `context-record-file.ts` and Stella stamp them; the stamper reproduced a published record from the main product repository byte for byte. `workspace.toml` binds this repository to the `oxagen/product` workspace as a linked repo, so records carry `sharing_scope = "repository"`. `governance.toml` is `solo`.
 
 The records carry every rule above that a builder must not lose while turning these plans into code, plus the housekeeping rules of this repository.
 

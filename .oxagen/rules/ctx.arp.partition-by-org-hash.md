@@ -1,0 +1,18 @@
+---
+schema: context-record/v0.2
+set_id: macanderson.oxagen-arp
+lineage_id: ctx.arp.partition-by-org-hash
+record_id: rec_arp_partition_by_org_hash_4bcd95529de7
+record_hash: sha256:ea5d4c9aaf299905eef952f942aea0bb4ac0b8d3a57f564600f973b5946ad9e7
+kind: rule
+origin: user
+sharing_scope: repository
+status: active
+provenance:
+  source_kind: document
+  source_uri: ARP-Schema-spec.md
+steering:
+  force: must
+---
+
+Partition high-volume event and ledger tables by organization hash, never by time, because their unique keys and foreign-key targets carry no time column; retention is a bounded deletion job.

@@ -1,0 +1,18 @@
+---
+schema: context-record/v0.2
+set_id: macanderson.oxagen-arp
+lineage_id: ctx.arp.limit-identity-is-definition
+record_id: rec_arp_limit_identity_is_definition_f9c611b08348
+record_hash: sha256:54b0a74008fb702204ed1371a62494e17b34d59b0a66e90bf2bd99d13f7bc057
+kind: rule
+origin: user
+sharing_scope: repository
+status: active
+provenance:
+  source_kind: document
+  source_uri: ARP-Schema-spec.md
+steering:
+  force: must
+---
+
+Budget and business limits key on a stable limit_definitions row, never on a policy revision, so publishing a revision, renaming a policy, or creating an agent cannot mint a fresh allowance.

@@ -1,0 +1,18 @@
+---
+schema: context-record/v0.2
+set_id: macanderson.oxagen-arp
+lineage_id: ctx.arp.fixtures-live-in-one-package
+record_id: rec_arp_fixtures_live_in_one_package_2221c1becfa7
+record_hash: sha256:d56a8cf658fa926ad7be3552044b724dedeae6be27fd7da69237c971104818d5
+kind: rule
+origin: user
+sharing_scope: repository
+status: active
+provenance:
+  source_kind: document
+  source_uri: packages/fixtures/src/index.ts
+steering:
+  force: must
+---
+
+Fake data lives only in packages/fixtures and every fixture validates against its contract's output schema; a page, story, or binder never carries its own sample data.

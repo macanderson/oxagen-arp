@@ -1,0 +1,18 @@
+---
+schema: context-record/v0.2
+set_id: macanderson.oxagen-arp
+lineage_id: ctx.arp.unknown-usage-is-not-zero
+record_id: rec_arp_unknown_usage_is_not_zero_c82cb1103067
+record_hash: sha256:abe86cae4122e16dc8ad50d7fa40c0c8ee9fbb44c2de7ac99ee711a9cba73a0a
+kind: rule
+origin: user
+sharing_scope: repository
+status: active
+provenance:
+  source_kind: document
+  source_uri: ARP-Performance-spec.md
+steering:
+  force: must
+---
+
+A missing or unsupported token, cache, or cost field stays null and is shown as unknown; it is never stored or displayed as zero, and every usage value carries its basis: provider reported, gateway measured, client reported, or estimated.

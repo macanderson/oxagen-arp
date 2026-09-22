@@ -1,0 +1,18 @@
+---
+schema: context-record/v0.2
+set_id: macanderson.oxagen-arp
+lineage_id: ctx.arp.status-colors-on-raised-rows
+record_id: rec_arp_status_colors_on_raised_rows_d2e1aed86057
+record_hash: sha256:a0c454192b145f49f0c6916174f4fc7171070792876f01462711535bb85b43d6
+kind: rule
+origin: user
+sharing_scope: repository
+status: active
+provenance:
+  source_kind: document
+  source_uri: ARP-Brand-spec.md
+steering:
+  force: must
+---
+
+Status text must reach 4.5 to 1 on canvas, panel, and raised row in its theme; use the corrected dark Denied, Failed, and Urgent values and never put gold text on a light raised row.

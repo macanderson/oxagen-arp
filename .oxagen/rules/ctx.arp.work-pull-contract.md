@@ -1,0 +1,18 @@
+---
+schema: context-record/v0.2
+set_id: macanderson.oxagen-arp
+lineage_id: ctx.arp.work-pull-contract
+record_id: rec_arp_work_pull_contract_22e9388b8a8c
+record_hash: sha256:7b2f68c3350fa6e142d88520fd4a2b7972710c518423cd35637192a7a5a65b3b
+kind: fact
+origin: user
+sharing_scope: repository
+status: active
+provenance:
+  source_kind: document
+  source_uri: ARP-design.md
+steering:
+  force: must
+---
+
+The desktop guard pulls work through work.claim, work.extend, and work.start_ack with lease epochs, reads a target-scoped event stream, and recovers after a gap with one target.control_snapshot call rather than polling each run.

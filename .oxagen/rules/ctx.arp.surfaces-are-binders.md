@@ -1,0 +1,18 @@
+---
+schema: context-record/v0.2
+set_id: macanderson.oxagen-arp
+lineage_id: ctx.arp.surfaces-are-binders
+record_id: rec_arp_surfaces_are_binders_2b43144620d6
+record_hash: sha256:44485224624fa82fa34637dede6508664b5386893e5ccf4e8415ec9144739613
+kind: rule
+origin: user
+sharing_scope: repository
+status: active
+provenance:
+  source_kind: document
+  source_uri: tools/check-surface-parity.mjs
+steering:
+  force: must
+---
+
+apps/api, apps/mcp, and apps/cli derive their routes, tools, and commands from capabilitiesForSurface at boot and call invoke with the surface they verified; a per-capability route, tool, or command file is duplicate code and fails the parity gate.

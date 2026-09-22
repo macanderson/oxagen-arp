@@ -1,0 +1,18 @@
+---
+schema: context-record/v0.2
+set_id: macanderson.oxagen-arp
+lineage_id: ctx.arp.metrics-carry-no-content
+record_id: rec_arp_metrics_carry_no_content_3a7743e2e2ac
+record_hash: sha256:2d67130df7e5ed28f49f10482bb07e0250a16205e5bfe0e7235d9fe284ed681d
+kind: rule
+origin: user
+sharing_scope: repository
+status: active
+provenance:
+  source_kind: document
+  source_uri: ARP-Performance-spec.md
+steering:
+  force: must
+---
+
+Usage records and metrics labels carry only approved low-cardinality fields; no prompt body, file path, user text, raw-content digest, or replacement value enters metrics, and a count or export may not reveal a run the viewer cannot read.

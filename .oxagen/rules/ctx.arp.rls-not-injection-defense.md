@@ -1,0 +1,18 @@
+---
+schema: context-record/v0.2
+set_id: macanderson.oxagen-arp
+lineage_id: ctx.arp.rls-not-injection-defense
+record_id: rec_arp_rls_not_injection_defense_e46f396a6f30
+record_hash: sha256:524d836d30b27024af5e511d58faeb778a37395773d8f6c7a13b297fe450cc72
+kind: fact
+origin: user
+sharing_scope: repository
+status: active
+provenance:
+  source_kind: document
+  source_uri: ARP-design.md
+steering:
+  force: must
+---
+
+Row-level security keyed on a transaction setting stops application code that forgets a filter; it does not stop SQL injection run as the runtime role, so services use parameterized statements only and a lint gate rejects dynamic SQL.
