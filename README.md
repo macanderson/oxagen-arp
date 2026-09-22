@@ -28,6 +28,34 @@ Search with the Search button, `/`, or Cmd/Ctrl+K. Open a drawing for full-scree
 - [Usage and performance](ARP-Performance-spec.md): token and cache accounting, operator coaching, and cost savings that are estimates until measured.
 - [Audit](AUDIT.md): the 2026-09-20 adversarial review, what was executed, what changed, and what is still open.
 
+## Adopted in Oxagen
+
+The gateway's credential design landed in `macanderson/oxagen` on 2026-09-22 as
+ADR-138 ("The gateway brokers the vendor credential: a wrapped harness holds a
+run token"), in `packages/tacho`. What it took from this pack:
+
+- "The model proxy stores the key; the device never sees it" (Design §3): the
+  daemon `tachod` holds the vendor key sealed under `TACHO_HOME`, and Claude
+  Code's `apiKeyHelper` and Codex's `auth.json` hold a run token in its place.
+  That is the shape of the build system's local execution adapter
+  (`build-system/adapters/local-execution.mjs`): the host keeps the provider
+  credential in a private file that only the broker reads, and the agent
+  container is handed `ANTHROPIC_AUTH_TOKEN=local-operation-socket`, a
+  placeholder that works at the broker's socket and nowhere else.
+- A short-lived, audience-bound grant for one host, harness and provider, with
+  its expiry issued by the gateway and never chosen by the caller, under the
+  fifteen-minute ceiling the API specification publishes for a credential
+  lease (`ARP-API-spec.md`, "Default ceilings, published with the API"). A
+  caller may only ask for less (the audit's finding on caller-chosen expiry).
+- "Never forward the client's token upstream" (MCP §2): the proxy drops the run
+  token and attaches the custody credential in the vendor's own header.
+- "Never include bearer tokens in evidence": every frame carries the token's
+  id and the credential basis, never the token or the key.
+
+What Oxagen did differently: the credential stays on the machine rather than in
+an org gateway, as ADR-094 decided, and the two-tier org proxy, the budget
+holds and the OS keystore stay in this pack as design.
+
 ## Working code
 
 The pack now carries a pnpm workspace that mirrors the macanderson/oxagen kernel-and-invoke pattern. Run `pnpm install`, then:
