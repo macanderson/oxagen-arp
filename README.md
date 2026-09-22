@@ -36,12 +36,17 @@ run token"), in `packages/tacho`. What it took from this pack:
 
 - "The model proxy stores the key; the device never sees it" (Design §3): the
   daemon `tachod` holds the vendor key sealed under `TACHO_HOME`, and Claude
-  Code's `apiKeyHelper` and Codex's `auth.json` hold a run token in its place,
-  the placeholder pattern the build system's local execution adapter used.
+  Code's `apiKeyHelper` and Codex's `auth.json` hold a run token in its place.
+  That is the shape of the build system's local execution adapter
+  (`build-system/adapters/local-execution.mjs`): the host keeps the provider
+  credential in a private file that only the broker reads, and the agent
+  container is handed `ANTHROPIC_AUTH_TOKEN=local-operation-socket`, a
+  placeholder that works at the broker's socket and nowhere else.
 - A short-lived, audience-bound grant for one host, harness and provider, with
-  its expiry issued by the gateway under a published ceiling of fifteen
-  minutes. A caller may only ask for less (the audit's finding on caller-chosen
-  expiry).
+  its expiry issued by the gateway and never chosen by the caller, under the
+  fifteen-minute ceiling the API specification publishes for a credential
+  lease (`ARP-API-spec.md`, "Default ceilings, published with the API"). A
+  caller may only ask for less (the audit's finding on caller-chosen expiry).
 - "Never forward the client's token upstream" (MCP §2): the proxy drops the run
   token and attaches the custody credential in the vendor's own header.
 - "Never include bearer tokens in evidence": every frame carries the token's
