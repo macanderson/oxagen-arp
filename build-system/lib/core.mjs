@@ -33,63 +33,71 @@ export function certificationSnapshot(root,required){
 }
 export function validateReview(review,{head,implementationHarness,reviewerHarness}){assert(review?.head===head,'Review is stale');assert(reviewerHarness!==implementationHarness,'Implementer cannot self-approve');assert(review.harness===reviewerHarness,'Review harness mismatch');assert(review.verdict==='pass'&&Array.isArray(review.findings)&&review.findings.length===0,'Review has findings or failed');assert(typeof review.sessionId==='string'&&review.sessionId.length>0,'Fresh review session ID missing')}
 export class Journal{
- constructor(dir,manifestHash){this.dir=dir;fs.mkdirSync(dir,{recursive:true,mode:0o700});this.file=path.join(dir,'events.jsonl');this.seq=0;this.prev='0';this.state={manifestHash,batches:{},active:null,blocked:null};if(fs.existsSync(this.file)){const text=fs.readFileSync(this.file,'utf8');assert(!text||text.endsWith('\n'),'Truncated journal requires operator repair');for(const line of text.trim().split('\n').filter(Boolean)){const e=JSON.parse(line);const {hash,...body}=e;assert(e.seq===this.seq+1&&e.prev===this.prev&&hash===digest(body),'Journal integrity failure');this.seq=e.seq;this.prev=hash;this.state=e.state}assert(this.state.manifestHash===manifestHash,'Plan changed: use a new control run')}}
+ constructor(dir,manifestHash){this.dir=dir;fs.mkdirSync(dir,{recursive:true,mode:0o700});this.file=path.join(dir,'events.jsonl');this.seq=0;this.prev='0';this.state={manifestHash,batches:{},active:null,activeOps:{},pendingReceipt:null,pendingReceipts:{},blocked:null};if(fs.existsSync(this.file)){const text=fs.readFileSync(this.file,'utf8');assert(!text||text.endsWith('\n'),'Truncated journal requires operator repair');for(const line of text.trim().split('\n').filter(Boolean)){const e=JSON.parse(line);const {hash,...body}=e;assert(e.seq===this.seq+1&&e.prev===this.prev&&hash===digest(body),'Journal integrity failure');this.seq=e.seq;this.prev=hash;this.state=e.state}assert(this.state.manifestHash===manifestHash,'Plan changed: use a new control run')}}
  record(type,state){const body={seq:this.seq+1,prev:this.prev,time:new Date().toISOString(),type,state};const e={...body,hash:digest(body)};const fd=fs.openSync(this.file,'a',0o600);try{fs.writeSync(fd,canonical(e)+'\n');fs.fsyncSync(fd)}finally{fs.closeSync(fd)}this.seq=e.seq;this.prev=e.hash;this.state=structuredClone(state);const temp=path.join(this.dir,'checkpoint.json.tmp');fs.writeFileSync(temp,canonical({seq:this.seq,hash:this.prev,state}),{mode:0o600});fs.renameSync(temp,path.join(this.dir,'checkpoint.json'));return state}
 }
 export async function processJSON(command,args,input,{timeoutSeconds=60,killGraceMs=30000,cancelFile,env={},cwd}={}){
  assert(path.isAbsolute(command),'Trusted hook executable must be absolute');assert(Array.isArray(args)&&args.every(x=>typeof x==='string'),'Use argv strings');
  return new Promise((resolve,reject)=>{let stdout='',stderr='',stopped=null;const child=spawn(command,args,{cwd,env:{PATH:'/usr/bin:/bin',...env},stdio:['pipe','pipe','pipe'],shell:false,detached:process.platform!=='win32'});const stop=reason=>{if(stopped)return;stopped=reason;try{process.platform==='win32'?child.kill('SIGTERM'):process.kill(-child.pid,'SIGTERM')}catch{}setTimeout(()=>{try{process.platform==='win32'?child.kill('SIGKILL'):process.kill(-child.pid,'SIGKILL')}catch{}},killGraceMs).unref()};const timer=setTimeout(()=>stop('timeout'),timeoutSeconds*1000);const poll=setInterval(()=>{if(cancelFile&&fs.existsSync(cancelFile))stop('cancelled')},100);child.stdout.on('data',b=>{stdout+=b;if(stdout.length>4*1024*1024)stop('oversized response')});child.stderr.on('data',b=>{stderr=(stderr+b).slice(-4096)});child.on('error',e=>{clearTimeout(timer);clearInterval(poll);reject(e)});child.on('close',code=>{clearTimeout(timer);clearInterval(poll);if(process.platform!=='win32'){try{process.kill(-child.pid,'SIGKILL')}catch{}}if(stopped||code!==0)return reject(new Error(stopped||`Trusted hook exited ${code}`));try{resolve(JSON.parse(stdout))}catch{reject(new Error('Trusted hook returned invalid JSON'))}});child.stdin.on('error',()=>{});child.stdin.end(canonical(input));});
 }
+// Several batches of one wave run at once, so the journal holds a map of active operations. `active`
+// is the derived single view (the oldest active operation, or null) so existing readers keep working.
+export function activeOperations(state){const ops=state.activeOps&&Object.keys(state.activeOps).length?Object.values(state.activeOps):(state.active?[state.active]:[]);return ops}
+export function withActive(state,ops){const activeOps=Object.fromEntries(ops.map(o=>[o.id,o]));return {...state,activeOps,active:ops[0]??null}}
+export function withoutOperation(state,id){return withActive(state,activeOperations(state).filter(o=>o.id!==id))}
+export function withOperation(state,op){return withActive(state,[...activeOperations(state).filter(o=>o.id!==op.id),op])}
+export function findActive(state,operationId){const ops=activeOperations(state);if(operationId!==undefined){const hit=ops.find(o=>o.id===operationId);if(hit)return hit}assert(ops.length<=1||operationId!==undefined,'Several operations are in flight; name the operation to reconcile');return ops[0]??null}
 export async function invokeStage(journal,operation,invoke){
- assert(!journal.state.active&&!journal.state.blocked,'Reconcile or resolve the blocked operation first');
- journal.record('operation.started',{...journal.state,active:operation});
- try{const result=await invoke(operation);assert(result.operationId===operation.id,'Operation receipt mismatch');if(knownCheckFailure(operation,result)){recordCheckFailure(journal,operation,result);throw new Error('Checks failed; use bounded retry after reviewing the recorded result');}assert(result.status==='succeeded','Operation failed or outcome unknown');return result}catch(e){if(journal.state.active?.id===operation.id)journal.record('operation.unknown',{...journal.state,blocked:{operationId:operation.id,reason:e.message}});throw e}
+ assert(!journal.state.blocked,'Reconcile or resolve the blocked operation first');
+ assert(!activeOperations(journal.state).some(o=>o.batchId===operation.batchId),'Batch already has an operation in flight');
+ journal.record('operation.started',withOperation(journal.state,operation));
+ try{const result=await invoke(operation);assert(result.operationId===operation.id,'Operation receipt mismatch');if(knownCheckFailure(operation,result)){recordCheckFailure(journal,operation,result);throw new Error('Checks failed; use bounded retry after reviewing the recorded result');}assert(result.status==='succeeded','Operation failed or outcome unknown');return result}catch(e){if(activeOperations(journal.state).some(o=>o.id===operation.id))journal.record('operation.unknown',{...journal.state,blocked:{operationId:operation.id,reason:e.message}});throw e}
 }
 
 // A failed agent stage counts as a known failure only when the adapter proved no charge and no unknown
 // provider liability; a settled nonzero cost still needs receipt adoption, which stays manual.
 function knownCheckFailure(op,result){return ['quality','ci','post_merge_ci','agent'].includes(op.kind)&&result.status==='failed'&&result.operationId===op.id&&result.noExternalEffect===true&&result.allChildrenStopped===true&&result.costCents===0;}
-function recordCheckFailure(journal,op,result){const b=journal.state.batches[op.batchId];journal.record('checks.failed',{...journal.state,active:null,pendingReceipt:null,blocked:{batchId:op.batchId,knownNoExternalEffect:true,reason:result.reason||'Required checks failed'},batches:{...journal.state.batches,[op.batchId]:{...b,lastReceipt:result}}});}
+function recordCheckFailure(journal,op,result){const b=journal.state.batches[op.batchId];const {[op.batchId]:_dropped,...pendingReceipts}=journal.state.pendingReceipts||{};journal.record('checks.failed',{...withoutOperation(journal.state,op.id),pendingReceipt:null,pendingReceipts,blocked:{batchId:op.batchId,knownNoExternalEffect:true,reason:result.reason||'Required checks failed'},batches:{...journal.state.batches,[op.batchId]:{...b,lastReceipt:result}}});}
 
 export function requestRetry(journal,plan,id){
  const b=plan.batches.find(x=>x.id===id),r=journal.state.batches[id],blocked=journal.state.blocked;
- assert(b&&r&&!journal.state.active&&blocked?.knownNoExternalEffect&&blocked.batchId===id&&['implement','review','quality','ci','post_merge_ci'].includes(r.stage),'Retry must target the exact blocked review or check batch');assert(r.attempt<b.maxAttempts,'Retry limit reached');
+ assert(b&&r&&activeOperations(journal.state).length===0&&blocked?.knownNoExternalEffect&&blocked.batchId===id&&['implement','review','quality','ci','post_merge_ci'].includes(r.stage),'Retry must target the exact blocked review or check batch');assert(r.attempt<b.maxAttempts,'Retry limit reached');
  journal.record('batch.retry',{...journal.state,blocked:null,pendingReceipt:null,batches:{...journal.state.batches,[id]:{...r,stage:'retry'}}});
 }
 export async function invokeRollbackStage(journal,operation,invoke){
- const blocked=journal.state.blocked;assert(!journal.state.active&&blocked?.rollbackRequired&&blocked.batchId===operation.batchId&&operation.kind==='rollback','Rollback must target the known failed health batch');
+ const blocked=journal.state.blocked;assert(activeOperations(journal.state).length===0&&blocked?.rollbackRequired&&blocked.batchId===operation.batchId&&operation.kind==='rollback','Rollback must target the known failed health batch');
  // One durable event replaces the health block with the in-flight rollback.
  const recovery={blocked:structuredClone(blocked),pendingReceipt:structuredClone(journal.state.pendingReceipt??null)};
  const active={...operation,recovery};
- journal.record('rollback.started',{...journal.state,active,blocked:null,pendingReceipt:null});
+ journal.record('rollback.started',{...withOperation(journal.state,active),blocked:null,pendingReceipt:null});
  try{const result=await invoke(operation);assert(result.operationId===operation.id&&result.status==='succeeded','Rollback outcome is unknown or failed');return result}catch(e){journal.record('rollback.unknown',{...journal.state,blocked:{operationId:operation.id,reason:e.message}});throw e}
 }
 
 export function reconcileNoEffect(journal,result){
- const active=journal.state.active;assert(active,'No uncertain in-flight operation');
+ const active=findActive(journal.state,result?.operationId);assert(active,'No uncertain in-flight operation');
  assert(result.status==='succeeded'&&result.operationId===active.id&&result.noExternalEffect===true&&result.allChildrenStopped===true&&result.costCents===0,'Reconciliation cannot safely retry: known completed/charged effects require trusted receipt adoption, which this version does not automate');
  if(active.kind==='rollback')assert(active.recovery?.blocked?.rollbackRequired&&active.recovery.blocked.batchId===active.batchId,'Rollback recovery context is missing');
- journal.record('operation.reconciled',{...journal.state,active:null,blocked:active.kind==='rollback'?active.recovery.blocked:null,pendingReceipt:active.kind==='rollback'?active.recovery.pendingReceipt:null});
+ journal.record('operation.reconciled',{...withoutOperation(journal.state,active.id),blocked:active.kind==='rollback'?active.recovery.blocked:null,pendingReceipt:active.kind==='rollback'?active.recovery.pendingReceipt:null});
 }
 
 // Adopt only an already durable result from the protected local adapter. Never
 // reconstruct successful execution from agent prose or a caller-supplied file.
 export function adoptLocalReceipt(journal,result){
- const active=journal.state.active;assert(active,'No adoptable operation');
+ const active=findActive(journal.state,result?.operationId);assert(active,'No adoptable operation');
  if(active.kind==='rollback'){completeRollback(journal,result);return;}
  if(knownCheckFailure(active,result)){recordCheckFailure(journal,active,result);return;}
  assert(result.status==='succeeded'&&result.operationId===active.id,'Stored operation receipt mismatch');
  assert(Number.isSafeInteger(result.costCents)&&result.costCents>=0&&result.costCents<=active.maxCostCents,'Invalid stored settled cost');
  if(active.kind==='agent')assert(result.allChildrenStopped===true&&result.budgetReceipt&&result.isolationReceipt,'Stored agent result lacks cleanup and budget proof');
  const b=journal.state.batches[active.batchId];assert(b,'Unknown stored batch');
- journal.record('operation.adopted',{...journal.state,active:null,blocked:null,spentCents:(journal.state.spentCents||0)+result.costCents,batches:{...journal.state.batches,[active.batchId]:{...b,spentCents:(b.spentCents||0)+result.costCents,lastReceipt:result}},pendingReceipt:{kind:active.kind,batchId:active.batchId,payloadDigest:digest(active.payload),result}});
+ journal.record('operation.adopted',{...withoutOperation(journal.state,active.id),blocked:null,spentCents:(journal.state.spentCents||0)+result.costCents,batches:{...journal.state.batches,[active.batchId]:{...b,spentCents:(b.spentCents||0)+result.costCents,lastReceipt:result}},pendingReceipt:{kind:active.kind,batchId:active.batchId,payloadDigest:digest(active.payload),result},pendingReceipts:{...(journal.state.pendingReceipts||{}),[active.batchId]:{kind:active.kind,batchId:active.batchId,payloadDigest:digest(active.payload),result}}});
 }
 
 // A recovered rollback uses the same checks and final blocked state as a direct reply.
 export function completeRollback(journal,result){
- const active=journal.state.active;assert(active?.kind==='rollback'&&active.recovery?.blocked?.rollbackRequired,'No active failed-health rollback');
+ const active=findActive(journal.state,result?.operationId);assert(active?.kind==='rollback'&&active.recovery?.blocked?.rollbackRequired,'No active failed-health rollback');
  const p=active.payload,failed=p.failedHealth;
  assert(result.operationId===active.id&&result.status==='succeeded'&&result.costCents===0&&result.authorized===true&&result.restored===true&&result.healthy===true&&result.restoredArtifactDigest,'Rollback lacks exact operation, authorization, artifact and health proof');
  assert(result.head===p.head&&result.target&&[p.targets.staging,p.targets.production].includes(result.target)&&failed?.target===result.target,'Rollback target or source mismatch');
- journal.record('rollback.completed',{...journal.state,active:null,pendingReceipt:null,blocked:{batchId:active.batchId,reason:'Rollback complete. A new reviewed release plan is required.'},rollbackReceipt:result});
+ journal.record('rollback.completed',{...withoutOperation(journal.state,active.id),pendingReceipt:null,blocked:{batchId:active.batchId,reason:'Rollback complete. A new reviewed release plan is required.'},rollbackReceipt:result});
 }
